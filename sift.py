@@ -13,9 +13,12 @@ def getKeypoints(img):
 
 
 def getDes(img):
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    sift = cv2.xfeatures2d.SIFT_create()
-    kp, des = sift.detectAndCompute(gray, None)
-    return des
+    try:
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        sift = cv2.xfeatures2d.SIFT_create()
+        kp, des = sift.detectAndCompute(gray, None)
+        return des
+    except:
+        return None
 
 
