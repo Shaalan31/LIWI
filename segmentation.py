@@ -97,12 +97,12 @@ def fill_blocks(bounding_rects):
     y = 0
 
     # loop for processing each bounding rect
-    for index, bounding_rect in enumerate(bounding_rects):
+    for index, bounding_rect in enumerate(bounding_rects, 1):
 
         # filling the block with the bounding rect & incrementing the width x
         # & append the height of the bounding rect to the heights
-        block[y:y + bounding_rect.rect.shape(0) - 1, x:x + bounding_rect.rect.shape(1) - 1] = bounding_rect.rect
-        x += bounding_rect.rect.shape(1)
+        block[y:y + bounding_rect.height - 1, x:x + bounding_rect.width - 1] = bounding_rect.rect
+        x += bounding_rect.width
         heights = np.append(heights, bounding_rect.height)
 
         # Check if the height greater than 256
@@ -114,15 +114,15 @@ def fill_blocks(bounding_rects):
             heights = np.asarray([])
             blocks = np.append(blocks, block)
             block = np.zeros((256, 256), dtype='int')
-            block[y:y + next_bounding_rect.rect.shape(0) - 1, x:255] = next_bounding_rect.rect[:, 0:255 - x]
+            block[y:y + next_bounding_rect.height - 1, x:255] = next_bounding_rect.rect[:, 0:255 - x]
 
         # getting next bounding rect and check if it will fit in the remaining block,
         # if not will split the bounding rect into two bounding rects, one will fill the remaining part
         # the other will replace the next bounding rect, and increment the height y and clearing heights & width
-        if index + 1 < bounding_rects.shape(1):
+        if index + 1 < bounding_rects.shape[0]:
             next_bounding_rect = bounding_rects[index + 1]
-            if x + next_bounding_rect.rect.shape(1) - 1 > 256:
-                block[y:y + next_bounding_rect.rect.shape(0) - 1, x:255] = next_bounding_rect.rect[:, 0:255 - x]
+            if x + next_bounding_rect.width - 1 > 256:
+                block[y:y + next_bounding_rect.height - 1, x:255] = next_bounding_rect.rect[:, 0:255 - x]
                 heights = np.append(heights, next_bounding_rect.height)
                 y += int((np.average(heights)) / 2)
                 heights = np.asarray([])
