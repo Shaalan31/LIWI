@@ -1,8 +1,8 @@
 from segmentation import *
-from AnglesHistogram import *
-from BlobsDetection import *
-from ConnectedComponents import *
-from DiskFractal import *
+# from AnglesHistogram import *
+# from BlobsDetection import *
+# from ConnectedComponents import *
+# from DiskFractal import *
 import glob
 import warnings
 import time
@@ -11,31 +11,31 @@ from sklearn.neural_network import MLPClassifier
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-
-def feature_extraction(example, image_shape):
-    example = example.astype('uint8')
-    example_copy = example.copy()
-
-    feature = []
-
-    # feature 1, Angles Histogram
-    feature.extend(AnglesHistogram(example))
-
-    # Calculate Contours
-    _, contours, hierarchy = cv2.findContours(example_copy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    hierarchy = hierarchy[0]
-    contours = np.asarray(contours)
-
-    # feature 2, Blobs Detection
-    feature.extend(blob_threaded(contours, hierarchy))
-
-    # feature 3, Connected Components
-    feature.extend(ConnectedComponents(contours, hierarchy, example_copy, image_shape))
-
-    # feature 4, Disk Fractal
-    feature.extend(DiskFractal(example_copy))
-
-    return np.asarray(feature)
+#
+# def feature_extraction(example, image_shape):
+#     example = example.astype('uint8')
+#     example_copy = example.copy()
+#
+#     feature = []
+#
+#     # feature 1, Angles Histogram
+#     feature.extend(AnglesHistogram(example))
+#
+#     # Calculate Contours
+#     _, contours, hierarchy = cv2.findContours(example_copy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+#     hierarchy = hierarchy[0]
+#     contours = np.asarray(contours)
+#
+#     # feature 2, Blobs Detection
+#     feature.extend(blob_threaded(contours, hierarchy))
+#
+#     # feature 3, Connected Components
+#     feature.extend(ConnectedComponents(contours, hierarchy, example_copy, image_shape))
+#
+#     # feature 4, Disk Fractal
+#     feature.extend(DiskFractal(example_copy))
+#
+#     return np.asarray(feature)
 
 
 def test(image, clf, mu, sigma):
@@ -49,10 +49,10 @@ def test(image, clf, mu, sigma):
     writerLines = segment(image)
 
     num_testing_examples = 0
-    for line in writerLines:
-        example = feature_extraction(line, image.shape)
-        all_features_test = np.append(all_features_test, example)
-        num_testing_examples += 1
+    # for line in writerLines:
+    #     example = feature_extraction(line, image.shape)
+    #     all_features_test = np.append(all_features_test, example)
+    #     num_testing_examples += 1
 
     all_features_test = (adjustNaNValues(
         np.reshape(all_features_test, (num_testing_examples, num_features))) - mu) / sigma
@@ -84,11 +84,11 @@ def training(image, class_num):
 
     boundingRects = np.asarray([])
 
-
-    for line in writerLines:
-        all_features_class = np.append(all_features_class, feature_extraction(line, image.shape))
-        labels.append(class_num)
-        num_training_examples += 1
+    #
+    # for line in writerLines:
+    #     all_features_class = np.append(all_features_class, feature_extraction(line, image.shape))
+    #     labels.append(class_num)
+    #     num_training_examples += 1
 
     return np.reshape(all_features_class, (num_lines_per_class, num_features))
 
