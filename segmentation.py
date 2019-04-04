@@ -127,9 +127,8 @@ def fill_blocks(bounding_rects):
             # the other will replace the next bounding rect, and increment the height y and clearing heights & width
             if index + 1 < bounding_rects.shape[0]:
                 next_bounding_rect = bounding_rects[index + 1]
-                next_bounding_rect.rect = 1 - np.divide(next_bounding_rect.rect, 255).astype('int')
-
                 if x + next_bounding_rect.width - 1 > 256:
+                    next_bounding_rect.rect = 1 - np.divide(next_bounding_rect.rect, 255).astype('int')
                     block[y:y + next_bounding_rect.height - 1, x:255] = np.multiply(
                         block[y:y + next_bounding_rect.height - 1, x:255], next_bounding_rect.rect[:, 0:255 - x])
                     heights = np.append(heights, next_bounding_rect.height)
