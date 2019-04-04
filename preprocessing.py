@@ -21,7 +21,7 @@ def extract_text(img):
     horizontal = cv2.dilate(horizontal, horizontalStructure)
     horizontal = cv2.erode(horizontal, horizontalStructure)
     horizontal = 255 - horizontal
-    horizontal /= 255
+    horizontal = horizontal / 255
     sum = np.sum(horizontal, axis=1)
     sum[sum < int(cols / 10)] = 0
     sum[sum > int(cols / 10)] = 1
