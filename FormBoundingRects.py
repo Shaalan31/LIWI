@@ -4,8 +4,7 @@ from BoundingRect import BoundingRect
 
 
 def getBoundingRects(image, image_shape):
-    example = image.astype('uint8')
-    example_copy = example.copy()
+    image = image.astype('uint8')
 
     # finding contours whose parent is the bounding rect of the whole paper
     # since hierarchy[:, 3] gives us the id of the parent
@@ -13,8 +12,8 @@ def getBoundingRects(image, image_shape):
     small_components_ratio = 375 / 8780618
 
     all_bounding_rects = np.asarray([])
+    _, contours, hierarchy = cv2.findContours(image.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    _, contours, hierarchy = cv2.findContours(example_copy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     hierarchy = hierarchy[0]
     contours = np.asarray(contours)
     mask = (hierarchy[:, 3] == 0).astype('int')

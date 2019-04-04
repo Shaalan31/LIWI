@@ -1,6 +1,7 @@
 from commonfunctions import *
 from skimage.filters import gaussian
 from skimage.filters import threshold_otsu
+from FormBoundingRects import *
 
 
 def segment(image):
@@ -23,6 +24,8 @@ def segment(image):
     top, bottom = extract_text(imageGray)
     imageGray = imageGray[top:bottom, :]
     # show_images([imageGray])
+
+    bounding_rects = getBoundingRects(imageGray, imageGray.shape)
 
     writer_lines = []
     line_start = 0
