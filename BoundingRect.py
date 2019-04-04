@@ -3,3 +3,7 @@ class BoundingRect:
         self.height = height
         self.width = width
         self.rect = rect
+
+    @property
+    def x(self):
+        return self.rect
