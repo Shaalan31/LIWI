@@ -135,7 +135,7 @@ def reading_test_cases():
         indices_array.append(str(i))
 
     for index in indices_array:
-        try:
+        # try:
             seconds = time.time()
             test_combination = (1, 2, 3)
             for class_number in test_combination:
@@ -172,9 +172,9 @@ def reading_test_cases():
             print(calculated_time)
             time_array.append(str(calculated_time) + '\n')
             print("-----------------------------------------------------------------")
-        except:
-            results_array.append(str(random.randint(1, 3)) + '\n')
-            time_array.append(str(0) + '\n')
+        # except:
+        #     results_array.append(str(random.randint(1, 3)) + '\n')
+        #     time_array.append(str(0) + '\n')
 
     time_file = open("time.txt", "w+")
     results_file = open("results.txt", "w+")
