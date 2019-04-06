@@ -1,11 +1,12 @@
 import cv2
 import numpy as np
 from BoundingRect import BoundingRect
+from commonfunctions import *
 
 
 def getBoundingRects(image, image_shape):
     image = image.astype('uint8')
-
+    show_images([image])
     # finding contours whose parent is the bounding rect of the whole paper
     # since hierarchy[:, 3] gives us the id of the parent
 
@@ -22,7 +23,7 @@ def getBoundingRects(image, image_shape):
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
         if int(w * h) > small_components_ratio * (image_shape[0] * image_shape[1]):
-            new_bounding_rect = BoundingRect(h, w, np.divide(image[y:y + h - 1, x:x + w - 1], 255))
+            new_bounding_rect = BoundingRect(h, w, np.divide(image[y:y + h, x:x + w], 255))
             all_bounding_rects = np.append(all_bounding_rects, new_bounding_rect)
 
     return all_bounding_rects
