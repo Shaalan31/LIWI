@@ -6,7 +6,7 @@ from commonfunctions import *
 
 def getBoundingRects(image, image_shape):
     image = image.astype('uint8')
-    show_images([image])
+    # show_images([image])
     # finding contours whose parent is the bounding rect of the whole paper
     # since hierarchy[:, 3] gives us the id of the parent
 

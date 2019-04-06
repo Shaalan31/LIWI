@@ -5,6 +5,7 @@ from skimage.exposure import histogram
 from skimage.exposure import equalize_hist
 from matplotlib.pyplot import bar
 from skimage.color import rgb2gray, rgb2hsv
+from skimage.feature import local_binary_pattern
 
 # Convolution:
 from scipy.signal import convolve2d

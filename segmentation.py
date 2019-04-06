@@ -88,7 +88,7 @@ def fill_blocks(bounding_rects):
     heights = np.asarray([])
 
     # blocks to save the resultant blocks
-    blocks = np.asarray([])
+    blocks = []
 
     # x, variable that identifies the current column (current width)
     x = 0
@@ -104,8 +104,8 @@ def fill_blocks(bounding_rects):
             y = 0
             x = 0
             heights = np.asarray([])
-            show_images([np.multiply(block, 255)])
-            blocks = np.append(blocks, block)
+            # show_images([np.multiply(block, 255)])
+            blocks.append(block)
             block = np.full((256, 256), 1, dtype='int')
 
         # filling the block with the bounding rect & incrementing the width x
@@ -116,12 +116,17 @@ def fill_blocks(bounding_rects):
         x += bounding_rect.width
         heights = np.append(heights, bounding_rect.height)
 
+        if x == 256:
+            x = 0
+            y += int((np.average(heights)) / 2)
+            heights = np.asarray([])
+
         # getting next bounding rect and check if it will fit in the remaining block,
         # if not will split the bounding rect into two bounding rects, one will fill the remaining part
         # the other will replace the next bounding rect, and increment the height y and clearing heights & width
         if index + 1 < bounding_rects.shape[0]:
             next_bounding_rect = bounding_rects[index + 1]
-            if (x + next_bounding_rect.width - 1 > 256) and (y + next_bounding_rect.height - 1 < 256):
+            if (x + next_bounding_rect.width > 256) and (y + next_bounding_rect.height < 256):
                 block[y:y + next_bounding_rect.height, x:255] = np.multiply(
                     block[y:y + next_bounding_rect.height, x:255], next_bounding_rect.rect[:, 0:255 - x])
                 # show_images([np.multiply(block, 255)])
@@ -137,8 +142,8 @@ def fill_blocks(bounding_rects):
                 # if the height is greater than 256, then will start to fill new block,
                 # and append the filled block to blocks, and setting the height y to 0
                 if y > 256:
-                    show_images([np.multiply(block, 255)])
-                    blocks = np.append(blocks, block)
+                    # show_images([np.multiply(block, 255)])
+                    blocks.append(block)
                     block = np.full((256, 256), 1, dtype='int')
                     y = 0
 
