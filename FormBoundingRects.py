@@ -23,6 +23,9 @@ def getBoundingRects(image, image_shape):
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
         if int(w * h) > small_components_ratio * (image_shape[0] * image_shape[1]):
+            # we need to discard this bounding rect since it's not logical
+            if h > 256:
+                continue
             new_bounding_rect = BoundingRect(h, w, np.divide(image[y:y + h, x:x + w], 255))
             all_bounding_rects = np.append(all_bounding_rects, new_bounding_rect)
 

@@ -25,7 +25,7 @@ def segment(image):
     imageGray = imageGray[top:bottom, :]
     # show_images([imageGray])
 
-    blocks = fill_blocks(getBoundingRects(imageGray, imageGray.shape))
+    blocks = fill_blocks(getBoundingRects(imageGray, imageGray.shape), imageGray.shape)
     #
     # writer_lines = []
     # line_start = 0
@@ -79,7 +79,9 @@ def extract_text(img):
 
 
 # Segment the paper into blocks, and removing white space between words
-def fill_blocks(bounding_rects):
+def fill_blocks(bounding_rects, image_shape):
+    small_components_ratio = 375 / 8780618
+
     # initialize variables needed
     # block to save one block, when it is full we clear it
     block = np.full((256, 256), 1, dtype='int')
@@ -96,55 +98,82 @@ def fill_blocks(bounding_rects):
     # y, variable that identifies the current row (current height)
     y = 0
 
-    # loop for processing each bounding rect
-    for index, bounding_rect in enumerate(bounding_rects):
-        # Check if the height greater than 256
-        # move to another block, and clear the variables
-        if y + bounding_rect.height > 256:
-            y = 0
-            x = 0
-            heights = np.asarray([])
-            # show_images([np.multiply(block, 255)])
-            blocks.append(block)
-            block = np.full((256, 256), 1, dtype='int')
+    size = len(bounding_rects)
+    index = 0
+    while index < size:
+        bounding_rect = bounding_rects[index]
 
-        # filling the block with the bounding rect & incrementing the width x
-        # & append the height of the bounding rect to the heights
-        block[y:y + bounding_rect.height, x:x + bounding_rect.width] = np.multiply(
-            block[y:y + bounding_rect.height, x:x + bounding_rect.width], bounding_rect.rect)
-        # show_images([np.multiply(block, 255)])
-        x += bounding_rect.width
-        heights = np.append(heights, bounding_rect.height)
+        if bounding_rect.height * bounding_rect.width <= small_components_ratio * (image_shape[0] * image_shape[1]):
+            index += 1
+            continue
+
+        # show_images([np.multiply(bounding_rect.rect, 255)])
 
         if x == 256:
             x = 0
             y += int((np.average(heights)) / 2)
             heights = np.asarray([])
 
-        # getting next bounding rect and check if it will fit in the remaining block,
-        # if not will split the bounding rect into two bounding rects, one will fill the remaining part
-        # the other will replace the next bounding rect, and increment the height y and clearing heights & width
-        if index + 1 < bounding_rects.shape[0]:
-            next_bounding_rect = bounding_rects[index + 1]
-            if (x + next_bounding_rect.width > 256) and (y + next_bounding_rect.height < 256):
-                block[y:y + next_bounding_rect.height, x:255] = np.multiply(
-                    block[y:y + next_bounding_rect.height, x:255], next_bounding_rect.rect[:, 0:255 - x])
+        if y == 256:
+            # New Block
+            x = 0
+            y = 0
+            blocks.append(block)
+            block = np.full((256, 256), 1, dtype='int')
+            heights = np.asarray([])
+
+        if x + bounding_rect.width > 256:
+            if y + bounding_rect.height > 256:
+                block[y:255, x:255] = np.multiply(
+                    block[y:255, x:255], bounding_rect.rect[0:255 - y, 0:255 - x])
                 # show_images([np.multiply(block, 255)])
-                heights = np.append(heights, next_bounding_rect.height)
-                bounding_rects[index + 1].rect = next_bounding_rect.rect[:, 255 - x:]
-                bounding_rects[index + 1].width = next_bounding_rect.width - (255 - x)
-                # show_images([np.multiply(next_bounding_rect.rect[:, 0:255 - x], 255),
-                #              np.multiply(next_bounding_rect.rect[:, 255 - x:], 255)])
+                new_bounding_rect = BoundingRect(bounding_rect.height - (255 - y), bounding_rect.width - (255 - x),
+                                                 bounding_rect.rect[255 - y:, 255 - x:])
+                bounding_rects = np.insert(bounding_rects, index + 1, new_bounding_rect)
+                size += 1
+
+                # New Block
+                x = 0
+                y = 0
+                # show_images([np.multiply(block, 255)])
+                blocks.append(block)
+                block = np.full((256, 256), 1, dtype='int')
+                heights = np.asarray([])
+
+            else:
+                block[y:y + bounding_rect.height, x:255] = np.multiply(
+                    block[y:y + bounding_rect.height, x:255], bounding_rect.rect[:, 0:255 - x])
+                # show_images([np.multiply(block, 255)])
+                heights = np.append(heights, bounding_rect.height)
+                new_bounding_rect = BoundingRect(bounding_rect.height, bounding_rect.width - (255 - x),
+                                                 bounding_rect.rect[:, 255 - x:])
+                bounding_rects = np.insert(bounding_rects, index + 1, new_bounding_rect)
+                size += 1
+
                 x = 0
                 y += int((np.average(heights)) / 2)
                 heights = np.asarray([])
 
-                # if the height is greater than 256, then will start to fill new block,
-                # and append the filled block to blocks, and setting the height y to 0
-                if y > 256:
-                    # show_images([np.multiply(block, 255)])
-                    blocks.append(block)
-                    block = np.full((256, 256), 1, dtype='int')
-                    y = 0
+        else:
+            if y + bounding_rect.height > 256:
+                block[y:255, x:x + bounding_rect.width] = np.multiply(
+                    block[y:255, x:x + bounding_rect.width], bounding_rect.rect[0:255 - y, :])
+                # show_images([np.multiply(block, 255)])
+
+                x += bounding_rect.width
+                heights = np.append(heights, 256 - y)
+
+                new_bounding_rect = BoundingRect(bounding_rect.height - (255 - y), bounding_rect.width,
+                                                 bounding_rect.rect[255 - y:, :])
+                bounding_rects = np.insert(bounding_rects, index + 1, new_bounding_rect)
+                size += 1
+            else:
+                block[y:y + bounding_rect.height, x:x + bounding_rect.width] = np.multiply(
+                    block[y:y + bounding_rect.height, x:x + bounding_rect.width], bounding_rect.rect)
+                # show_images([np.multiply(block, 255)])
+                x += bounding_rect.width
+                heights = np.append(heights, bounding_rect.height)
+
+        index += 1
 
     return blocks
