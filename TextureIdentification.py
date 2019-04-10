@@ -93,8 +93,6 @@ def training(image, class_num):
 
     num_blocks_per_class += len(writer_blocks)
 
-    boundingRects = np.asarray([])
-
     for block in writer_blocks:
         all_features_class = np.append(all_features_class, feature_extraction(block, image.shape))
         labels.append(class_num)
@@ -143,6 +141,7 @@ def reading_test_cases():
     time_array = []
 
     indices_array = ['01', '02', '03', '04', '05', '06', '07', '08', '09']
+    # indices_array = ['08']
     for i in range(10, 101):
         indices_array.append(str(i))
 

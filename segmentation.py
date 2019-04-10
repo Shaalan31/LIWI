@@ -5,7 +5,7 @@ from FormBoundingRects import *
 
 
 def segment(image):
-    image = remove_shadow(image)
+    # image = remove_shadow(image)
 
     imageGray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -14,7 +14,7 @@ def segment(image):
 
     # Thresholding
     imageGray *= 255
-    threshold = np.round(threshold_otsu(imageGray) * 1.1)
+    threshold = np.round(threshold_otsu(imageGray))
     imageGray[(imageGray > threshold)] = 255
     imageGray[(imageGray <= threshold)] = 0
 
