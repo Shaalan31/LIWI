@@ -1,8 +1,6 @@
 import skimage.io as io
 import matplotlib.pyplot as plt
 import numpy as np
-from skimage.exposure import histogram
-from skimage.exposure import equalize_hist
 from matplotlib.pyplot import bar
 from skimage.color import rgb2gray, rgb2hsv
 from skimage.feature import local_binary_pattern
@@ -36,13 +34,13 @@ def show_images(images, titles=None):
     fig.set_size_inches(np.array(fig.get_size_inches()) * n_ims)
     plt.show()
 
-
-def showHist(img):
-    # An "interface" to matplotlib.axes.Axes.hist() method
-    plt.figure()
-    imgHist = histogram(img, nbins=256)
-
-    bar(imgHist[1].astype(np.uint8), imgHist[0], width=0.8, align='center')
+#
+# def showHist(img):
+#     # An "interface" to matplotlib.axes.Axes.hist() method
+#     plt.figure()
+#     imgHist = histogram(img, nbins=256)
+#
+#     bar(imgHist[1].astype(np.uint8), imgHist[0], width=0.8, align='center')
 
 
 def remove_shadow(img):

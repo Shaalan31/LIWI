@@ -13,11 +13,11 @@ def getBoundingRects(image, image_shape):
     small_components_ratio = 375 / 8780618
 
     all_bounding_rects = np.asarray([])
-    _, contours, hierarchy = cv2.findContours(image.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    _, contours, hierarchy = cv2.findContours(np.subtract(255, image.copy()), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
 
     hierarchy = hierarchy[0]
     contours = np.asarray(contours)
-    mask = (hierarchy[:, 3] == 0).astype('int')
+    mask = (hierarchy[:, 3] == -1).astype('int')
     contours = contours[np.where(mask)]
 
     for contour in contours:

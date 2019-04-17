@@ -1,3 +1,5 @@
+from networkx import neighbors
+
 from segmentation import *
 import glob
 import warnings
@@ -15,6 +17,7 @@ import warnings
 import time
 import random
 from sklearn.neural_network import MLPClassifier
+from lpq import *
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
@@ -28,7 +31,11 @@ def feature_extraction(example, image_shape):
 
     lbp = local_binary_pattern(example_copy, P=8, R=1)
 
-    feature.extend(histogram(lbp, nbins=256)[0])
+    feature.extend(np.histogram(lbp, bins=256)[0])
+
+    lpq = LPQ(radius=1).__call__(example_copy)
+    feature.extend(np.histogram(np.array(lpq), bins=256)[0])
+
     # # feature 1, Angles Histogram
     # feature.extend(AnglesHistogram(example))
     #
@@ -141,7 +148,7 @@ def reading_test_cases():
     time_array = []
 
     indices_array = ['01', '02', '03', '04', '05', '06', '07', '08', '09']
-    # indices_array = ['08']
+    # indices_array = ['04']
     for i in range(10, 101):
         indices_array.append(str(i))
 
@@ -201,7 +208,7 @@ all_features_class = np.asarray([])
 labels = []
 temp = []
 num_training_examples = 0
-num_features = 256
+num_features = 256*2
 num_blocks_per_class = 0
 total_test_cases = 100
 
