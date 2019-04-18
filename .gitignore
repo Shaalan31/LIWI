@@ -1,6 +1,3 @@
-*.txt
-Datasets/
-*.tgz
 .idea/
 *.png
 

@@ -1,7 +1,5 @@
 import cv2
 import numpy as np
-from skimage.filters import gaussian
-from skimage.filters import threshold_otsu
 
 # remove shadow from the image
 def remove_shadow(img):
@@ -23,38 +21,14 @@ def extract_text(img):
     horizontal = cv2.dilate(horizontal, horizontalStructure)
     horizontal = cv2.erode(horizontal, horizontalStructure)
     horizontal = 255 - horizontal
-    horizontal = horizontal /255
-    print(horizontal.shape)
+    horizontal = horizontal / 255
     sum = np.sum(horizontal, axis=1)
-    print(sum.shape)
     sum[sum < int(cols / 10)] = 0
     sum[sum > int(cols / 10)] = 1
     if np.max(sum) == np.min(sum):
         return 0, img.shape[0]
-    print(sum.shape)
     half = int(sum.shape[0] / 2)
-    print(half,'\n')
-    print(sum)
     top_boundary = half - np.argmax(sum[half:0:-1])
     bottom_boundary = half + np.argmax(sum[half:])
 
     return top_boundary + 2, bottom_boundary - 2
-
-
-
-image = cv2.imread('a01-000u.png')
-
-image = remove_shadow(image)
-
-imageGray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-# Noise removal with gaussian
-imageGray = gaussian(imageGray, 1)
-
-# Thresholding
-imageGray *= 255
-threshold = np.round(threshold_otsu(imageGray) * 1.1)
-imageGray[(imageGray > threshold)] = 255
-imageGray[(imageGray <= threshold)] = 0
-
-#print(extract_text(imageGray))
