@@ -19,7 +19,7 @@ def data_preprocessor():
         if temp is not None:
             SDpoints = np.append(SDpoints,temp,axis=0)
         if SDpoints.shape[0] > 40000:
-            SDpoints = np.delete(SDpoints,0,0)
+            SDpoints = np.delete(SDpoints, (0), axis=0)
             #SDpoints, _,_ = common.feature_normalize(SDpoints)
             with h5py.File('Datasets/SDpoints'+str(batch_num) +'.h5', 'w') as hf:
                 hf.create_dataset("keypoints-batch", data=SDpoints)
@@ -40,6 +40,8 @@ def data_preprocessor():
 
 
 def normalize():
+    with open("stats.txt", 'w') as out:
+        out.write("")
     SDpoints = np.zeros((1, 128))
     SDpointsFinal = np.zeros((1, 128))
     for x in range(0,244):
@@ -47,19 +49,29 @@ def normalize():
         with h5py.File('Datasets/SDpoints'+str(x) +'.h5', 'r') as hf:
             SDpoints = np.append(SDpoints, hf['keypoints-batch'][:],axis=0)
         if(x % 50 == 0):
-            SDpoints = np.delete(SDpoints, 0, 0)
+            SDpoints = np.delete(SDpoints, (0), axis=0)
             SDpointsFinal = np.append(SDpointsFinal,SDpoints,axis=0)
+            print(SDpointsFinal.shape)
             SDpoints = np.zeros((1, 128))
-    SDpoints = np.delete(SDpoints, 0, 0)
+    SDpoints = np.delete(SDpoints, (0), axis=0)
     SDpointsFinal = np.append(SDpointsFinal, SDpoints,axis=0)
     SDpoints = np.zeros((1, 128))
-    print(SDpointsFinal.shape)
-    SDpointsFinal = np.delete(SDpoints, 0, 0)
-    SDpointsFinal, mean,dev = common.feature_normalize(SDpointsFinal)
+    #print(SDpointsFinal.shape)
+    SDpointsFinal = np.delete(SDpointsFinal, (0), axis=0)
+    #SDpointsFinal, mean,dev = common.feature_normalize(SDpointsFinal)
+
+    mean = np.mean(SDpointsFinal, axis=0)
+    print(SDpointsFinal)
+    mean = mean.reshape((1,128))
+    print(SDpointsFinal.transpose().shape, SDpointsFinal.shape)
+    normalized_X = SDpointsFinal - mean
+    print(normalized_X.shape)
+    deviation = np.sqrt(np.var(normalized_X, axis=0))
+    normalized_X = np.divide(normalized_X, deviation)
     with open("stats.txt", 'a') as out:
-        out.write("Mean:  "+str(mean) + " \nDev: " + str(dev))
+        out.write("Mean:  "+str(mean) + " \nDev: " + str(deviation))
     with h5py.File('Datasets/AData.h5', 'w') as hf:
-        hf.create_dataset("keypoints-batch", data=SDpoints)
+        hf.create_dataset("keypoints-batch", data=normalized_X)
 
 
 
