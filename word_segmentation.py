@@ -114,26 +114,31 @@ def merge_swrs(image, image_gray, bounding_rects):
 
 def word_segmentation(image):
 
-    image_orig = image.copy()
+    image_orig = np.copy(image)
 
-    image_copy = remove_shadow(image.copy())
+    image = remove_shadow(image)
 
-    image_gray = cv2.cvtColor(image_copy, cv2.COLOR_RGB2GRAY)
+    imageGray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    # convert into binary image using Otsu
-    image_binary = image_gray * 255
-    threshold = threshold_otsu(image_binary)
-    image_binary[(image_binary > threshold)] = 255
-    image_binary[(image_binary <= threshold)] = 0
-    cv2.imwrite('image_otsu.png', image_binary)
+    # Noise removal with gaussian
+    imageGray = gaussian(imageGray, 1)
+
+    # Thresholding
+    imageGray *= 255
+    threshold = np.round(threshold_otsu(imageGray) * 1.1)
+    imageGray[(imageGray > threshold)] = 255
+    imageGray[(imageGray <= threshold)] = 0
+
+    cv2.imwrite('image_otsu.png', imageGray)
+
 
     # extract handwriting from image
-    # top, bottom = extract_text(image_binary)
+    #top, bottom = extract_text(image_binary)
     # image_binary = image_binary[top:bottom, :]
     # cv2.imwrite('image_extract_text.png', image_binary)
 
     # get all connected components
-    im, contours, hierarchy = cv2.findContours(np.copy(image_binary), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    im, contours, hierarchy = cv2.findContours(np.copy(imageGray), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     bounding_rect = np.zeros((len(contours), 1))
 
     for i in range(0, len(contours)):
@@ -168,5 +173,5 @@ def word_segmentation(image):
     # merging the SWRs to get the word regions (WRs)
     merge_swrs(image_orig.copy(), image_gray.copy(), bounding_rects)
 
-image = cv2.imread('samplecrop1.png')
+image = cv2.imread('a01-000u.png')
 word_segmentation(image)
