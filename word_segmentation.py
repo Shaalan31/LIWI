@@ -77,39 +77,20 @@ def merge_swrs(image, image_gray, bounding_rects):
     # get all indexes of lines in the paper
     indexes_lines = segment(image_gray)
 
+    for index_line in indexes_lines:
+        # get line by line
+        line = bounding_rects_sorted[(bounding_rects_sorted[:, 5] >= index_line[0, 0] )& (bounding_rects_sorted[:, 5] <= index_line[0, 1])]
 
+        # sort bounding rectangles on x
+        line = line[line[:, 0].argsort()]
 
-    # # get difference between all ys
-    # diff_dist_lines = np.diff(bounding_rects_sorted, axis=0)[:, 1]
-    #
-    # # sort the difference between ys descending to get maximum differences (peaks / number of lines)
-    # diff_dist_lines_sorted = np.sort(diff_dist_lines)[::-1]
-
-    # # maximum 15 lines
-    # threshold = np.average(diff_dist_lines_sorted[:15])
-    #
-    # peaks = diff_dist_lines_sorted[np.where(diff_dist_lines_sorted > threshold)]
-    #
-    # # get the indexes of blank lines
-    # mask = np.isin(diff_dist_lines, peaks)
-    # indexes = np.argwhere(mask == True)
-    #
-    # # lines splitted
-    # indexes = indexes.flatten() + 1
-    # lines = np.split(bounding_rects_sorted, indexes)
-    #
-    # for line in lines:
-    #     line = line[line[:, 0].argsort()]
-    #     diff_dist_word, within_word_dist = within_word_distance(line)
-    #     indexes_dist = np.where(diff_dist_word < within_word_dist)
-
-    #     for i in range(0, len(line)):
-    #         x = int(line[i, 0])
-    #         y = int(line[i, 1])
-    #         w = int(line[i, 2])
-    #         h = int(line[i, 3])
-    #         cv2.rectangle(image_copy, (x, y), (x + w, y + h), (0, 0, 255), 2)
-    #         cv2.imwrite('image_sorted_contours.png', image_copy)
+        # for i in range(0, len(line)):
+        #     x = int(line[i, 0])
+        #     y = int(line[i, 1])
+        #     w = int(line[i, 2])
+        #     h = int(line[i, 3])
+        #     cv2.rectangle(image_copy, (x, y), (x + w, y + h), (0, 0, 255), 2)
+        #     cv2.imwrite('image_sorted_contours.png', image_copy)
 
 
 def word_segmentation(image):
@@ -156,13 +137,18 @@ def word_segmentation(image):
 
     # get contours from binarized gaussian image
     im, contours, hierarchy = cv2.findContours(np.copy(image_gaussian_binary), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    bounding_rects = np.zeros((len(contours), 6))
+    bounding_rects = np.zeros((len(contours), 7))
 
 
     for i in range(0, len(contours)):
         x, y, w, h = cv2.boundingRect(contours[i])
-        bounding_rects[i] = (int(x), int(y), int(w), int(h), int(x + 0.5 * w), int(y + 0.5 * h))
+        bounding_rects[i] = (int(x), int(y), int(w), int(h), int(x + 0.5 * w), int(y + 0.5 * h), int(w * h))
         cv2.rectangle(image_copy, (x, y), (x + w, y + h), (0, 0, 255), 2)
+
+    # check area of contours
+    iAmDbImageSize = 375 / 8780618
+    mask = (bounding_rects[:, 6] > (iAmDbImageSize * (image_binary.shape[0] * image_binary.shape[1]))).astype('int')
+    bounding_rect_sorted = bounding_rects[np.where(mask)]
     cv2.imwrite('image_final_contours.png', image_copy)
 
     # merging the SWRs to get the word regions (WRs)
