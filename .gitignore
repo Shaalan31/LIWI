@@ -1,3 +1,7 @@
+Datasets/
+*.txt
+*.tgz
+
 .idea/
 *.png
 *.tgz
