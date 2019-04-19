@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+from skimage.filters import threshold_otsu
+from skimage.filters import gaussian
 
 # remove shadow from the image
 def remove_shadow(img):
@@ -14,6 +16,16 @@ def remove_shadow(img):
 
 # extract text from IAM database
 def extract_text(img):
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+
+    # Noise removal with gaussian
+    img = gaussian(img, 1)
+
+    img = img * 255
+    threshold = threshold_otsu(img)
+    img[(img > threshold)] = 255
+    img[(img <= threshold)] = 0
+
     horizontal = np.copy(img)
     cols = horizontal.shape[1]
     horizontal_size = int(cols / 15)

@@ -1,29 +1,6 @@
 import cv2
-import math
-from skimage.filters import threshold_otsu
-from skimage.filters import gaussian
+from sift import *
 from preprocessing import *
-
-def within_word_distance(bounding_rect_sorted):
-    diff_dist_word = np.diff(bounding_rect_sorted, axis=0)[:, 0] - bounding_rect_sorted[:-1, 2]
-    threshold = np.average(np.abs(diff_dist_word))
-
-    within_word_dist = np.average(np.abs(diff_dist_word[np.where(diff_dist_word < threshold)]))
-    if math.isnan(within_word_dist):
-        within_word_dist = 0
-
-    return diff_dist_word, within_word_dist
-
-def word_distance(bounding_rect_sorted):
-    diff_dist_word = np.diff(bounding_rect_sorted, axis=0)[:, 0] - bounding_rect_sorted[:-1, 2]
-    threshold = np.average(np.abs(diff_dist_word))
-
-    word_dist = np.average(diff_dist_word[np.where(diff_dist_word > threshold)])
-    # if line consists of only one word
-    if math.isnan(word_dist):
-        word_dist = 0
-
-    return word_dist
 
 
 def segment(image_gray):
@@ -36,14 +13,11 @@ def segment(image_gray):
     image_gray[(image_gray > threshold)] = 255
     image_gray[(image_gray <= threshold)] = 0
 
-    top, bottom = extract_text(image_gray)
-    imageGray = image_gray[top:bottom, :]
-
     indexes_lines = []
     line_start = 0
     found_line = False
-    for line_index in range(imageGray.shape[0]):
-        values, count = np.unique(imageGray[line_index, :], return_counts=True)
+    for line_index in range(image_gray.shape[0]):
+        values, count = np.unique(image_gray[line_index, :], return_counts=True)
         if len(values) == 1:
             found_line = False
             continue
@@ -56,7 +30,7 @@ def segment(image_gray):
             line_start = line_index
         else:
             if found_line and percentageBlack < 1:
-                if line_index - line_start > (imageGray.shape[0] / 60):
+                if line_index - line_start > (image_gray.shape[0] / 60):
                     indexes_lines.append([line_start, line_index])
                     #line = imageGray[line_start:line_index, :].astype('uint8')
                     #writer_lines.append(line)
@@ -68,36 +42,73 @@ def segment(image_gray):
     return indexes_lines
 
 
-def merge_swrs(image, image_gray, bounding_rects):
-    image_copy = image.copy()
-
+def merge_swrs(image_gray, bounding_rects):
+    
     # sort bounding rectsangles on y then on x
     bounding_rects_sorted = bounding_rects[np.lexsort((bounding_rects[:, 0], bounding_rects[:, 1]))]
 
     # get all indexes of lines in the paper
     indexes_lines = segment(image_gray)
 
+    sd = {}
+    so = {}
+    number = 0
     for index_line in indexes_lines:
         # get line by line
-        line = bounding_rects_sorted[(bounding_rects_sorted[:, 5] >= index_line[0, 0] )& (bounding_rects_sorted[:, 5] <= index_line[0, 1])]
+        line = bounding_rects_sorted[(np.bitwise_or (bounding_rects_sorted[:, 5] >= index_line[0, 0] ,
+                                      bounding_rects_sorted[:, 1] >= index_line[0, 0] ))&
+                                     (np.bitwise_or(bounding_rects_sorted[:, 5] <= index_line[0, 1] ,
+                                      bounding_rects_sorted[:, 1] <= index_line[0, 1]))]
+        # print(int(np.min(line[:,0])))
+        # print(int(np.max(line[:,0]+line[:,2])))
+        # print (int(np.min(line[:,1])))
+        # print(int(np.max(line[:,1]+line[:,3])))
 
         # sort bounding rectangles on x
         line = line[line[:, 0].argsort()]
 
-        # for i in range(0, len(line)):
-        #     x = int(line[i, 0])
-        #     y = int(line[i, 1])
-        #     w = int(line[i, 2])
-        #     h = int(line[i, 3])
-        #     cv2.rectangle(image_copy, (x, y), (x + w, y + h), (0, 0, 255), 2)
-        #     cv2.imwrite('image_sorted_contours.png', image_copy)
+        # calculate distances between two words
+        diff_dist_word = np.diff(line, axis=0)[:, 0] - line[:-1, 2]
 
+        # get indexes of differences which are less than threshold
+        diff_indexes = np.argwhere(diff_dist_word < 20)
+
+        word_index=0
+        while word_index < len(line):
+            number += 1
+            if word_index in diff_indexes:
+                start = word_index
+                while True:
+                    word_index += 1
+                    if(word_index not  in diff_indexes):
+                        break
+
+                ymax = int(np.max(line[start:word_index+1, 1]+line[start:word_index+1, 3]))
+                ymin = int(np.min(line[start:word_index+1, 1]))
+
+                # get segmented word from the image
+                word = image_gray[ymin:ymax,int(line[start,0]):int(line[word_index,0]+line[word_index,2])]
+                cv2.imwrite('words/' + str(int(number)) + '.png', word)
+
+            else:
+                # get segmented word from the image
+                word = image_gray[int(line[word_index,1]):int(line[word_index,1]+line[word_index,3]),int(line[word_index,0]):int(line[word_index,0]+line[word_index,2])]
+                cv2.imwrite('words/' + str(int(number)) + '.png', word)
+
+            word_index += 1
+
+            # get sift descriptors and orientation
+            key_points, des = getKeypoints(word)
+            sd.update({ number: des })
+            so.update({ number: key_points })
+
+    return sd, so
 
 def word_segmentation(image):
 
     image_orig = image.copy()
 
-    image_copy = remove_shadow(image.copy())
+    image_copy = image_orig.copy()
 
     image_gray = cv2.cvtColor(image_copy, cv2.COLOR_RGB2GRAY)
 
@@ -107,11 +118,6 @@ def word_segmentation(image):
     image_binary[(image_binary > threshold)] = 255
     image_binary[(image_binary <= threshold)] = 0
     cv2.imwrite('image_otsu.png', image_binary)
-
-    # extract handwriting from image
-    # top, bottom = extract_text(image_binary)
-    # image_binary = image_binary[top:bottom, :]
-    # cv2.imwrite('image_extract_text.png', image_binary)
 
     # get all connected components
     im, contours, hierarchy = cv2.findContours(np.copy(image_binary), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -137,22 +143,31 @@ def word_segmentation(image):
 
     # get contours from binarized gaussian image
     im, contours, hierarchy = cv2.findContours(np.copy(image_gaussian_binary), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    bounding_rects = np.zeros((len(contours), 7))
-
-
-    for i in range(0, len(contours)):
-        x, y, w, h = cv2.boundingRect(contours[i])
-        bounding_rects[i] = (int(x), int(y), int(w), int(h), int(x + 0.5 * w), int(y + 0.5 * h), int(w * h))
-        cv2.rectangle(image_copy, (x, y), (x + w, y + h), (0, 0, 255), 2)
+    bounding_rects = np.zeros((len(contours), 6))
 
     # check area of contours
-    iAmDbImageSize = 375 / 8780618
-    mask = (bounding_rects[:, 6] > (iAmDbImageSize * (image_binary.shape[0] * image_binary.shape[1]))).astype('int')
-    bounding_rect_sorted = bounding_rects[np.where(mask)]
+    iAmDbImageSize = 1600 / 8780618
+    for i in range(0, len(contours)):
+        x, y, w, h = cv2.boundingRect(contours[i])
+        if(int(w*h) > (iAmDbImageSize * (image_orig.shape[0] * image_orig.shape[1]))):
+            bounding_rects[i] = (int(x), int(y), int(w), int(h), int(x + 0.5 * w), int(y + 0.5 * h))
+            cv2.rectangle(image_copy, (x, y), (x + w, y + h), (0, 0, 255), 2)
     cv2.imwrite('image_final_contours.png', image_copy)
 
     # merging the SWRs to get the word regions (WRs)
-    merge_swrs(image_orig.copy(), image_gray.copy(), bounding_rects)
+    sd, so = merge_swrs(image_gray.copy(), bounding_rects)
 
-image = cv2.imread('samplecrop1.png')
-word_segmentation(image)
+    return sd, so
+
+
+
+image = cv2.imread('sample3.png')
+image = remove_shadow(image)
+
+# extract handwriting from image
+top, bottom = extract_text(image)
+image = image[top:bottom, :]
+cv2.imwrite('image_extract_text.png', image)
+
+# segment words and get its sift descriptors and orientations
+sd, so = word_segmentation(image)
