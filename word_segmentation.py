@@ -161,13 +161,13 @@ def word_segmentation(image):
 
 
 
-image = cv2.imread('sample3.png')
-image = remove_shadow(image)
-
-# extract handwriting from image
-top, bottom = extract_text(image)
-image = image[top:bottom, :]
-cv2.imwrite('image_extract_text.png', image)
-
-# segment words and get its sift descriptors and orientations
-sd, so = word_segmentation(image)
+# image = cv2.imread('sample3.png')
+# image = remove_shadow(image)
+#
+# # extract handwriting from image
+# top, bottom = extract_text(image)
+# image = image[top:bottom, :]
+# cv2.imwrite('image_extract_text.png', image)
+#
+# # segment words and get its sift descriptors and orientations
+# sd, so = word_segmentation(image)
