@@ -1,5 +1,5 @@
 import cv2
-import time
+from sift import *
 from preprocessing import *
 
 
@@ -42,15 +42,16 @@ def segment(image_gray):
     return indexes_lines
 
 
-def merge_swrs(image, image_gray, bounding_rects):
-
-    #cv2.imshow('omar', image)
-
+def merge_swrs(image_gray, bounding_rects):
+    
     # sort bounding rectsangles on y then on x
     bounding_rects_sorted = bounding_rects[np.lexsort((bounding_rects[:, 0], bounding_rects[:, 1]))]
 
     # get all indexes of lines in the paper
     indexes_lines = segment(image_gray)
+
+    sd = {}
+    so = {}
     number = 0
     for index_line in indexes_lines:
         # get line by line
@@ -62,11 +63,14 @@ def merge_swrs(image, image_gray, bounding_rects):
         # print(int(np.max(line[:,0]+line[:,2])))
         # print (int(np.min(line[:,1])))
         # print(int(np.max(line[:,1]+line[:,3])))
+
         # sort bounding rectangles on x
         line = line[line[:, 0].argsort()]
 
         # calculate distances between two words
         diff_dist_word = np.diff(line, axis=0)[:, 0] - line[:-1, 2]
+
+        # get indexes of differences which are less than threshold
         diff_indexes = np.argwhere(diff_dist_word < 20)
 
         word_index=0
@@ -82,19 +86,23 @@ def merge_swrs(image, image_gray, bounding_rects):
                 ymax = int(np.max(line[start:word_index+1, 1]+line[start:word_index+1, 3]))
                 ymin = int(np.min(line[start:word_index+1, 1]))
 
-                cv2.imwrite('words/' + str(int(number)) + '.png', image[ymin:ymax,int(line[start,0]):int(line[word_index,0]+line[word_index,2])])
+                # get segmented word from the image
+                word = image_gray[ymin:ymax,int(line[start,0]):int(line[word_index,0]+line[word_index,2])]
+                cv2.imwrite('words/' + str(int(number)) + '.png', word)
+
             else:
-                cv2.imwrite('words/' + str(int(number)) + '.png', image[int(line[word_index,1]):int(line[word_index,1]+line[word_index,3]),int(line[word_index,0]):int(line[word_index,0]+line[word_index,2])])
+                # get segmented word from the image
+                word = image_gray[int(line[word_index,1]):int(line[word_index,1]+line[word_index,3]),int(line[word_index,0]):int(line[word_index,0]+line[word_index,2])]
+                cv2.imwrite('words/' + str(int(number)) + '.png', word)
+
             word_index += 1
 
-        # for i in range(0, len(line)):
-        #     x = int(line[i, 0])
-        #     y = int(line[i, 1])
-        #     w = int(line[i, 2])
-        #     h = int(line[i, 3])
-        #     cv2.rectangle(image_copy, (x, y), (x + w, y + h), (0, 0, 255), 2)
-        #     cv2.imwrite('image_sorted_contours.png', image_copy)
+            # get sift descriptors and orientation
+            key_points, des = getKeypoints(word)
+            sd.update({ number: des })
+            so.update({ number: key_points })
 
+    return sd, so
 
 def word_segmentation(image):
 
@@ -147,10 +155,9 @@ def word_segmentation(image):
     cv2.imwrite('image_final_contours.png', image_copy)
 
     # merging the SWRs to get the word regions (WRs)
-    merge_swrs(image_orig.copy(), image_gray.copy(), bounding_rects)
+    sd, so = merge_swrs(image_gray.copy(), bounding_rects)
 
-
-
+    return sd, so
 
 
 
@@ -162,4 +169,5 @@ top, bottom = extract_text(image)
 image = image[top:bottom, :]
 cv2.imwrite('image_extract_text.png', image)
 
-word_segmentation(image)
+# segment words and get its sift descriptors and orientations
+sd, so = word_segmentation(image)
