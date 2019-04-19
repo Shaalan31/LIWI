@@ -54,7 +54,10 @@ def merge_swrs(image, image_gray, bounding_rects):
     number = 0
     for index_line in indexes_lines:
         # get line by line
-        line = bounding_rects_sorted[(bounding_rects_sorted[:, 5] >= index_line[0, 0] )& (bounding_rects_sorted[:, 5] <= index_line[0, 1])]
+        line = bounding_rects_sorted[(np.bitwise_or (bounding_rects_sorted[:, 5] >= index_line[0, 0] ,
+                                      bounding_rects_sorted[:, 1] >= index_line[0, 0] ))&
+                                     (np.bitwise_or(bounding_rects_sorted[:, 5] <= index_line[0, 1] ,
+                                      bounding_rects_sorted[:, 1] <= index_line[0, 1]))]
         # print(int(np.min(line[:,0])))
         # print(int(np.max(line[:,0]+line[:,2])))
         # print (int(np.min(line[:,1])))
@@ -151,7 +154,7 @@ def word_segmentation(image):
 
 
 
-image = cv2.imread('sample1.png')
+image = cv2.imread('sample3.png')
 image = remove_shadow(image)
 
 # extract handwriting from image
