@@ -1,13 +1,12 @@
 import cv2
-import numpy as np
-from word_segmentation import *
 import features
 import pickle
+from word_segmentation import *
 
 
 
 code_book = pickle.load( open( "centers.pkl", "rb" ) )
-image = cv2.imread('a01-000u.png')
+image = cv2.imread('sample3.png')
 image = remove_shadow(image)
 
 # extract handwriting from image
@@ -18,7 +17,8 @@ cv2.imwrite('image_extract_text.png', image)
 # segment words and get its sift descriptors and orientations
 sd, so = word_segmentation(image)
 
-features.sds(sd, code_book, 30)
+SDS = features.sds(sd, code_book, t=30)
+#features.soh(so, phi=10)
 
 
 

@@ -3,7 +3,7 @@ import numpy as np
 
 def getKeypoints(img_gray):
     # img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    sift = cv2.xfeatures2d.SIFT_create()
+    sift = cv2.xfeatures2d.SIFT_create(nOctaveLayers=3)
     kp, des = sift.detectAndCompute(img_gray, None)
     key_points= np.zeros((len(kp),2))
     for i in range(len(kp)):
