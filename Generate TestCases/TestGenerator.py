@@ -7,10 +7,10 @@ import numpy as np
 import shutil
 from itertools import combinations
 import random
+
 base = 'test/'
 
-
-imageCount = np.zeros((700,1))
+imageCount = np.zeros((700, 1))
 # for filename in glob.glob('iAm/*.xml'):
 #     #temp = cv2.imread(filename)
 #     tree = ET.parse(filename)
@@ -28,11 +28,11 @@ imageCount = np.zeros((700,1))
 #             raise
 #     shutil.copyfile(filename,base+id+'/'+name)
 #
-    #cv2.imwrite(base+id+'/'+name,temp)
+# cv2.imwrite(base+id+'/'+name,temp)
 
-base = 'Samples/'
+base = 'D:/Uni/Graduation Project/Samples/'
 try:
-    os.makedirs('TestCases')
+    os.makedirs('D:/Uni/Graduation Project/TestCases')
 except OSError as e:
     if e.errno != errno.EEXIST:
         raise
@@ -41,14 +41,14 @@ except OSError as e:
 # imageCount = np.genfromtxt('foo.csv', delimiter=',')
 classNum = 0
 print('generating cases')
-for i in range(0,1000):
+for i in range(0, 1182):
     # if imageCount[i] < 3:
     #     continue
     classNum += 1
     id = str(i)
     print(i)
     try:
-        os.makedirs(base+'Class'+str(classNum))
+        os.makedirs(base + 'Class' + str(classNum))
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
@@ -60,18 +60,20 @@ for i in range(0,1000):
         id = '0' + id
 
     count = 0
-    for filename in glob.glob('KHATT/*'+id+'*.tif'):
-        #temp = cv2.imread(filename)
+    for filename in glob.glob('D:/Uni/Graduation Project/KHATT/KHATT/*' + id + '*.tif'):
+        # temp = cv2.imread(filename)
         name = Path(filename).name
         if count < 3:
-            #cv2.imwrite(base+'Class'+str(classNum)+'/'+name,temp)
-            shutil.copyfile(filename, base+'Class'+str(classNum)+'/'+name)
+            # cv2.imwrite(base+'Class'+str(classNum)+'/'+name,temp)
+            shutil.copyfile(filename, base + 'Class' + str(classNum) + '/' + name)
 
         elif count == 3:
-            #cv2.imwrite('TestCases/testing'+str(classNum)+'.png',temp)
-            shutil.copyfile(filename, 'TestCases/testing'+str(classNum)+'.png')
+            # cv2.imwrite('TestCases/testing'+str(classNum)+'.png',temp)
+            shutil.copyfile(filename, 'D:/Uni/Graduation Project/TestCases/testing' + str(classNum) + '.png')
             break
         count += 1
+    if count == 0:
+        classNum -= 1
 
 # try:
 #     os.makedirs('exam')
