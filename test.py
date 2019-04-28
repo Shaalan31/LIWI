@@ -2,7 +2,7 @@ import cv2
 import features
 import pickle
 from word_segmentation import *
-
+from feature_matching import *
 
 
 code_book = pickle.load( open( "centers.pkl", "rb" ) )
@@ -17,9 +17,10 @@ cv2.imwrite('image_extract_text.png', image)
 # segment words and get its sift descriptors and orientations
 sd, so = word_segmentation(image)
 
-SDS = features.sds(sd, code_book, t=30)
-#features.soh(so, phi=10)
+SDS_I1 = features.sds(sd, code_book, t=30)
+#SOH_I1 = features.soh(so, phi=10)
 
+# D = match(u=SDS_I1, v=SDS_I2, x=SOH_I1, y=SOH_I2, w=0.8)
 
 
 #
