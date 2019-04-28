@@ -18,7 +18,7 @@ cv2.imwrite('image_extract_text.png', image)
 sd, so = word_segmentation(image)
 
 SDS_I1 = features.sds(sd, code_book, t=30)
-#SOH_I1 = features.soh(so, phi=10)
+#SOH_I1 = features.soh(so, phi=36)
 
 # D = match(u=SDS_I1, v=SDS_I2, x=SOH_I1, y=SOH_I2, w=0.8)
 
