@@ -85,8 +85,9 @@ def find_opt_t(classes=2,testcases=51):
                     counter +=1
                 class_num +=1
 
+            class_count = 0
             for x in range(test_case_num, test_case_num + classes):
-                class_count = 0
+
                 for filename in glob.glob('C:/Users/omars/Documents/Github/LIWI/Omar/TestCases/testing' + str(test_case_num)  + '_*.png'):
                     name = filename
                     print(filename)
