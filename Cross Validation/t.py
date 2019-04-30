@@ -42,11 +42,21 @@ def tester(name):
 # print(D0,D1)
 
 #t from 1 to 300 step 10
+
+# u: SDS of I1 (first image)
+# v: SDS of I2 (second image)
+def matchSDS(u, v,real_class):
+    # Manhattan distance to measure the dissimilarity between two SDSs u and v
+    D = np.sum(np.abs(u - v),axis=1)
+    return int(real_class  == int(np.argmin(D)/2))
+
+
+
 def find_opt_t(classes=3,testcases=51):
     test_case=0
     class_num = 1
-
-    for t in range(1,300,10):
+    accuracy = np.zeros((1,10))
+    for t in range(1,300,30):
         passed_cases = 0
         total_cases=0
         while test_case < testcases:
@@ -74,6 +84,7 @@ def find_opt_t(classes=3,testcases=51):
                 class_num +=1
 
             for x in range(test_case_num, test_case_num + classes):
+                class_count = 0
                 for filename in glob.glob('C:/Users/omars/Documents/Github/LIWI/Omar/TestCases/testing' + str(test_case_num)  + '_*.png'):
                     name = filename
                     print(filename)
@@ -83,27 +94,27 @@ def find_opt_t(classes=3,testcases=51):
                     # extract handwriting from image
                     top, bottom = extract_text(image)
                     image = image[top:bottom, :]
-                    cv2.imwrite('image_extract_text.png', image)
+                    #cv2.imwrite('image_extract_text.png', image)
 
                     # segment words and get its sift descriptors and orientations
                     sd, so = word_segmentation(image)
 
                     # calculate SDS and SOH
-                    SDS[counter] = features.sds(sd, code_book, t=t)
+                    SDS_case = features.sds(sd, code_book, t=t)
+                    passed_cases += matchSDS(SDS,SDS_case,class_count)
+                    total_cases += 1
+                    print('accuracy: ', passed_cases / total_cases)
                 test_case_num +=1
+                class_count +=1
+
             break
-            return
-            print(SDS.shape)
+
+        print('accuracy: ',passed_cases/total_cases)
+        accuracy[int(t/10)] = passed_cases/total_cases
+        print(accuracy)
     return
 
 
 
 find_opt_t()
-
-# u: SDS of I1 (first image)
-# v: SDS of I2 (second image)
-def matchSDS(u, v):
-    # Manhattan distance to measure the dissimilarity between two SDSs u and v
-    D = np.sum(np.abs(u - v))
-    return D
 
