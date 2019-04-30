@@ -43,12 +43,10 @@ features.sds(sd, code_book, 30)
 # n= n.reshape((int(n.shape[0]/2),2))
 # print(n,'\n',n.shape)
 #
-<<<<<<< HEAD
 #
 # with h5py.File('SDpoints.h5', 'r') as hf:
 #     data = hf['keypoints-of-Iam'][:]
 # print(data.shape)
-=======
 
 # with h5py.File('SDpoints.h5', 'r') as hf:
 #     data = hf["keypoints-batch12"][:]
@@ -100,4 +98,3 @@ print(sofmnet.weight)
 print(sofmnet.features_grid)
 for data in X:
     print( sofmnet.predict(np.reshape(data, (2, 1)).T))
->>>>>>> 82b03214e53ac5de9033c9db29b1b25c9c12c84c
