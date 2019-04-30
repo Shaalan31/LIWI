@@ -115,7 +115,7 @@ def find_opt_t(classes=3,testcases=21):
                 test_case_num +=1
                 class_count +=1
 
-            
+
 
         print('accuracy: ',passed_cases/total_cases)
         accuracy[int(t/100)] = passed_cases/total_cases
