@@ -36,6 +36,7 @@ D0 = match(u=SDS0, v=SDST, x=SOH0, y=SOHT, w=0.1)
 D1 = match(u=SDS1, v=SDST, x=SOH1, y=SOHT, w=0.1)
 
 print(D0,D1)
+
 #
 # img = cv2.imread('a01-026u-02-02.png')
 # gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
