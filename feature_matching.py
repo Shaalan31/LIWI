@@ -11,6 +11,7 @@ def match(u, v, x, y, w):
     D1 = np.sum(np.abs(u - v))
 
     # Chi-Square distance to measurethe dissimilarity between SOH x and y
+
     D2 = np.sum(np.square(x - y) / (x + y + 1e-16))
 
     # normalize two distance between [0, 1]
