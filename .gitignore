@@ -1,3 +1,5 @@
+IAM/
+*.pdf
 Datasets/
 *.txt
 *.tgz
@@ -5,6 +7,8 @@ Datasets/
 .idea/
 *.png
 *.tgz
+*.h5
+*.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

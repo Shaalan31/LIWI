@@ -51,7 +51,7 @@ def merge_swrs(image_gray, bounding_rects):
     indexes_lines = segment(image_gray)
 
     sd = {}
-    so = {}
+    so = np.zeros((1,3))
     number = 0
     for index_line in indexes_lines:
         # get line by line
@@ -74,6 +74,7 @@ def merge_swrs(image_gray, bounding_rects):
         diff_indexes = np.argwhere(diff_dist_word < 20)
 
         word_index=0
+
         while word_index < len(line):
             number += 1
             if word_index in diff_indexes:
@@ -100,8 +101,9 @@ def merge_swrs(image_gray, bounding_rects):
             # get sift descriptors and orientation
             key_points, des = getKeypoints(word)
             sd.update({ number: des })
-            so.update({ number: key_points })
+            so = np.append(so, key_points, axis=0)
 
+    so = np.delete(so,0,0)
     return sd, so
 
 def word_segmentation(image):
@@ -161,13 +163,13 @@ def word_segmentation(image):
 
 
 
-image = cv2.imread('sample3.png')
-image = remove_shadow(image)
-
-# extract handwriting from image
-top, bottom = extract_text(image)
-image = image[top:bottom, :]
-cv2.imwrite('image_extract_text.png', image)
-
-# segment words and get its sift descriptors and orientations
-sd, so = word_segmentation(image)
+# image = cv2.imread('sample3.png')
+# image = remove_shadow(image)
+#
+# # extract handwriting from image
+# top, bottom = extract_text(image)
+# image = image[top:bottom, :]
+# cv2.imwrite('image_extract_text.png', image)
+#
+# # segment words and get its sift descriptors and orientations
+# sd, so = word_segmentation(image)
