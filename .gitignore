@@ -29,6 +29,8 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+*.pdf
+Omar/
 MANIFEST
 
 # PyInstaller
