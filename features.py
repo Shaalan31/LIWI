@@ -4,6 +4,8 @@ import math
 def sds(des, code_book_center, t):
     SDS = np.zeros((1, 300))
     for key,word in des.items():
+        if word is None:
+            continue
         for point in word:
             ED = np.subtract(code_book_center , point)
             ED = np.square(ED)
