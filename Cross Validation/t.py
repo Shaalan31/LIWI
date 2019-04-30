@@ -53,7 +53,7 @@ def matchSDS(u, v,real_class):
 
 
 
-def find_opt_t(classes=2,testcases=51):
+def find_opt_t(classes=3,testcases=21):
     test_case=0
 
     accuracy = np.zeros((10))
@@ -115,7 +115,7 @@ def find_opt_t(classes=2,testcases=51):
                 test_case_num +=1
                 class_count +=1
 
-            break
+            
 
         print('accuracy: ',passed_cases/total_cases)
         accuracy[int(t/100)] = passed_cases/total_cases
