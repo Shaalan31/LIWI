@@ -20,12 +20,13 @@ def getKeypoints(img_gray):
     # img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     sift = cv2.xfeatures2d.SIFT_create(nOctaveLayers=3)
     kp, des = sift.detectAndCompute(img_gray, None)
-    key_points= np.zeros((len(kp),2))
+    key_points= np.zeros((len(kp),3))
     for i in range(len(kp)):
         octave, layer, scale = unpackSIFTOctave(kp[i])
+        #print(str(octave) + ', ' + str(layer) + ', ' + str(scale) + ', ' + str(kp[i].octave))
         key_points[i,0] = kp[i].angle
-        key_points[i, 1] = kp[i].octave
-        print(str(octave) + ', ' + str(layer) + ', ' + str(scale) + ', ' + str(kp[i].octave))
+        key_points[i, 1] = octave
+        key_points[i, 2] = layer
     return key_points, des
 
 
