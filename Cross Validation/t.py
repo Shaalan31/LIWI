@@ -48,15 +48,17 @@ def tester(name):
 def matchSDS(u, v,real_class):
     # Manhattan distance to measure the dissimilarity between two SDSs u and v
     D = np.sum(np.abs(u - v),axis=1)
+    print(np.argmin(D)/2)
     return int(real_class  == int(np.argmin(D)/2))
 
 
 
-def find_opt_t(classes=3,testcases=51):
+def find_opt_t(classes=2,testcases=51):
     test_case=0
-    class_num = 1
+
     accuracy = np.zeros((1,10))
     for t in range(1,300,30):
+        class_num = 2
         passed_cases = 0
         total_cases=0
         while test_case < testcases:
@@ -110,8 +112,8 @@ def find_opt_t(classes=3,testcases=51):
             break
 
         print('accuracy: ',passed_cases/total_cases)
-        accuracy[int(t/10)] = passed_cases/total_cases
-        print(accuracy)
+        accuracy[0,int(t/30)] = passed_cases/total_cases
+    print(accuracy)
     return
 
 
