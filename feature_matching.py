@@ -14,10 +14,10 @@ def match(u, v, x, y, w):
     if(x.shape[1] != y.shape[1]):
         if(x.shape[1] < y.shape[1]):
             padding = np.zeros((x.shape[0], (y.shape[1] - x.shape[1])))
-            x = np.append(x, padding)
+            x = np.append(x, padding,axis=1)
         else:
             padding = np.zeros((y.shape[0], (x.shape[1] - y.shape[1])))
-            y = np.append(y, padding)
+            y = np.append(y, padding,axis=1)
 
 
     D2 = np.sum(np.square(x - y) / (x + y + 1e-16))

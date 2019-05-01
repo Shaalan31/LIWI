@@ -88,11 +88,13 @@ def merge_swrs(image_gray, bounding_rects, name):
 
                 # get segmented word from the image
                 word = image_gray[ymin:ymax,int(line[start,0]):int(line[word_index,0]+line[word_index,2])]
+
                 cv2.imwrite('words/' + str(int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
 
             else:
                 # get segmented word from the image
                 word = image_gray[int(line[word_index,1]):int(line[word_index,1]+line[word_index,3]),int(line[word_index,0]):int(line[word_index,0]+line[word_index,2])]
+
                 cv2.imwrite('words/' + str(int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
 
             word_index += 1
@@ -119,7 +121,7 @@ def word_segmentation(image, name):
     threshold = threshold_otsu(image_binary)
     image_binary[(image_binary > threshold)] = 255
     image_binary[(image_binary <= threshold)] = 0
-    cv2.imwrite('image_otsu.png', image_binary)
+    #cv2.imwrite('image_otsu.png', image_binary)
 
     # get all connected components
     im, contours, hierarchy = cv2.findContours(np.copy(image_binary), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -129,19 +131,19 @@ def word_segmentation(image, name):
         x, y, w, h = cv2.boundingRect(contours[i])
         bounding_rect[i] = (int(h))
         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
-    cv2.imwrite('image_contours.png', image)
+    #cv2.imwrite('image_contours.png', image)
 
     # get the average height ha of all CCs in Ib to decide the variance
     variance = np.average(bounding_rect[:, 0]) / 5
     image_gaussian = gaussian(image_binary.copy(), sigma=variance) * 255
-    cv2.imwrite('image_gaussian.png', image_gaussian)
+    #cv2.imwrite('image_gaussian.png', image_gaussian)
 
     # convert gaussian image into binary image using Otsu
     image_gaussian_binary = image_gaussian.copy().astype('uint8')
     threshold = threshold_otsu(image_gaussian_binary)
     image_gaussian_binary[(image_gaussian_binary > threshold)] = 255
     image_gaussian_binary[(image_gaussian_binary <= threshold)] = 0
-    cv2.imwrite('image_gaussian_otsu.png', image_gaussian_binary)
+    #cv2.imwrite('image_gaussian_otsu.png', image_gaussian_binary)
 
     # get contours from binarized gaussian image
     im, contours, hierarchy = cv2.findContours(np.copy(image_gaussian_binary), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -154,7 +156,7 @@ def word_segmentation(image, name):
         if(int(w*h) > (iAmDbImageSize * (image_orig.shape[0] * image_orig.shape[1]))):
             bounding_rects[i] = (int(x), int(y), int(w), int(h), int(x + 0.5 * w), int(y + 0.5 * h))
             cv2.rectangle(image_copy, (x, y), (x + w, y + h), (0, 0, 255), 2)
-    cv2.imwrite('image_final_contours.png', image_copy)
+    #cv2.imwrite('image_final_contours.png', image_copy)
 
     # merging the SWRs to get the word regions (WRs)
     sd, so = merge_swrs(image_gray.copy(), bounding_rects, name)
