@@ -7,3 +7,4 @@ class BoundingRect:
     @property
     def x(self):
         return self.rect
+

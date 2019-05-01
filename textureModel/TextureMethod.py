@@ -3,8 +3,8 @@ import warnings
 from itertools import combinations
 from sklearn import decomposition
 from sklearn import svm
-from lpq import *
-from segmentation import *
+from textureModel.TextureFeatures import *
+from textureModel.BlockSegmentation import *
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
@@ -12,7 +12,6 @@ randomState = 1545481387
 
 
 class TextureWriterIdentification:
-
     def __init__(self, path_training_set, path_test_cases):
         self.num_features = 256 * 2
         self.all_features = np.asarray([])
@@ -28,15 +27,12 @@ class TextureWriterIdentification:
     def feature_extraction(self, example):
         example = example.astype('uint8')
         example_copy = example.copy()
-
+        lpq = LPQ(radius=1)
         feature = []
 
-        lbp = local_binary_pattern(example_copy, P=8, R=1)
+        feature.extend(np.histogram(lpq.getlbp_Features(example_copy), bins=256)[0])
 
-        feature.extend(np.histogram(lbp, bins=256)[0])
-
-        lpq = LPQ(radius=1).__call__(example_copy)
-        feature.extend(np.histogram(np.array(lpq), bins=256)[0])
+        feature.extend(np.histogram(np.array(lpq.__call__(example_copy)), bins=256)[0])
 
         return np.asarray(feature)
 
@@ -47,7 +43,7 @@ class TextureWriterIdentification:
             image = cv2.resize(src=image, dsize=(3500, round((3500 / image.shape[1]) * image.shape[0])))
 
         # image = adjust_rotation(image=image)
-        writer_blocks = segment(image)
+        writer_blocks = BlockSegmentation(image).segment()
 
         num_testing_examples = 0
         for block in writer_blocks:
@@ -72,7 +68,7 @@ class TextureWriterIdentification:
             image = cv2.resize(src=image, dsize=(3500, round((3500 / image.shape[1]) * image_height)))
 
         # image = adjust_rotation(image=image)
-        writer_blocks = segment(image)
+        writer_blocks = BlockSegmentation(image).segment()
 
         self.num_blocks_per_class += len(writer_blocks)
 

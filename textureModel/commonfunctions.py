@@ -3,16 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.pyplot import bar
 from skimage.color import rgb2gray, rgb2hsv
-from skimage.feature import local_binary_pattern
-
-# Convolution:
-from scipy.signal import convolve2d
-from scipy import fftpack
 import math
 import cv2
-
-# Edges
-from skimage.filters import sobel_h, sobel, sobel_v, roberts, prewitt
+from BoundingRect import *
 
 
 # Show the figures / plots inside the notebook
@@ -34,6 +27,7 @@ def show_images(images, titles=None):
     fig.set_size_inches(np.array(fig.get_size_inches()) * n_ims)
     plt.show()
 
+
 #
 # def showHist(img):
 #     # An "interface" to matplotlib.axes.Axes.hist() method
@@ -52,3 +46,47 @@ def remove_shadow(img):
     _, th_img = cv2.threshold(norm_img, 230, 0, cv2.THRESH_TRUNC)
     cv2.normalize(th_img, th_img, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8UC1)
     return th_img
+
+
+def extract_text(img):
+    horizontal = np.copy(img)
+    cols = horizontal.shape[1]
+    horizontal_size = int(cols / 15)
+    horizontalStructure = cv2.getStructuringElement(cv2.MORPH_RECT, (horizontal_size, 1))
+    horizontal = cv2.dilate(horizontal, horizontalStructure)
+    horizontal = cv2.erode(horizontal, horizontalStructure)
+    horizontal = 255 - horizontal
+    horizontal /= 255
+    # show_images([horizontal])
+    sum = np.sum(horizontal, axis=1)
+    sum[sum < int(cols / 10)] = 0
+    sum[sum > int(cols / 10)] = 1
+    if np.max(sum) == np.min(sum):
+        return 0, img.shape[0]
+    half = int(sum.shape[0] / 2)
+    top_boundary = half - np.argmax(sum[half:0:-1])
+    bottom_boundary = half + np.argmax(sum[half:])
+
+    return top_boundary + 2, bottom_boundary - 2
+
+
+def getBoundingRects(image):
+    image_shape = image.shape
+    image = image.astype('uint8')
+
+    small_components_ratio = 375 / 8780618
+
+    all_bounding_rects = np.asarray([])
+    contours, hierarchy = cv2.findContours(np.subtract(255, image.copy()), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    contours = np.asarray(contours)
+
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        if int(w * h) > small_components_ratio * (image_shape[0] * image_shape[1]):
+            # we need to discard this bounding rect since it's not logical
+            if h > 256:
+                continue
+            new_bounding_rect = BoundingRect(h, w, np.divide(image[y:y + h, x:x + w], 255))
+            all_bounding_rects = np.append(all_bounding_rects, new_bounding_rect)
+
+    return all_bounding_rects

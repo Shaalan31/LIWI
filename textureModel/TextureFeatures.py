@@ -5,6 +5,7 @@
 # Licensed under the BSD license. See LICENSE file in the project root for full license information.
 
 import numpy as np
+from skimage.feature import local_binary_pattern
 from scipy.signal import convolve2d
 
 
@@ -112,9 +113,12 @@ class LPQ(LocalDescriptor):
 
         # Calculate the LPQ Patterns:
         B = (G[0, :] >= t) * 1 + (G[1, :] >= t) * 2 + (G[2, :] >= t) * 4 + (G[3, :] >= t) * 8 + (G[4, :] >= t) * 16 + (
-                    G[5, :] >= t) * 32 + (G[6, :] >= t) * 64 + (G[7, :] >= t) * 128
+                G[5, :] >= t) * 32 + (G[6, :] >= t) * 64 + (G[7, :] >= t) * 128
 
         return np.reshape(B, np.shape(Fa))
+
+    def getlbp_Features(self, greyScaleImage):
+        return local_binary_pattern(greyScaleImage, P=self._neighbors, R=self._radius, method='uniform')
 
     @property
     def radius(self):
