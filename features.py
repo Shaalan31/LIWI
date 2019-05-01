@@ -36,4 +36,6 @@ def soh(key_points, phi):
     SOH = np.zeros((1, int(Obin * np.max(scales))))
     SOH[0,idxx] =  count[0, np.indices((1, real_idx[0].shape[0]))[:, 0][1]]
 
-    return np.divide(SOH, np.sum(SOH))
+    SOH = np.divide(SOH, np.sum(SOH))
+
+    return SOH.reshape((1, SOH.shape[1]))

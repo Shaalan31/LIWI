@@ -42,7 +42,7 @@ def segment(image_gray):
     return indexes_lines
 
 
-def merge_swrs(image_gray, bounding_rects):
+def merge_swrs(image_gray, bounding_rects, name):
     
     # sort bounding rectsangles on y then on x
     bounding_rects_sorted = bounding_rects[np.lexsort((bounding_rects[:, 0], bounding_rects[:, 1]))]
@@ -74,7 +74,6 @@ def merge_swrs(image_gray, bounding_rects):
         diff_indexes = np.argwhere(diff_dist_word < 20)
 
         word_index=0
-
         while word_index < len(line):
             number += 1
             if word_index in diff_indexes:
@@ -89,12 +88,12 @@ def merge_swrs(image_gray, bounding_rects):
 
                 # get segmented word from the image
                 word = image_gray[ymin:ymax,int(line[start,0]):int(line[word_index,0]+line[word_index,2])]
-                cv2.imwrite('words/' + str(int(number)) + '.png', word)
+                cv2.imwrite('words/' + str(int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
 
             else:
                 # get segmented word from the image
                 word = image_gray[int(line[word_index,1]):int(line[word_index,1]+line[word_index,3]),int(line[word_index,0]):int(line[word_index,0]+line[word_index,2])]
-                cv2.imwrite('words/' + str(int(number)) + '.png', word)
+                cv2.imwrite('words/' + str(int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
 
             word_index += 1
 
@@ -106,7 +105,8 @@ def merge_swrs(image_gray, bounding_rects):
     so = np.delete(so,0,0)
     return sd, so
 
-def word_segmentation(image):
+
+def word_segmentation(image, name):
 
     image_orig = image.copy()
 
@@ -157,19 +157,6 @@ def word_segmentation(image):
     cv2.imwrite('image_final_contours.png', image_copy)
 
     # merging the SWRs to get the word regions (WRs)
-    sd, so = merge_swrs(image_gray.copy(), bounding_rects)
+    sd, so = merge_swrs(image_gray.copy(), bounding_rects, name)
 
     return sd, so
-
-
-
-# image = cv2.imread('sample3.png')
-# image = remove_shadow(image)
-#
-# # extract handwriting from image
-# top, bottom = extract_text(image)
-# image = image[top:bottom, :]
-# cv2.imwrite('image_extract_text.png', image)
-#
-# # segment words and get its sift descriptors and orientations
-# sd, so = word_segmentation(image)

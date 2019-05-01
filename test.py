@@ -6,7 +6,7 @@ from pathlib import Path
 from word_segmentation import *
 from feature_matching import *
 
-def tester(name):
+def tester(name, path):
     image = cv2.imread(name)
     image = remove_shadow(image)
 
@@ -16,7 +16,7 @@ def tester(name):
     cv2.imwrite('image_extract_text.png', image)
 
     # segment words and get its sift descriptors and orientations
-    sd, so = word_segmentation(image)
+    sd, so = word_segmentation(image, path)
 
     # calculate SDS and SOH
     SDS = features.sds(sd, code_book, t=30)
@@ -33,7 +33,7 @@ code_book = pickle.load( open( "centers.pkl", "rb" ) )
 
 # Train the model
 base_train = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/Samples/'
-class_count = 3
+class_count = 20
 count = 1
 SDS_train = []
 SOH_train = []
@@ -47,7 +47,7 @@ while count <= class_count:
             name = Path(image).name
             print(name)
 
-            SDS, SOH = tester(base_train + 'Class' + str(count) + '/' + name)
+            SDS, SOH = tester(base_train + 'Class' + str(count) + '/' + name, name)
             SDS_train.append(SDS)
             SOH_train.append(SOH)
 
@@ -69,8 +69,7 @@ while count <= class_count:
     for filename in glob.glob(base_test + 'testing' + str(count) + '_*.png'):
         name = Path(filename).name
 
-        name = 'testing1_27.png'
-        SDS, SOH = tester(base_test + name)
+        SDS, SOH = tester(base_test + name, name)
 
         distances = []
         for i in range(0, len(SDS_train)):
@@ -84,26 +83,11 @@ while count <= class_count:
             right_test_cases += 1
         total_test_cases += 1
 
+        break
     count += 1
 
 accuracy = (right_test_cases / total_test_cases) * 100
 print('Accuracy:  ' + str(accuracy) + '%')
-
-
-
-
-
-# SDS0,SOH0 = tester('a01-000u.png')
-# SDS1,SOH1 = tester('a01-000x.png')
-# SDST,SOHT = tester('a01-007u.png')
-#
-#
-# #print(SDS_I1.shape,SOH_I1.shape)
-# D0 = match(u=SDS0, v=SDST, x=SOH0, y=SOHT, w=0.1)
-# D1 = match(u=SDS1, v=SDST, x=SOH1, y=SOHT, w=0.1)
-#
-# print(D0,D1)
-
 
 
 
