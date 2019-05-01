@@ -1,11 +1,7 @@
-import skimage.io as io
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.pyplot import bar
-from skimage.color import rgb2gray, rgb2hsv
-import math
 import cv2
-from BoundingRect import *
+from textureModel.BoundingRect import *
 
 
 # Show the figures / plots inside the notebook
