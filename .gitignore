@@ -1,10 +1,18 @@
+TestCases/
+Samples/
+test/
+iAm/
+*.pdf
 Datasets/
 *.txt
 *.tgz
+*.csv
 
 .idea/
 *.png
 *.tgz
+*.h5
+*.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
