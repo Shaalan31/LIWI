@@ -10,65 +10,44 @@ from feature_matching import *
 import glob
 
 code_book = pickle.load( open( "C:/Users/omars/Documents/Github/LIWI/centers.pkl", "rb" ) )
+def matchSOH(x, ys,real_class,num_of_classes):
 
-def tester(name):
-    print(name)
-    image = cv2.imread(name)
-    image = remove_shadow(image)
+    # Chi-Square distance to measure the dissimilarity between SOH x and y
+    ChiDistance = np.zeros(num_of_classes*2)
+    idx = 0
+    for y in ys:
+        if (x.shape[1] != y.shape[1]):
+            if (x.shape[1] < y.shape[1]):
+                padding = np.zeros((x.shape[0], (y.shape[1] - x.shape[1])))
+                x = np.append(x, padding,axis=1)
+            else:
+                padding = np.zeros((y.shape[0], (x.shape[1] - y.shape[1])))
+                y = np.append(y, padding,axis=1)
 
-    # extract handwriting from image
-    top, bottom = extract_text(image)
-    image = image[top:bottom, :]
-    cv2.imwrite('image_extract_text.png', image)
+        ChiDistance[idx] = np.sum(np.square(x - y) / (x + y + 1e-16))
+        idx += 1
 
-    # segment words and get its sift descriptors and orientations
-    sd, so = word_segmentation(image)
-
-    # calculate SDS and SOH
-    SDS_I1 = features.sds(sd, code_book, t=30)
-    SOH_I1 = features.soh(so, phi=36)
-    print(SDS_I1,'\n',SOH_I1)
-    return SDS_I1,SOH_I1
-
-# SDS0,SOH0 = tester('a01-000u.png')
-# SDS1,SOH1 = tester('a01-000x.png')
-# SDST,SOHT = tester('a01-007u.png')
-#
-#
-# #print(SDS_I1.shape,SOH_I1.shape)
-# D0 = match(u=SDS0, v=SDST, x=SOH0, y=SOHT, w=0.1)
-# D1 = match(u=SDS1, v=SDST, x=SOH1, y=SOHT, w=0.1)
-#
-# print(D0,D1)
-
-#t from 1 to 300 step 10
-
-# u: SDS of I1 (first image)
-# v: SDS of I2 (second image)
-def matchSOH(u, v,real_class):
-    # Manhattan distance to measure the dissimilarity between two SDSs u and v
-    D = np.sum(np.abs(u - v),axis=1)
-    print(np.argmin(D)/2)
-    return int(real_class  == int(np.argmin(D)/2))
+    return int(real_class  == int(np.argmin(ChiDistance)/2))
 
 
 
-def find_opt_w(classes=3,testcases=21):
+def find_opt_phi(classes=3,testcases=21):
     test_case=0
 
-    accuracy = np.zeros((10))
+    accuracy = np.zeros((30))
     print(accuracy)
-    xaxis = np.zeros((10))
+    xaxis = np.zeros((30))
 
 
-    for t in range(1,300,100):
-        xaxis[int(t/100)] = t
-        class_num = 2
+    for phi in range(1,360,180):
+        test_case = 0
+        xaxis[int(phi/12)] = phi
+        class_num = 1
         passed_cases = 0
         total_cases=0
         while test_case < testcases:
             counter = 0
-            SDS = np.zeros((2 * classes, 300))
+            SOH_train = []
             test_case_num = class_num
             for x in range(classes):
                 for filename in glob.glob('C:/Users/omars/Documents/Github/LIWI/Omar/Samples/Class'+str(class_num)+'/'+ '*.png'):
@@ -86,7 +65,7 @@ def find_opt_w(classes=3,testcases=21):
                     sd, so = word_segmentation(image)
 
                     # calculate SDS and SOH
-                    SDS[counter] = features.sds(sd, code_book, t=t)
+                    SOH_train.append(features.soh(so, phi=phi))
                     counter +=1
                 class_num +=1
 
@@ -106,26 +85,28 @@ def find_opt_w(classes=3,testcases=21):
 
                     # segment words and get its sift descriptors and orientations
                     sd, so = word_segmentation(image)
+                    SOH = features.soh(so, phi=phi)
 
-                    # calculate SDS and SOH
-                    SDS_case = features.sds(sd, code_book, t=t)
-                    passed_cases += matchSDS(SDS,SDS_case,class_count)
+
+
+                    passed_cases += matchSOH(SOH,SOH_train,class_count,classes)
                     total_cases += 1
                     print('accuracy: ', passed_cases / total_cases)
                 test_case_num +=1
+                test_case +=1
                 class_count +=1
 
 
-
         print('accuracy: ',passed_cases/total_cases)
-        accuracy[int(t/100)] = passed_cases/total_cases
+        accuracy[int(phi/12)] = passed_cases/total_cases
         print(accuracy.shape)
     print(accuracy)
     plt.plot(xaxis, accuracy)
     plt.show()
+    plt.savefig('phi.png')
     return
 
 
 
-find_opt_t()
+find_opt_phi()
 

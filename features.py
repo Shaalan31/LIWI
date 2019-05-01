@@ -25,7 +25,7 @@ def soh(key_points, phi):
     # compute index idx in SOH feature vector
     bin = np.ceil(key_points[:, 0]/phi)
     bin = bin.reshape((1,bin.shape[0]))
-    idx = np.int32(Obin*(scales - 1) + bin)
+    idx = np.int32(Obin*(scales - 1) + bin) - 1
     real_idx = np.unique(idx,return_counts=True)
     idxx = real_idx[0].reshape((1,real_idx[0].shape[0]))
     count = real_idx[1].reshape((1,real_idx[0].shape[0]))
@@ -33,5 +33,6 @@ def soh(key_points, phi):
     # update the SOH feature vector
     SOH = np.zeros((1, int(Obin * np.max(scales))))
     SOH[0,idxx] =  count[0,np.indices((1, real_idx[0].shape[0]))[:, 0][1]]
+
 
     return np.divide(SOH, np.sum(SOH))
