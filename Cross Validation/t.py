@@ -24,19 +24,19 @@ def matchSDS(u, v,real_class):
 
 
 def find_opt_t(classes=3,testcases=21):
-    test_case=0
+    #test_case=0
 
     accuracy = np.zeros((10))
     print(accuracy)
     xaxis = np.zeros((10))
 
 
-    for t in range(1,300,10):
-        xaxis[int(t/100)] = t
-        class_num = 2
+    for t in range(1,300,30):
+        xaxis[int(t/30)] = t
+        class_num = 1
         passed_cases = 0
         total_cases=0
-        while test_case < testcases:
+        while class_num < testcases:
             counter = 0
             SDS = np.zeros((2 * classes, 300))
             test_case_num = class_num
@@ -88,7 +88,7 @@ def find_opt_t(classes=3,testcases=21):
 
 
         print('accuracy: ',passed_cases/total_cases)
-        accuracy[int(t/100)] = passed_cases/total_cases
+        accuracy[int(t/30)] = passed_cases/total_cases
         print(accuracy.shape)
     print(accuracy)
     plt.plot(xaxis, accuracy)
