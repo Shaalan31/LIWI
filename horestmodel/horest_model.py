@@ -154,7 +154,7 @@ class HorestWriterIdentification:
             for class_number in classCombination:
                 for filename in glob.glob(
                         self.pathTestCases + str(
-                            class_number) + '.png'):
+                            class_number) + '_*.png'):
                     print(filename)
                     label = class_number
                     prediction = self.test(cv2.imread(filename), classifier, mu, sigma)
@@ -164,6 +164,7 @@ class HorestWriterIdentification:
                         total_correct += 1
                     results_array.append(str(prediction[0]) + '\n')
                     print("Accuracy = ", total_correct * 100 / total_cases, " %")
+                    break
 
         results_file = open("results.txt", "w+")
         results_file.writelines(results_array)
