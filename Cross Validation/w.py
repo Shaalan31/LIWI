@@ -44,14 +44,14 @@ def match(u, v, x, ys, w,real_class,num_of_classes):
 
 
     # D new distance to measure the dissimilarity between I1 and I2
-    D = w * distances[0] + (1 - w) * distances[1]
+#    D = w * distances[0] + (1 - w) * distances[1]
     passed = np.zeros((9))
     idx = 0
     for prob in w:
-        D = prob * distances[0,idx] + (1 - prob) * distances[1,idx]
+        D = prob * distances[0,:] + (1 - prob) * distances[1,:]
         passed[idx] = int(real_class  == int(np.argmin(D)/2))
         idx += 1
-    return D
+    return passed
 
 def find_opt_w(classes=3,testcases=159,t=25,phi=36):
     test_case=0
@@ -62,7 +62,7 @@ def find_opt_w(classes=3,testcases=159,t=25,phi=36):
 
 
 
-    class_num = 1
+    class_num = 2
     passed_cases = np.zeros((9))
     total_cases=0
     while test_case < testcases:
@@ -124,3 +124,5 @@ def find_opt_w(classes=3,testcases=159,t=25,phi=36):
     plt.plot(xaxis, accuracy)
     plt.show()
     return
+
+find_opt_w()
