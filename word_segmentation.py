@@ -59,10 +59,6 @@ def merge_swrs(image_gray, bounding_rects, name):
                                       bounding_rects_sorted[:, 1] >= index_line[0, 0] ))&
                                      (np.bitwise_or(bounding_rects_sorted[:, 5] <= index_line[0, 1] ,
                                       bounding_rects_sorted[:, 1] <= index_line[0, 1]))]
-        # print(int(np.min(line[:,0])))
-        # print(int(np.max(line[:,0]+line[:,2])))
-        # print (int(np.min(line[:,1])))
-        # print(int(np.max(line[:,1]+line[:,3])))
 
         # sort bounding rectangles on x
         line = line[line[:, 0].argsort()]
@@ -87,7 +83,7 @@ def merge_swrs(image_gray, bounding_rects, name):
                 ymin = int(np.min(line[start:word_index+1, 1]))
 
                 # get segmented word from the image
-                word = image_gray[ymin:ymax,int(line[start,0]):int(line[word_index,0]+line[word_index,2])]
+                word = image_gray[ymin:ymax, int(line[start,0]):int(line[word_index,0]+line[word_index,2])]
 
                 cv2.imwrite('words/' + str(int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
 
@@ -98,6 +94,9 @@ def merge_swrs(image_gray, bounding_rects, name):
                 cv2.imwrite('words/' + str(int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
 
             word_index += 1
+
+            if (len(word) == 0):
+                continue
 
             # get sift descriptors and orientation
             key_points, des = getKeypoints(word)
