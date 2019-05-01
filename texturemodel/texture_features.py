@@ -33,7 +33,7 @@ class LPQ(LocalDescriptor):
         So all credit goes to them.
 
       Reference:
-        Ojansivu V & Heikkilä J (2008) Blur insensitive texture classification
+        Ojansivu V & Heikkilä J (2008) Blur insensitive texturemodel classification
         using local phase quantization. Proc. Image and Signal Processing
         (ICISP 2008), Cherbourg-Octeville, France, 5099:236-243.
         Copyright 2008 by Heikkilä & Ojansivu

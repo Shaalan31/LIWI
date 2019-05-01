@@ -1,4 +1,4 @@
-from textureModel.commonfunctions import *
+from utils.commonfunctions import *
 from skimage.filters import gaussian
 from skimage.filters import threshold_otsu
 

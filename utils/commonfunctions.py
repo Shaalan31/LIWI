@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
-from textureModel.BoundingRect import *
+from texturemodel.bounding_rect import *
 
 
 # Show the figures / plots inside the notebook

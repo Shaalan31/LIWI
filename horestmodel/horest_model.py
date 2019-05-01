@@ -1,66 +1,74 @@
 import glob
 import warnings
 from itertools import combinations
-from sklearn import decomposition
-from sklearn import svm
-from textureModel.TextureFeatures import *
-from textureModel.BlockSegmentation import *
+from horestmodel.line_segmentation import *
+from horestmodel.horest_features import *
+from sklearn.neural_network import MLPClassifier
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 randomState = 1545481387
 
 
-class TextureWriterIdentification:
+class HorestWriterIdentification:
     def __init__(self, path_training_set, path_test_cases):
-        self.num_features = 256 * 2
+        self.num_features = 18
         self.all_features = np.asarray([])
         self.all_features_class = np.asarray([])
         self.labels = []
         self.temp = []
         self.num_training_examples = 0
-        self.num_blocks_per_class = 0
+        self.num_lines_per_class = 0
         self.total_test_cases = 100
         self.pathTrainingSet = path_training_set
         self.pathTestCases = path_test_cases
 
-    def feature_extraction(self, example):
+    def feature_extraction(self, example, image_shape):
         example = example.astype('uint8')
         example_copy = example.copy()
-        lpq = LPQ(radius=1)
+
+        # Calculate Contours
+        contours, hierarchy = cv2.findContours(example_copy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        hierarchy = hierarchy[0]
+        contours = np.asarray(contours)
+
+        horest_features = HorestFeatures(example, contours, hierarchy)
         feature = []
 
-        feature.extend(np.histogram(lpq.getlbp_Features(example_copy), bins=256)[0])
+        # feature 1, Angles Histogram
+        feature.extend(horest_features.angles_histogram())
 
-        feature.extend(np.histogram(np.array(lpq.__call__(example_copy)), bins=256)[0])
+        # feature 2, Blobs Detection
+        feature.extend(horest_features.blob_threaded())
+
+        # feature 3, Connected Components
+        feature.extend(horest_features.connected_components(image_shape))
+
+        # feature 4, Disk Fractal
+        feature.extend(horest_features.disk_fractal())
 
         return np.asarray(feature)
 
-    def test(self, image, clf, mu, sigma, pca):
+    def test(self, image, clf, mu, sigma):
         all_features_test = np.asarray([])
 
         if image.shape[0] > 3500:
             image = cv2.resize(src=image, dsize=(3500, round((3500 / image.shape[1]) * image.shape[0])))
 
         # image = adjust_rotation(image=image)
-        writer_blocks = BlockSegmentation(image).segment()
+        # show_images([image])
+        writer_lines = LineSegmentation(image).segment()
 
         num_testing_examples = 0
-        for block in writer_blocks:
-            example = self.feature_extraction(block)
+        for line in writer_lines:
+            example = self.feature_extraction(line, image.shape)
             all_features_test = np.append(all_features_test, example)
             num_testing_examples += 1
 
-        all_features_test = (self.adjustNaNValues(
+        all_features_test = (self.adjust_nan_values(
             np.reshape(all_features_test, (num_testing_examples, self.num_features))) - mu) / sigma
 
-        # Predict on each line
-        # predictions = []
-        # for example in all_features_test:
-        #     predictions.append(clf.predict(np.asarray(example).reshape(1, -1)))
-        # values, counts = np.unique(np.asarray(predictions), return_counts=True)
-        # return values[np.argmax(counts)]
-        return clf.predict(pca.transform(np.average(all_features_test, axis=0).reshape(1, -1)))
+        return clf.predict(np.average(all_features_test, axis=0).reshape(1, -1))
 
     def training(self, image, class_num):
         image_height = image.shape[0]
@@ -68,18 +76,18 @@ class TextureWriterIdentification:
             image = cv2.resize(src=image, dsize=(3500, round((3500 / image.shape[1]) * image_height)))
 
         # image = adjust_rotation(image=image)
-        writer_blocks = BlockSegmentation(image).segment()
+        # show_images([image])
+        writer_lines = LineSegmentation(image).segment()
 
-        self.num_blocks_per_class += len(writer_blocks)
-
-        for block in writer_blocks:
-            self.all_features_class = np.append(self.all_features_class, self.feature_extraction(block))
+        self.num_lines_per_class += len(writer_lines)
+        for line in writer_lines:
+            self.all_features_class = np.append(self.all_features_class, self.feature_extraction(line, image.shape))
             self.labels.append(class_num)
             self.num_training_examples += 1
 
-        return np.reshape(self.all_features_class, (self.num_blocks_per_class, self.num_features))
+        return np.reshape(self.all_features_class, (self.num_lines_per_class, self.num_features))
 
-    def adjustNaNValues(self, writer_features):
+    def adjust_nan_values(self, writer_features):
         for i in range(self.num_features):
             feature = writer_features[:, i]
             is_nan_mask = np.isnan(feature)
@@ -97,33 +105,28 @@ class TextureWriterIdentification:
 
         return writer_features
 
-    def featureNormalize(self, X):
+    def feature_normalize(self, X):
         mean = np.mean(X, axis=0)
         normalized_X = X - mean
         deviation = np.sqrt(np.var(normalized_X, axis=0))
-        if len(np.where(deviation == 0)[0]) > 0:
-            deviation[np.where(deviation == 0)[0]] = 1
         normalized_X = np.divide(normalized_X, deviation)
         return normalized_X, mean, deviation
 
+    randomState = 1545481387
+
     def run(self):
-        # classifier = MLPClassifier(solver='lbfgs', max_iter=30000, alpha=0.046041, hidden_layer_sizes=(22, 18, 15, 12, 7,),
-        #                            random_state=randomState)
-
-        classifier = svm.SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
-                             decision_function_shape='ovr', degree=3, gamma='scale', kernel='rbf',
-                             max_iter=-1, probability=False, random_state=None, shrinking=True,
-                             tol=0.001, verbose=False)
-
+        classifier = MLPClassifier(solver='lbfgs', max_iter=30000, alpha=0.046041,
+                                   hidden_layer_sizes=(22, 18, 15, 12, 7,),
+                                   random_state=randomState)
         results_array = []
-        startClass = 1
-        endClass = 20
-        classCombinations = combinations(range(startClass, endClass + 1), r=3)
+
+        start_class = 1
+        end_class = 20
+        class_combinations = list(combinations(range(start_class, end_class + 1), r=3))
 
         total_cases = 0
         total_correct = 0
-
-        for classCombination in classCombinations:
+        for classCombination in class_combinations:
             # if 10 in list(classCombination) or 26 in list(classCombination):
             #     continue
             # try:
@@ -132,22 +135,20 @@ class TextureWriterIdentification:
             self.num_training_examples = 0
 
             for class_number in classCombination:
-                self.num_blocks_per_class = 0
+                self.num_lines_per_class = 0
                 self.all_features_class = np.asarray([])
                 for filename in glob.glob(
-                        self.pathTrainingSet + str(class_number) + '/*.tif'):
+                        self.pathTrainingSet + str(class_number) + '/*.png'):
                     print(filename)
                     self.temp = self.training(cv2.imread(filename), class_number)
                 self.all_features = np.append(self.all_features,
-                                              np.reshape(self.adjustNaNValues(self.temp),
-                                                         (1, self.num_blocks_per_class * self.num_features)))
+                                              np.reshape(self.adjust_nan_values(self.temp),
+                                                         (1, self.num_lines_per_class * self.num_features)))
 
             # Normalization of features
-            self.all_features, mu, sigma = self.featureNormalize(
+            self.all_features, mu, sigma = self.feature_normalize(
                 np.reshape(self.all_features, (self.num_training_examples, self.num_features)))
-            pca = decomposition.PCA(n_components=min(self.all_features.shape[0], self.all_features.shape[1]),
-                                    svd_solver='full')
-            self.all_features = pca.fit_transform(self.all_features)
+
             classifier.fit(self.all_features, self.labels)
 
             for class_number in classCombination:
@@ -156,7 +157,7 @@ class TextureWriterIdentification:
                             class_number) + '.png'):
                     print(filename)
                     label = class_number
-                    prediction = self.test(cv2.imread(filename), classifier, mu, sigma, pca)
+                    prediction = self.test(cv2.imread(filename), classifier, mu, sigma)
                     total_cases += 1
                     print(prediction[0])
                     if prediction[0] == label:
