@@ -1,8 +1,12 @@
-IAM/
+TestCases/
+Samples/
+test/
+iAm/
 *.pdf
 Datasets/
 *.txt
 *.tgz
+*.csv
 
 .idea/
 *.png

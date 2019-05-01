@@ -4,7 +4,7 @@ import math
 def sds(des, code_book_center, t):
     SDS = np.zeros((1, 300))
     for key,word in des.items():
-        if word is None:
+        if(word is None):
             continue
         for point in word:
             ED = np.subtract(code_book_center , point)
@@ -19,6 +19,8 @@ def sds(des, code_book_center, t):
 def soh(key_points, phi):
     Obin = math.ceil(360 / phi)
 
+    key_points[key_points[:, 2] == 0, 2] = key_points[key_points[:, 2] == 0, 2] + 1e-16
+
     scales = ((key_points[:, 1] - np.min(key_points[:, 1])) * np.max(key_points[:, 2]) + key_points[:, 2])
     scales = scales.reshape((1,scales.shape[0]))
 
@@ -32,7 +34,8 @@ def soh(key_points, phi):
 
     # update the SOH feature vector
     SOH = np.zeros((1, int(Obin * np.max(scales))))
-    SOH[0,idxx] =  count[0,np.indices((1, real_idx[0].shape[0]))[:, 0][1]]
+    SOH[0,idxx] =  count[0, np.indices((1, real_idx[0].shape[0]))[:, 0][1]]
 
+    SOH = np.divide(SOH, np.sum(SOH))
 
-    return np.divide(SOH, np.sum(SOH))
+    return SOH.reshape((1, SOH.shape[1]))
