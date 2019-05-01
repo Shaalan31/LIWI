@@ -1,4 +1,4 @@
-from utils.commonfunctions import *
+from utils.common_functions import *
 from skimage.filters import gaussian
 from skimage.filters import threshold_otsu
 
