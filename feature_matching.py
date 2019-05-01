@@ -11,6 +11,14 @@ def match(u, v, x, y, w):
     D1 = np.sum(np.abs(u - v))
 
     # Chi-Square distance to measurethe dissimilarity between SOH x and y
+    if(x.shape[1] != y.shape[1]):
+        if(x.shape[1] < y.shape[1]):
+            padding = np.zeros((x.shape[0], (y.shape[1] - x.shape[1])))
+            x = np.append(x, padding)
+        else:
+            padding = np.zeros((y.shape[0], (x.shape[1] - y.shape[1])))
+            y = np.append(y, padding)
+
 
     D2 = np.sum(np.square(x - y) / (x + y + 1e-16))
 
