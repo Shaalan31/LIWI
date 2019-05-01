@@ -15,10 +15,10 @@ def getBoundingRects(image, image_shape):
     all_bounding_rects = np.asarray([])
     contours, hierarchy = cv2.findContours(np.subtract(255, image.copy()), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
 
-    hierarchy = hierarchy[0]
+    # hierarchy = hierarchy[0]
     contours = np.asarray(contours)
-    mask = (hierarchy[:, 3] == -1).astype('int')
-    contours = contours[np.where(mask)]
+    # mask = (hierarchy[:, 3] == -1).astype('int')
+    # contours = contours[np.where(mask)]
 
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
