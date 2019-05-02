@@ -29,7 +29,7 @@ class SiftModel:
     # Train the model
     def train(self):
 
-        count = self.first_class
+
         SDS_train = []
         SOH_train = []
         print('Training The Model:')
@@ -42,7 +42,9 @@ class SiftModel:
                 for image in glob.glob(filename + '/*.csv'):
                     name = Path(image).name
                     print(name)
-                    SDS_train.append(np.genfromtxt(image, delimiter=","))
+                    SDS = np.genfromtxt(image, delimiter=",")
+                    SDS = SDS.reshape((1,SDS.shape[0]))
+                    SDS_train.append(SDS)
 
             for filename in glob.glob(self.base_train_SOH + 'Class' + str(count)):
                 print('Class' + str(count) + ':')
@@ -50,7 +52,9 @@ class SiftModel:
                 for image in glob.glob(filename + '/*.csv'):
                     name = Path(image).name
                     print(name)
-                    SOH_train.append(np.genfromtxt(image, delimiter=","))
+                    SOH = np.genfromtxt(image, delimiter=",")
+                    SOH = SOH.reshape((1,SOH.shape[0]))
+                    SOH_train.append(SOH)
 
         return SDS_train, SOH_train
 
@@ -59,7 +63,6 @@ class SiftModel:
 
         total_test_cases = 0
         right_test_cases = 0
-        count = self.first_class
         print('Testing The Model:')
 
         matching = FeatureMatching()
@@ -70,8 +73,10 @@ class SiftModel:
                 name = Path(filename).name
 
                 SDS = np.genfromtxt(filename, delimiter=",")
+                SDS = SDS.reshape((1,SDS.shape[0]))
                 SOH_filename = filename.replace('SDS','SOH')
                 SOH = np.genfromtxt(SOH_filename, delimiter=",")
+                SOH = SOH.reshape((1,SOH.shape[0]))
 
                 # Feature Matching and Fusion
                 manhattan = []

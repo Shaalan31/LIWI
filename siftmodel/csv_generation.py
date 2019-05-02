@@ -63,7 +63,7 @@ def generate_train():
 
 
 def generate_test():
-    for count in range (1,159):
+    for count in range (61,160):
         print('Class' + str(count) + ':')
 
         for filename in glob.glob(base_test + 'testing' + str(count) + '_*.png'):

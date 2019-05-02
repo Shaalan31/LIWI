@@ -5,12 +5,12 @@ from siftmodel.sift_model_test import *
 
 
 
-code_book = pickle.load( open( "siftmodel/centers.pkl", "rb" ) )
+code_book = pickle.load( open( "centers.pkl", "rb" ) )
 
 #writer identification using SIFT
 accuracy = None
-class_labels = list(range(2, 159))
-classCombinations = list(combinations(class_labels, r=10))
+class_labels = list(range(2, 34))
+classCombinations = list(combinations(class_labels, r=30))
 total = len(classCombinations)
 print(total)
 count = 0
