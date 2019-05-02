@@ -42,8 +42,8 @@ class Preprocessing:
         horizontal = 255 - horizontal
         horizontal = horizontal / 255
         sum = np.sum(horizontal, axis=1)
-        sum[sum < int(cols / 10)] = 0
-        sum[sum > int(cols / 10)] = 1
+        sum[sum < int(cols / 6)] = 0
+        sum[sum > int(cols / 6)] = 1
         if np.max(sum) == np.min(sum):
             return 0, img.shape[0]
         half = int(sum.shape[0] / 2)

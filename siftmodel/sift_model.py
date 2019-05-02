@@ -18,18 +18,18 @@ class SiftModel:
         self.preprocess = Preprocessing()
         self.features = FeaturesExtraction()
 
-    def get_features(self, name, path):
+    def get_features(self, path, name):
 
-        image = cv2.imread(name)
-        image = self.preprocess.remove_shadow(image)
+        image = cv2.imread(path)
+        # image = self.preprocess.remove_shadow(image)
 
         # extract handwriting from image
         top, bottom = self.preprocess.extract_text(image)
         image = image[top:bottom, :]
-        cv2.imwrite('image_extract_text.png', image)
+        # cv2.imwrite('image_extract_text.png', image)
 
         # segment words and get its sift descriptors and orientations
-        sd, so = self.segmentation.word_segmentation(image, path)
+        sd, so = self.segmentation.word_segmentation(image, name)
 
         # calculate SDS and SOH
         SDS = self.features.sds(sd, self.code_book, t=1)
@@ -53,6 +53,7 @@ class SiftModel:
                     name = Path(image).name
                     print(name)
 
+                    # Feature Extraction
                     SDS, SOH = self.get_features(self.base_train + 'Class' + str(count) + '/' + name, name)
                     SDS_train.append(SDS)
                     SOH_train.append(SOH)
@@ -76,17 +77,22 @@ class SiftModel:
             for filename in glob.glob(self.base_test + 'testing' + str(count) + '_*.png'):
                 name = Path(filename).name
 
-                # self.tester('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCases/testing24_2.png', 'testing24_2.png')
+                # Feature Extraction
                 SDS, SOH = self.get_features(self.base_test + name, name)
 
-                distances = []
+                # Feature Matching and Fusion
+                manhattan = []
+                chi_square = []
                 for i in range(0, len(SDS_train)):
-                    D = matching.match(u=SDS, v=SDS_train[i], x=SOH, y=SOH_train[i], w=0.35)
-                    distances.append(D)
+                    D1, D2 = matching.calculate_distances(u=SDS, v=SDS_train[i], x=SOH, y=SOH_train[i])
+                    manhattan.append(D1)
+                    chi_square.append(D2)
+                prediction = matching.match(manhattan, chi_square, w=0.75)
 
-                class_numb = int(np.argmin(distances) / 2) + self.first_class
+                class_numb = int(prediction / 2) + self.first_class
                 print(name + ' , class number: ' +  str(class_numb))
-
+                
+                # Calculate accuracy
                 if(class_numb == count):
                     right_test_cases += 1
                 total_test_cases += 1
