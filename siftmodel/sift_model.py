@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 import glob
 from pathlib import Path
 from siftmodel.features import *
@@ -8,8 +9,8 @@ from siftmodel.feature_matching import *
 
 class SiftModel:
     def __init__(self, first_class, last_class, code_book):
-        self.base_train = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/Samples/'
-        self.base_test = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCases/'
+        self.base_train = 'C:/Users/omars/Documents/Github/LIWI/Omar/Samples/'
+        self.base_test = 'C:/Users/omars/Documents/Github/LIWI/Omar/TestCases/'
         self.first_class = first_class
         self.last_class = last_class
         self.code_book = code_book
@@ -17,6 +18,7 @@ class SiftModel:
         self.segmentation = WordSegmentation()
         self.preprocess = Preprocessing()
         self.features = FeaturesExtraction()
+        self.accuracy = None
 
     def get_features(self, name, path):
 
@@ -26,7 +28,7 @@ class SiftModel:
         # extract handwriting from image
         top, bottom = self.preprocess.extract_text(image)
         image = image[top:bottom, :]
-        cv2.imwrite('image_extract_text.png', image)
+        #cv2.imwrite('image_extract_text.png', image)
 
         # segment words and get its sift descriptors and orientations
         sd, so = self.segmentation.word_segmentation(image, path)
@@ -81,7 +83,7 @@ class SiftModel:
 
                 distances = []
                 for i in range(0, len(SDS_train)):
-                    D = matching.match(u=SDS, v=SDS_train[i], x=SOH, y=SOH_train[i], w=0.35)
+                    D = matching.match(u=SDS, v=SDS_train[i], x=SOH, y=SOH_train[i], w=0.65)
                     distances.append(D)
 
                 class_numb = int(np.argmin(distances) / 2) + self.first_class
@@ -92,10 +94,12 @@ class SiftModel:
                 total_test_cases += 1
 
                 accuracy = (right_test_cases / total_test_cases) * 100
+
                 print('Accuracy:  ' + str(accuracy) + '%')
 
                 # break
             count += 1
+        self.accuracy = np.array([[right_test_cases], [total_test_cases]])
 
     def run(self):
         SDS, SOH = self.train()

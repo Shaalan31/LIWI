@@ -87,13 +87,13 @@ class WordSegmentation:
                     # get segmented word from the image
                     word = image_gray[ymin:ymax, int(line[start,0]):int(line[word_index,0]+line[word_index,2])]
 
-                    cv2.imwrite('words/' + str(int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
+                    #cv2.imwrite('words/' + str(int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
 
                 else:
                     # get segmented word from the image
                     word = image_gray[int(line[word_index,1]):int(line[word_index,1]+line[word_index,3]),int(line[word_index,0]):int(line[word_index,0]+line[word_index,2])]
 
-                    cv2.imwrite('words/' + str(int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
+                    #cv2.imwrite('words/' + str(int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
 
                 word_index += 1
 
@@ -143,7 +143,7 @@ class WordSegmentation:
         threshold = threshold_otsu(image_gaussian_binary)
         image_gaussian_binary[(image_gaussian_binary > threshold)] = 255
         image_gaussian_binary[(image_gaussian_binary <= threshold)] = 0
-        cv2.imwrite('image_gaussian_otsu.png', image_gaussian_binary)
+        #cv2.imwrite('image_gaussian_otsu.png', image_gaussian_binary)
 
         # get contours from binarized gaussian image
         im, contours, hierarchy = cv2.findContours(np.copy(image_gaussian_binary), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
