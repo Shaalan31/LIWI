@@ -1,6 +1,19 @@
+KHATT/
+TestCases/
+Samples/
+test/
+iAm/
+*.pdf
+Datasets/
+*.txt
+*.tgz
+*.csv
+
 .idea/
 *.png
-
+*.tgz
+*.h5
+*.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -27,6 +40,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+*.pdf
 MANIFEST
 
 # PyInstaller
@@ -106,7 +120,4 @@ venv.bak/
 
 # mypy
 .mypy_cache/
-
 data/
-
-
