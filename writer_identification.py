@@ -1,3 +1,4 @@
+import pickle
 from siftmodel.sift_model import *
 
 # code book

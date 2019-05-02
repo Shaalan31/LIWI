@@ -1,5 +1,4 @@
 import cv2
-import pickle
 import glob
 from pathlib import Path
 from siftmodel.features import *
@@ -19,7 +18,7 @@ class SiftModel:
         self.preprocess = Preprocessing()
         self.features = FeaturesExtraction()
 
-    def tester(self, name, path):
+    def get_features(self, name, path):
 
         image = cv2.imread(name)
         image = self.preprocess.remove_shadow(image)
@@ -54,7 +53,7 @@ class SiftModel:
                     name = Path(image).name
                     print(name)
 
-                    SDS, SOH = self.tester(self.base_train + 'Class' + str(count) + '/' + name, name)
+                    SDS, SOH = self.get_features(self.base_train + 'Class' + str(count) + '/' + name, name)
                     SDS_train.append(SDS)
                     SOH_train.append(SOH)
 
@@ -78,7 +77,7 @@ class SiftModel:
                 name = Path(filename).name
 
                 # self.tester('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCases/testing24_2.png', 'testing24_2.png')
-                SDS, SOH = self.tester(self.base_test + name, name)
+                SDS, SOH = self.get_features(self.base_test + name, name)
 
                 distances = []
                 for i in range(0, len(SDS_train)):
