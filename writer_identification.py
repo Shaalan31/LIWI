@@ -12,7 +12,25 @@ from siftmodel.sift_model import *
 #                                             'D:/Uni/Graduation Project/All Test Cases/IAM/TestCases/testing')
 # horestMethod.run()
 
+#SAMAR
+
 # code book
+code_book = pickle.load(open( "siftmodel/centers.pkl", "rb" ))
+sift_model = SiftModel(first_class=31, last_class=60, code_book=code_book)
+sift_model.run()
+
+#End Samar
+
+
+# sift_model.get_features("C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/Samples/Class75/f04-011.png","f04-011.png")
+# sift_model.get_features("C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/Samples/Class114/g07-022b.png","g07-022b.png")
+# sift_model.get_features("C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/Samples/Class112/g07-003b.png","g07-003b.png")
+# sift_model.get_features("C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCases/testing24_2.png","testing24_2.png")
+# sift_model.get_features("C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCases/testing48_3.png","testing48_3.png")
+# sift_model.get_features("C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCases/testing1_27.png","testing1_27.png")
+# sift_model.get_features("C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCases/testing1_9.png","testing1_9.png")
+
+#Shaalan
 code_book = pickle.load( open( "siftmodel/centers.pkl", "rb" ) )
 
 #writer identification using SIFT
