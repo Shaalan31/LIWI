@@ -5,7 +5,7 @@ from pathlib import Path
 from siftmodel.features import *
 from siftmodel.word_segmentation import *
 from siftmodel.feature_matching import *
-
+import math
 
 class SiftModel:
     def __init__(self, test_classes, code_book):
@@ -86,8 +86,7 @@ class SiftModel:
                     manhattan.append(D1)
                     chi_square.append(D2)
                 prediction = matching.match(manhattan, chi_square, w=0.75)
-
-                class_numb = self.test_class[ int(prediction / 2)-1]
+                class_numb = self.test_class[ math.floor(prediction / 2)]
                 print(name + ' , class number: ' + str(class_numb))
 
                 # Calculate accuracy
