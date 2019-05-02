@@ -67,21 +67,26 @@ class SiftModel:
             print('Class' + str(count) + ':')
 
             for filename in glob.glob(self.base_test_SDS + 'testing' + str(count) + '_*.csv'):
+                name = Path(filename).name
+
                 SDS = np.genfromtxt(filename, delimiter=",")
                 SOH_filename = filename.replace('SDS','SOH')
                 SOH = np.genfromtxt(SOH_filename, delimiter=",")
 
-                name = Path(filename).name
-
-                distances = []
+                # Feature Matching and Fusion
+                manhattan = []
+                chi_square = []
                 for i in range(0, len(SDS_train)):
-                    D = matching.match(u=SDS, v=SDS_train[i], x=SOH, y=SOH_train[i], w=0.65)
-                    distances.append(D)
+                    D1, D2 = matching.calculate_distances(u=SDS, v=SDS_train[i], x=SOH, y=SOH_train[i])
+                    manhattan.append(D1)
+                    chi_square.append(D2)
+                prediction = matching.match(manhattan, chi_square, w=0.75)
 
-                class_numb = int(np.argmin(distances) / 2) + self.first_class
-                print(name + ' , class number: ' +  str(class_numb))
+                class_numb = self.test_class[ int(prediction / 2)-1]
+                print(name + ' , class number: ' + str(class_numb))
 
-                if(class_numb == count):
+                # Calculate accuracy
+                if (class_numb == count):
                     right_test_cases += 1
                 total_test_cases += 1
 
@@ -89,7 +94,7 @@ class SiftModel:
 
                 print('Accuracy:  ' + str(accuracy) + '%')
 
-                # break
+            # break
         self.accuracy = np.array([[right_test_cases], [total_test_cases]])
 
     def run(self):
