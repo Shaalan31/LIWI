@@ -148,6 +148,7 @@ class WordSegmentation:
         image_gaussian_binary[(image_gaussian_binary <= threshold)] = 0
         # cv2.imwrite('image_gaussian_otsu.png', image_gaussian_binary)
 
+
         # get contours from binarized gaussian image
         im, contours, hierarchy = cv2.findContours(np.copy(image_gaussian_binary), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         bounding_rects = np.zeros((len(contours), 6))

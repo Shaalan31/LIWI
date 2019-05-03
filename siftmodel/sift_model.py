@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 import glob
 from pathlib import Path
 from siftmodel.features import *
@@ -8,8 +9,8 @@ from siftmodel.feature_matching import *
 
 class SiftModel:
     def __init__(self, first_class, last_class, code_book):
-        self.base_train = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/Samples/'
-        self.base_test = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCases/'
+        self.base_train = 'C:/Users/omars/Documents/Github/LIWI/Omar/Samples/'
+        self.base_test = 'C:/Users/omars/Documents/Github/LIWI/Omar/TestCases/'
         self.first_class = first_class
         self.last_class = last_class
         self.code_book = code_book
@@ -17,6 +18,7 @@ class SiftModel:
         self.segmentation = WordSegmentation()
         self.preprocess = Preprocessing()
         self.features = FeaturesExtraction()
+        self.accuracy = None
 
     def get_features(self, path, name):
 
@@ -89,6 +91,7 @@ class SiftModel:
                     chi_square.append(D2)
                 prediction = matching.match(manhattan, chi_square, w=0.75)
 
+
                 class_numb = int(prediction / 2) + self.first_class
                 print(name + ' , class number: ' +  str(class_numb))
                 
@@ -98,10 +101,12 @@ class SiftModel:
                 total_test_cases += 1
 
                 accuracy = (right_test_cases / total_test_cases) * 100
+
                 print('Accuracy:  ' + str(accuracy) + '%')
 
                 # break
             count += 1
+        self.accuracy = np.array([[right_test_cases], [total_test_cases]])
 
     def run(self):
         SDS, SOH = self.train()
