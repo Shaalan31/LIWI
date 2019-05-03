@@ -21,7 +21,7 @@ class SiftModel:
     def get_features(self, path, name):
 
         image = cv2.imread(path)
-        # image = self.preprocess.remove_shadow(image)
+        image = self.preprocess.remove_shadow(image)
 
         # extract handwriting from image
         top, bottom = self.preprocess.extract_text(image)
