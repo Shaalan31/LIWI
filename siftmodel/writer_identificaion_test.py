@@ -10,8 +10,8 @@ code_book = pickle.load( open( "centers.pkl", "rb" ) )
 #writer identification using SIFT
 accuracy = None
 print('start')
-class_labels = list(range(2, 61))
-classCombinations = list(combinations(class_labels, r=59))
+class_labels = list(range(2, 160))
+classCombinations = list(combinations(class_labels, r=158))
 total = len(classCombinations)
 print(total)
 count = 0
