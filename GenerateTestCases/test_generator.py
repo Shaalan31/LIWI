@@ -7,6 +7,7 @@ import numpy as np
 import shutil
 from itertools import combinations
 import random
+from PIL import Image
 
 
 # KHATT
@@ -82,9 +83,9 @@ def iam_test_generator():
     #     # cv2.imwrite(base+id+'/'+name,temp)
 
 
-    base = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/Samples/'
+    base = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCasesCompressed/Samples/'
     try:
-        os.makedirs('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCases')
+        os.makedirs('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCasesCompressed/TestCases')
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
@@ -109,14 +110,23 @@ def iam_test_generator():
             id = '0'+id
         count = 0
         for filename in glob.glob('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/test/'+id+'/*.png'):
-            #temp = cv2.imread(filename)
+            # temp = cv2.imread(filename)
+            temp = Image.open(filename)
+            temp = temp.convert('RGB')
             name = Path(filename).name
+
             if count<2:
-                #cv2.imwrite(base+'Class'+str(classNum)+'/'+name,temp)
-                shutil.copyfile(filename, base+'Class'+str(classNum)+'/'+name)
+                name = name.replace('.png', '.jpg')
+                temp.save(base+'Class'+str(classNum)+'/'+name)
+                # cv2.imwrite(base+'Class'+str(classNum)+'/'+name,temp)
+                # shutil.copyfile(filename, base+'Class'+str(classNum)+'/'+name)
 
             elif count >= 2:
-                #cv2.imwrite('TestCases/testing'+str(classNum)+'.png',temp)
-                shutil.copyfile(filename, 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCases/testing'+str(classNum)+'_'+str(count-1)+'.png')
+                temp.save('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCasesCompressed/TestCases/testing'+str(classNum)+'_'+str(count-1) + '.jpg')
+                # cv2.imwrite('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCases/testing'+str(classNum)+'_'+str(count-1) + '.jpg',temp)
+                # shutil.copyfile(filename, 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCases/testing'+str(classNum)+'_'+str(count-1)+'.jpg')
 
             count += 1
+
+
+iam_test_generator()
