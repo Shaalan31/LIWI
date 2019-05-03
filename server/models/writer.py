@@ -1,7 +1,7 @@
 from server.models.features import *
 
 
-class User:
+class Writer:
     def __init__(self):
         self._id = None
         self._name = None
