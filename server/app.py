@@ -7,11 +7,13 @@ from flask import jsonify
 
 from flask import Flask
 app = Flask(__name__)
+app.json_encoder = WriterEncoder
 
 @app.errorhandler(ExceptionHandler)
 def handle_invalid_usage(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
+
     return response
 
 @app.route('/')

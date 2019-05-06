@@ -1,5 +1,5 @@
-import json
-from flask import jsonify
+# import json
+from flask import json
 from server.utils.writerencoder import *
 
 class ExceptionHandler(Exception):
@@ -16,6 +16,6 @@ class ExceptionHandler(Exception):
         rv = dict(self.payload or ())
         rv['message'] = self.message
         rv['status_code'] = self.status_code
-        # rv = json.dumps(self.data, cls=WriterEncoder)
+        rv['data'] = self.data
 
         return rv
