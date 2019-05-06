@@ -17,7 +17,7 @@ def handle_invalid_usage(error):
 
     return response
 
-# test for create and update
+# test for create, update, get writer, get features
 @app.route('/')
 def test():
     # Create writer
@@ -73,12 +73,16 @@ def test():
     name_splitted = writer.name.split()
     writer.username = name_splitted[0][0].lower() + name_splitted[1].lower() + str(writer.id)
     writer.features = features
-    # status_code, message = writers.create_writer(writer)
+    status_code, message = writers.create_writer(writer)
     # status_code, message = writers.update_writer(writer)
 
-    writer = writers.get_writer(4)
+    # writer = writers.get_writer(4)
 
-    # raise ExceptionHandler(message=message.value, status_code=status_code.value)
+    # writers_objs = writers.get_features([5])
+    # for writer_obj in writers_objs:
+    #     print(writer_obj.id)
+
+    raise ExceptionHandler(message=message.value, status_code=status_code.value)
 
 
 if __name__ == "__main__":

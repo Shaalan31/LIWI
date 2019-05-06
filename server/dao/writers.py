@@ -62,7 +62,13 @@ class Writers:
         :param writers_ids:
         :return: list of writer model
         """
-        return
+        writers = []
+        writers_dicts = self.collection.find({"_id": {"$in": writers_ids}})
+        if writers_dicts.count() != 0:
+            for writer_dict in writers_dicts:
+                writer = dict_to_writer(writer_dict)
+                writers.append(writer)
+        return writers
 
     def get_writers(self):
         """
