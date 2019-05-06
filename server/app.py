@@ -37,6 +37,7 @@ def test():
     horest.append(dummy)
     horest.append(dummy)
     horest.append(dummy)
+    horest.append(dummy)
     features.horest_features = horest
 
     texture = []
@@ -70,7 +71,8 @@ def test():
     name_splitted = writer.name.split()
     writer.username = name_splitted[0][0].lower() + name_splitted[1].lower() + str(writer.id)
     writer.features = features
-    status_code, message = writers.create_writer(writer)
+    # status_code, message = writers.create_writer(writer)
+    status_code, message = writers.update_writer(writer)
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value)
 
