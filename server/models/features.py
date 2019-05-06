@@ -31,3 +31,27 @@ class Features:
     @property
     def sift_SOH(self):
         return self._sift_SOH
+
+    @horest_features.setter
+    def horest_features(self, value):
+        self._horest_features = value
+
+    @average_horest.setter
+    def average_horest(self, value):
+        self._average_horest = value
+
+    @texture_feature.setter
+    def texture_feature(self, value):
+        self._texture_feature = value
+
+    @average_texture.setter
+    def average_texture(self, value):
+        self._average_texture = value
+
+    @sift_SDS.setter
+    def sift_SDS(self, value):
+        self._sift_SDS = value
+
+    @sift_SOH.setter
+    def sift_SOH(self, value):
+        self._sift_SOH = value

@@ -23,3 +23,19 @@ class Writer:
     @property
     def features(self):
         return self._features
+
+    @id.setter
+    def id(self, value):
+        self._id = value
+
+    @name.setter
+    def name(self, value):
+        self._name = value
+
+    @username.setter
+    def username(self, value):
+        self._username = value
+
+    @features.setter
+    def features(self, value):
+        self._features = value

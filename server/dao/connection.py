@@ -41,12 +41,3 @@ class Database:
 
     def get_collection(self):
         return self.collection
-
-
-# db = Database()
-# db.create_database()
-# db.create_collection()
-# db.connect()
-# print(db.get_client())
-# print(db.get_database())
-# print(db.get_collection())
