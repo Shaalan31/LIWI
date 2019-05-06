@@ -11,7 +11,7 @@ randomState = 1545481387
 
 
 class HorestWriterIdentification:
-    def __init__(self, path_training_set, path_test_cases):
+    def __init__(self, path_training_set="", path_test_cases=""):
         self.num_features = 18
         self.all_features = np.asarray([])
         self.all_features_class = np.asarray([])
@@ -22,6 +22,9 @@ class HorestWriterIdentification:
         self.total_test_cases = 100
         self.pathTrainingSet = path_training_set
         self.pathTestCases = path_test_cases
+        self.classifier = MLPClassifier(solver='lbfgs', max_iter=30000, alpha=0.046041,
+                                        hidden_layer_sizes=(22, 18, 15, 12, 7,),
+                                        random_state=randomState)
 
     def feature_extraction(self, example, image_shape):
         example = example.astype('uint8')
@@ -49,7 +52,7 @@ class HorestWriterIdentification:
 
         return np.asarray(feature)
 
-    def test(self, image, clf, mu, sigma):
+    def test(self, image, mu, sigma):
         all_features_test = np.asarray([])
 
         if image.shape[0] > 3500:
@@ -68,7 +71,7 @@ class HorestWriterIdentification:
         all_features_test = (self.adjust_nan_values(
             np.reshape(all_features_test, (num_testing_examples, self.num_features))) - mu) / sigma
 
-        return clf.predict(np.average(all_features_test, axis=0).reshape(1, -1))
+        return self.classifier.predict(np.average(all_features_test, axis=0).reshape(1, -1))
 
     def training(self, image, class_num):
         image_height = image.shape[0]
@@ -115,9 +118,7 @@ class HorestWriterIdentification:
     randomState = 1545481387
 
     def run(self):
-        classifier = MLPClassifier(solver='lbfgs', max_iter=30000, alpha=0.046041,
-                                   hidden_layer_sizes=(22, 18, 15, 12, 7,),
-                                   random_state=randomState)
+
         results_array = []
 
         start_class = 1
@@ -149,7 +150,7 @@ class HorestWriterIdentification:
             self.all_features, mu, sigma = self.feature_normalize(
                 np.reshape(self.all_features, (self.num_training_examples, self.num_features)))
 
-            classifier.fit(self.all_features, self.labels)
+            self.classifier.fit(self.all_features, self.labels)
 
             for class_number in classCombination:
                 for filename in glob.glob(
@@ -157,7 +158,7 @@ class HorestWriterIdentification:
                             class_number) + '_*.png'):
                     print(filename)
                     label = class_number
-                    prediction = self.test(cv2.imread(filename), classifier, mu, sigma)
+                    prediction = self.test(cv2.imread(filename), mu, sigma)
                     total_cases += 1
                     print(prediction[0])
                     if prediction[0] == label:
@@ -169,3 +170,6 @@ class HorestWriterIdentification:
         results_file = open("results.txt", "w+")
         results_file.writelines(results_array)
         results_file.close()
+
+    def fit_classifier(self, avg_features, labels):
+        self.classifier.fit(avg_features, labels)
