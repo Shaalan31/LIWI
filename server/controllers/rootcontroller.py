@@ -1,10 +1,12 @@
 import time
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from server.dao.connection import Database
 from server.dao.writers import Writers
 from texturemodel.texture_model import *
 from horestmodel.horest_model import *
 from siftmodel.sift_model import *
+from server.httpexceptions.exceptions import *
+from server.utils.writerencoder import *
 
 app = Flask(__name__)
 
@@ -15,7 +17,14 @@ horest_model = HorestWriterIdentification()
 texture_model = TextureWriterIdentification()
 UPLOAD_FOLDER = 'uploads/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.json_encoder = WriterEncoder
 
+@app.errorhandler(ExceptionHandler)
+def handle_invalid_usage(error):
+    response = jsonify(error.to_dict())
+    response.status_code = error.status_code
+
+    return response
 
 @app.route('/')
 def hello_world():
