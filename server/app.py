@@ -2,6 +2,7 @@ from server.dao.connection import *
 from server.dao.writers import *
 from server.models.writer import *
 from server.httpexceptions.exceptions import *
+from server.utils.writerencoder import *
 from flask import jsonify
 
 
@@ -16,6 +17,7 @@ def handle_invalid_usage(error):
 
     return response
 
+# test for create and update
 @app.route('/')
 def test():
     # Create writer
