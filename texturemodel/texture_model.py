@@ -12,7 +12,7 @@ randomState = 1545481387
 
 
 class TextureWriterIdentification:
-    def __init__(self, path_training_set, path_test_cases):
+    def __init__(self, path_training_set="", path_test_cases=""):
         self.num_features = 256 * 2
         self.all_features = np.asarray([])
         self.all_features_class = np.asarray([])
@@ -23,6 +23,10 @@ class TextureWriterIdentification:
         self.total_test_cases = 100
         self.pathTrainingSet = path_training_set
         self.pathTestCases = path_test_cases
+        self.classifier = svm.SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
+                             decision_function_shape='ovr', degree=3, gamma='scale', kernel='rbf',
+                             max_iter=-1, probability=False, random_state=None, shrinking=True,
+                             tol=0.001, verbose=False)
 
     def feature_extraction(self, example):
         example = example.astype('uint8')
@@ -36,7 +40,7 @@ class TextureWriterIdentification:
 
         return np.asarray(feature)
 
-    def test(self, image, clf, mu, sigma, pca):
+    def test(self, image, mu, sigma, pca):
         all_features_test = np.asarray([])
 
         if image.shape[0] > 3500:
@@ -60,7 +64,7 @@ class TextureWriterIdentification:
         #     predictions.append(clf.predict(np.asarray(example).reshape(1, -1)))
         # values, counts = np.unique(np.asarray(predictions), return_counts=True)
         # return values[np.argmax(counts)]
-        return clf.predict(pca.transform(np.average(all_features_test, axis=0).reshape(1, -1)))
+        return self.classifier.predict(pca.transform(np.average(all_features_test, axis=0).reshape(1, -1)))
 
     def training(self, image, class_num):
         image_height = image.shape[0]
@@ -107,13 +111,6 @@ class TextureWriterIdentification:
         return normalized_X, mean, deviation
 
     def run(self):
-        # classifier = MLPClassifier(solver='lbfgs', max_iter=30000, alpha=0.046041, hidden_layer_sizes=(22, 18, 15, 12, 7,),
-        #                            random_state=randomState)
-
-        classifier = svm.SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
-                             decision_function_shape='ovr', degree=3, gamma='scale', kernel='rbf',
-                             max_iter=-1, probability=False, random_state=None, shrinking=True,
-                             tol=0.001, verbose=False)
 
         results_array = []
         startClass = 1
@@ -148,7 +145,7 @@ class TextureWriterIdentification:
             pca = decomposition.PCA(n_components=min(self.all_features.shape[0], self.all_features.shape[1]),
                                     svd_solver='full')
             self.all_features = pca.fit_transform(self.all_features)
-            classifier.fit(self.all_features, self.labels)
+            self.classifier.fit(self.all_features, self.labels)
 
             for class_number in classCombination:
                 for filename in glob.glob(
@@ -156,7 +153,7 @@ class TextureWriterIdentification:
                             class_number) + '.png'):
                     print(filename)
                     label = class_number
-                    prediction = self.test(cv2.imread(filename), classifier, mu, sigma, pca)
+                    prediction = self.test(cv2.imread(filename),mu, sigma, pca)
                     total_cases += 1
                     print(prediction[0])
                     if prediction[0] == label:
@@ -167,3 +164,6 @@ class TextureWriterIdentification:
         results_file = open("results.txt", "w+")
         results_file.writelines(results_array)
         results_file.close()
+
+    def fit_classifier(self,avg_features,labels):
+        self.classifier.fit(avg_features, labels)

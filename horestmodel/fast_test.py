@@ -10,7 +10,7 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 # Global Variables
 num_features = 18
 num_lines_per_class = 0
-num_classes = 165
+num_classes = 50
 training_dict = {}
 testing_dict = {}
 randomState = 1545481387
@@ -213,13 +213,13 @@ def featureNormalize(X):
 # for key, value in training_dict.items():
 #     np.savetxt("D:/Uni/Graduation Project/All Test Cases/IAMCSV/training" + str(key) + ".csv", value, delimiter=",")
 
-process_test_data()
-for key, value in testing_dict.items():
-    np.savetxt("D:/Uni/Graduation Project/All Test Cases/IAMCSV/test" + str(key) + ".csv", value, delimiter=",")
+# process_test_data()
+# for key, value in testing_dict.items():
+#     np.savetxt("D:/Uni/Graduation Project/All Test Cases/IAMCSV/test" + str(key) + ".csv", value, delimiter=",")
 
-#
-# for i in range(1, num_classes + 1):
-#     print(i)
-#     training_dict[i] = np.genfromtxt('D:/Uni/Graduation Project/All Test Cases/IAMCSV/Samples/training' + str(i) + '.csv', delimiter=",")
-#     testing_dict[i] = np.genfromtxt('D:/Uni/Graduation Project/All Test Cases/IAMCSV/TestCases/test' + str(i) + '.csv', delimiter=",")
-# start()
+
+for i in range(1, num_classes + 1):
+    print(i)
+    training_dict[i] = np.genfromtxt('D:/Uni/Graduation Project/All Test Cases/IAMCSV/Samples/Horest/training' + str(i) + '.csv', delimiter=",")
+    testing_dict[i] = np.genfromtxt('D:/Uni/Graduation Project/All Test Cases/IAMCSV/TestCases/Horest/test' + str(i) + '.csv', delimiter=",")
+start()
