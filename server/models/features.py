@@ -1,12 +1,12 @@
 import numpy as np
 class Features:
     def __init__(self):
-        self._horest_features = np.asarray([])
-        self._average_horest = np.asarray([])
-        self._texture_feature = np.asarray([])
-        self._average_texture = np.asarray([])
-        self._sift_SDS = np.asarray([])
-        self._sift_SOH = np.asarray([])
+        self._horest_features = []
+        self._average_horest = []
+        self._texture_feature = []
+        self._average_texture = []
+        self._sift_SDS = []
+        self._sift_SOH = []
 
     @property
     def horest_features(self):
