@@ -20,7 +20,6 @@ def handle_invalid_usage(error):
 # test for create, update, get writer, get features
 @app.route('/')
 def test():
-    # Create writer
     db = Database()
     db.connect()
 
@@ -84,6 +83,16 @@ def test():
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value)
 
+
+# test get writers
+@app.route('/writers')
+def test_writers():
+    db = Database()
+    db.connect()
+    writers = Writers(db.get_collection())
+    status_code, message, data = writers.get_writers()
+
+    raise ExceptionHandler(message=message.value, status_code=status_code.value, data=data)
 
 if __name__ == "__main__":
     app.run()

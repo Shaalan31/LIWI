@@ -1,5 +1,7 @@
 from server.models.writer import *
+from server.models.writers import *
 from server.models.features import *
+
 
 def writer_to_dict(writer):
     """
@@ -36,5 +38,19 @@ def dict_to_writer(writer_dict):
     features.sift_SOH = features_dict["_sift_SOH"]
 
     writer.features = features
+
+    return writer
+
+
+def dict_to_writers(writer_dict):
+    """
+    Convert writer dictionary into writers model
+    :param writer_dict: dictionary returned from database
+    :return: writer object of writers model
+    """
+    writer = Writers()
+    writer.id = writer_dict["_id"]
+    writer.name = writer_dict["_name"]
+    writer.username = writer_dict["_username"]
 
     return writer

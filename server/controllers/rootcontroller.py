@@ -19,6 +19,7 @@ UPLOAD_FOLDER = 'uploads/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.json_encoder = WriterEncoder
 
+
 @app.errorhandler(ExceptionHandler)
 def handle_invalid_usage(error):
     response = jsonify(error.to_dict())

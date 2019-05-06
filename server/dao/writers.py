@@ -1,7 +1,7 @@
 from server.httpresponses.errors import *
 from server.httpresponses.messages import *
 from server.utils.utilities import *
-
+from server.models.writers import *
 
 class Writers:
     """
@@ -48,13 +48,14 @@ class Writers:
         """
         Get writer from the collection
         :param writer_id: int
-        :return: writer model
+        :return: writer model if it exists, if it does not return none
         """
         writer = self.collection.find({"_id": writer_id})
         if writer.count() == 1:
             writer_obj = dict_to_writer(writer[0])
+            return writer_obj
+        else: return None
 
-        return writer_obj
 
     def get_features(self, writers_ids):
         """
@@ -75,5 +76,14 @@ class Writers:
         Get writers' ids, names and usernames for the application
         :return: list of writers
         """
-        return
+        writers = []
+        writers_dicts = self.collection.find()
+        if writers_dicts.count() != 0:
+            for writer_dict in writers_dicts:
+                writer = dict_to_writers(writer_dict)
+                writers.append(writer)
+            return HttpErrors.SUCCESS, HttpMessages.SUCCESS, writers
+        else:
+            return HttpErrors.NOTFOUND, HttpMessages.NOWRITERS, None
+
 
