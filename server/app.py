@@ -74,9 +74,11 @@ def test():
     writer.username = name_splitted[0][0].lower() + name_splitted[1].lower() + str(writer.id)
     writer.features = features
     # status_code, message = writers.create_writer(writer)
-    status_code, message = writers.update_writer(writer)
+    # status_code, message = writers.update_writer(writer)
 
-    raise ExceptionHandler(message=message.value, status_code=status_code.value)
+    writer = writers.get_writer(4)
+
+    # raise ExceptionHandler(message=message.value, status_code=status_code.value)
 
 
 if __name__ == "__main__":
