@@ -42,3 +42,4 @@ def codebook_generation(num_batches,sofm,epoch):
 
 codebook_generation(12,None,5)
 
+
