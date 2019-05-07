@@ -121,8 +121,8 @@ class HorestWriterIdentification:
         results_array = []
 
         start_class = 1
-        end_class = 20
-        class_combinations = list(combinations(range(start_class, end_class + 1), r=3))
+        end_class = 50
+        class_combinations = combinations(range(start_class, end_class + 1), r=30)
 
         total_cases = 0
         total_correct = 0

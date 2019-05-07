@@ -9,8 +9,8 @@ from siftmodel.feature_matching import *
 
 class SiftModel:
     def __init__(self, first_class, last_class, code_book):
-        self.base_train = 'C:/Users/omars/Documents/Github/LIWI/Omar/Samples/'
-        self.base_test = 'C:/Users/omars/Documents/Github/LIWI/Omar/TestCases/'
+        self.base_train = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/Samples/'
+        self.base_test = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCases/'
         self.first_class = first_class
         self.last_class = last_class
         self.code_book = code_book
@@ -23,7 +23,7 @@ class SiftModel:
     def get_features(self, path, name):
 
         image = cv2.imread(path)
-        # image = self.preprocess.remove_shadow(image)
+        image = self.preprocess.remove_shadow(image)
 
         # extract handwriting from image
         top, bottom = self.preprocess.extract_text(image)
