@@ -1,11 +1,15 @@
 import numpy as np
 from neupy import algorithms, utils, storage
 import h5py
+
+
 import pickle
+
 
 def on_epoch_end(optimizer):
     print("Last epoch: {}".format(optimizer.last_epoch))
     storage.load(optimizer, filepath='file.hdf5')
+
 
 def train_sofm(data,ep=1):
     with open('sofm.pkl','rb') as input:
@@ -35,4 +39,6 @@ def codebook_generation(num_batches,sofm,epoch):
             data = np.append(data,hf['keypoints-batch'][:],axis=0)
     sofm.train(data,epochs=int(epoch))
 
+
+codebook_generation(12,None,5)
 
