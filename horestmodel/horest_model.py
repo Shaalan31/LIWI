@@ -71,7 +71,7 @@ class HorestWriterIdentification:
         all_features_test = (self.adjust_nan_values(
             np.reshape(all_features_test, (num_testing_examples, self.num_features))) - mu) / sigma
 
-        return self.classifier.predict(np.average(all_features_test, axis=0).reshape(1, -1))
+        return self.classifier.predict_proba(np.average(all_features_test, axis=0).reshape(1, -1))
 
     def training(self, image, class_num):
         image_height = image.shape[0]
@@ -158,12 +158,13 @@ class HorestWriterIdentification:
                             class_number) + '_*.png'):
                     print(filename)
                     label = class_number
-                    prediction = self.test(cv2.imread(filename), mu, sigma)
+                    prediction, classes = self.test(cv2.imread(filename), mu, sigma)
+                    prediction = classes[np.argmax(prediction)]
                     total_cases += 1
-                    print(prediction[0])
-                    if prediction[0] == label:
+                    print(prediction)
+                    if prediction == label:
                         total_correct += 1
-                    results_array.append(str(prediction[0]) + '\n')
+                    results_array.append(str(prediction) + '\n')
                     print("Accuracy = ", total_correct * 100 / total_cases, " %")
                     break
 
@@ -171,5 +172,28 @@ class HorestWriterIdentification:
         results_file.writelines(results_array)
         results_file.close()
 
+    def get_features(self,image):
+        image_height = image.shape[0]
+        if image_height > 3500:
+            image = cv2.resize(src=image, dsize=(3500, round((3500 / image.shape[1]) * image_height)))
+
+        # image = adjust_rotation(image=image)
+        # show_images([image])
+        writer_lines = LineSegmentation(image).segment()
+        num_lines = len(writer_lines)
+
+        all_features_class = np.asarray([])
+        self.num_lines_per_class += len(writer_lines)
+        for line in writer_lines:
+            all_features_class = np.append(all_features_class, self.feature_extraction(line, image.shape))
+
+        return np.reshape(all_features_class, (1, num_lines * self.num_features))
+
     def fit_classifier(self, all_features, labels):
         self.classifier.fit(all_features, labels)
+
+    def get_classifier_classes(self):
+        return self.classifier.classes_
+
+    def get_num_features(self):
+        return self.num_features

@@ -23,9 +23,9 @@ class TextureWriterIdentification:
         self.total_test_cases = 100
         self.pathTrainingSet = path_training_set
         self.pathTestCases = path_test_cases
-        self.classifier = svm.SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
+        self.classifier = svm.SVC(C=10.0, cache_size=200, class_weight=None, coef0=0.0,
                              decision_function_shape='ovr', degree=3, gamma='scale', kernel='rbf',
-                             max_iter=-1, probability=False, random_state=None, shrinking=True,
+                             max_iter=-1, probability=True, random_state=1545481387, shrinking=True,
                              tol=0.001, verbose=False)
 
     def feature_extraction(self, example):
@@ -64,7 +64,7 @@ class TextureWriterIdentification:
         #     predictions.append(clf.predict(np.asarray(example).reshape(1, -1)))
         # values, counts = np.unique(np.asarray(predictions), return_counts=True)
         # return values[np.argmax(counts)]
-        return self.classifier.predict(pca.transform(np.average(all_features_test, axis=0).reshape(1, -1)))
+        return self.classifier.predict_proba(pca.transform(np.average(all_features_test, axis=0).reshape(1, -1)))
 
     def training(self, image, class_num):
         image_height = image.shape[0]
@@ -110,10 +110,27 @@ class TextureWriterIdentification:
         normalized_X = np.divide(normalized_X, deviation)
         return normalized_X, mean, deviation
 
+    def get_features(self,image):
+        image_height = image.shape[0]
+        if image_height > 3500:
+            image = cv2.resize(src=image, dsize=(3500, round((3500 / image.shape[1]) * image_height)))
+
+        # image = adjust_rotation(image=image)
+        # show_images([image])
+        writer_blocks = BlockSegmentation(image).segment()
+        num_blocks = len(writer_blocks)
+
+        all_features_class = np.asarray([])
+        self.num_blocks_per_class += len(writer_blocks)
+        for block in writer_blocks:
+            all_features_class = np.append(all_features_class, self.feature_extraction(block))
+
+        return np.reshape(all_features_class, (1, num_blocks * self.num_features))
+
     def run(self):
 
         results_array = []
-        startClass = 1
+        startClass = 10
         endClass = 20
         classCombinations = combinations(range(startClass, endClass + 1), r=3)
 
@@ -154,11 +171,13 @@ class TextureWriterIdentification:
                     print(filename)
                     label = class_number
                     prediction = self.test(cv2.imread(filename),mu, sigma, pca)
+                    classes = self.classifier.classes_
+                    prediction=classes[np.argmax(prediction)]
                     total_cases += 1
-                    print(prediction[0])
-                    if prediction[0] == label:
+                    print(prediction)
+                    if prediction == label:
                         total_correct += 1
-                    results_array.append(str(prediction[0]) + '\n')
+                    results_array.append(str(prediction) + '\n')
                     print("Accuracy = ", total_correct * 100 / total_cases, " %")
 
         results_file = open("results.txt", "w+")
@@ -167,3 +186,9 @@ class TextureWriterIdentification:
 
     def fit_classifier(self,all_features,labels):
         self.classifier.fit(all_features, labels)
+
+    def get_classifier_classes(self):
+       return self.classifier.classes_
+
+    def get_num_features(self):
+        return self.num_features

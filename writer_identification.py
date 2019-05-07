@@ -3,9 +3,9 @@ from horestmodel.horest_model import *
 import pickle
 from siftmodel.sift_model import *
 
-# textureMethod = TextureWriterIdentification('D:/Uni/Graduation Project/All Test Cases/KHATT/Samples/Class',
-#                                             'D:/Uni/Graduation Project/All Test Cases/KHATT/TestCases/testing')
-# textureMethod.run()
+textureMethod = TextureWriterIdentification('D:/Uni/Graduation Project/All Test Cases/KHATT/Samples/Class',
+                                            'D:/Uni/Graduation Project/All Test Cases/KHATT/TestCases/testing')
+textureMethod.run()
 
 #Horst Writer identification
 # horestMethod = HorestWriterIdentification('D:/Uni/Graduation Project/All Test Cases/IAM/Samples/Class',
@@ -14,9 +14,9 @@ from siftmodel.sift_model import *
 
 #SAMAR
 # code book
-code_book = pickle.load(open( "siftmodel/centers.pkl", "rb" ))
-sift_model = SiftModel(first_class=91, last_class=120, code_book=code_book)
-sift_model.run()
+# code_book = pickle.load(open( "siftmodel/centers.pkl", "rb" ))
+# sift_model = SiftModel(first_class=91, last_class=120, code_book=code_book)
+# sift_model.run()
 
 # sift_model.get_features("C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/Samples/Class75/f04-011.png","f04-011.png")
 # sift_model.get_features("C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/Samples/Class114/g07-022b.png","g07-022b.png")
