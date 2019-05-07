@@ -25,8 +25,23 @@ sift_model.run()
 # sift_model.get_features("C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCases/testing48_3.png","testing48_3.png")
 # sift_model.get_features("C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCases/testing1_27.png","testing1_27.png")
 # sift_model.get_features("C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCases/testing1_9.png","testing1_9.png")
-
 #End Samar
+
+#Shaalan
+
+code_book = pickle.load( open( "siftmodel/centers.pkl", "rb" ) )
+
+#writer identification using SIFT
+accuracy = None
+for x in range(1,160,10):
+    sift_model = SiftModel(first_class=x , last_class=x+9, code_book=code_book)
+    sift_model.run()
+    if accuracy is None:
+        accuracy = sift_model.accuracy
+    else:
+        accuracy = np.append(accuracy,sift_model.accuracy,axis=1)
+    print('Total accuracy',accuracy)
+    print(accuracy.shape)
 
 #Shaalan
 # code_book = pickle.load( open( "siftmodel/centers.pkl", "rb" ) )
