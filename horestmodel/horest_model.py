@@ -171,5 +171,5 @@ class HorestWriterIdentification:
         results_file.writelines(results_array)
         results_file.close()
 
-    def fit_classifier(self, avg_features, labels):
-        self.classifier.fit(avg_features, labels)
+    def fit_classifier(self, all_features, labels):
+        self.classifier.fit(all_features, labels)

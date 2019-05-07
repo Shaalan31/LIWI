@@ -55,7 +55,7 @@ class TextureWriterIdentification:
             all_features_test = np.append(all_features_test, example)
             num_testing_examples += 1
 
-        all_features_test = (self.adjustNaNValues(
+        all_features_test = (self.adjust_nan_values(
             np.reshape(all_features_test, (num_testing_examples, self.num_features))) - mu) / sigma
 
         # Predict on each line
@@ -83,7 +83,7 @@ class TextureWriterIdentification:
 
         return np.reshape(self.all_features_class, (self.num_blocks_per_class, self.num_features))
 
-    def adjustNaNValues(self, writer_features):
+    def adjust_nan_values(self, writer_features):
         for i in range(self.num_features):
             feature = writer_features[:, i]
             is_nan_mask = np.isnan(feature)
@@ -101,7 +101,7 @@ class TextureWriterIdentification:
 
         return writer_features
 
-    def featureNormalize(self, X):
+    def feature_normalize(self, X):
         mean = np.mean(X, axis=0)
         normalized_X = X - mean
         deviation = np.sqrt(np.var(normalized_X, axis=0))
@@ -136,11 +136,11 @@ class TextureWriterIdentification:
                     print(filename)
                     self.temp = self.training(cv2.imread(filename), class_number)
                 self.all_features = np.append(self.all_features,
-                                              np.reshape(self.adjustNaNValues(self.temp),
+                                              np.reshape(self.adjust_nan_values(self.temp),
                                                          (1, self.num_blocks_per_class * self.num_features)))
 
             # Normalization of features
-            self.all_features, mu, sigma = self.featureNormalize(
+            self.all_features, mu, sigma = self.feature_normalize(
                 np.reshape(self.all_features, (self.num_training_examples, self.num_features)))
             pca = decomposition.PCA(n_components=min(self.all_features.shape[0], self.all_features.shape[1]),
                                     svd_solver='full')
@@ -165,5 +165,5 @@ class TextureWriterIdentification:
         results_file.writelines(results_array)
         results_file.close()
 
-    def fit_classifier(self,avg_features,labels):
-        self.classifier.fit(avg_features, labels)
+    def fit_classifier(self,all_features,labels):
+        self.classifier.fit(all_features, labels)
