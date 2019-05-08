@@ -71,6 +71,10 @@ def get_prediction():
             all_features_texture = []
             num_training_examples_texture = 0
 
+            #declaring variable for sift
+            SDS_train = []
+            SOH_train = []
+
             for writer in writers:
                 # processing horest_features
                 horest_features = writer.feature.horest_features
@@ -93,6 +97,10 @@ def get_prediction():
                                                             (1,
                                                              num_current_examples_texture * texture_model.get_num_features())))
 
+                # appending sift features
+                SDS_train.append(writer.feature.sift_SDS)
+                SOH_train.append(writer.feature.sift_SOH)
+
             # fit horest classifier
             all_features_horest = np.reshape(all_features_horest,
                                              (num_training_examples_horest, horest_model.get_num_features()))
@@ -108,10 +116,11 @@ def get_prediction():
             all_features_texture = pca.fit_transform(all_features_texture)
             texture_model.fit_classifier(all_features_texture, labels_texture)
 
-            pool = Pool(2)
+            pool = Pool(3)
             async_results = []
             async_results += [pool.apply_async(horest_model.test, (testing_image, mu_horest, sigma_horest))]
             async_results += [pool.apply_async(texture_model.test, (testing_image, mu_texture, sigma_texture, pca))]
+            async_results += [pool.apply_async(sift_model.predict, (SDS_train, SOH_train, testing_image, filename))]
 
             pool.close()
             pool.join()
@@ -122,6 +131,7 @@ def get_prediction():
             texture_classes = texture_model.get_classifier_classes()
 
             print(predictions)
+            # todo get the prediction from the probabilities, by summing them and get max prob
 
     except KeyError as e:
         return 'error', 404
@@ -184,7 +194,6 @@ def set_writers():
     # loop on the writers
     for class_number in range(1, num_classes + 1):
         writer_name = names[class_number - 1]
-        id += 1
 
         writer_horest_features = []
         writer_texture_features = []
@@ -196,17 +205,18 @@ def set_writers():
 
         # loop on training data for each writer
         for filename in glob.glob(
-                'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCasesCompressed/Samples/Class' + str(class_number) + '/*.jpg'):
+                'D:/Uni/Graduation Project/All Test Cases/IAMJPG/Samples/Class' + str(class_number) + '/*.jpg'):
             print(filename)
+            image = cv2.imread(filename)
             print('Horest Features')
             # writer_horest_features.append(horest_model.get_features(cv2.imread(filename))[0].tolist())
-            writer_horest_features = np.append(writer_horest_features, horest_model.get_features(cv2.imread(filename))[0].tolist())
+            writer_horest_features = np.append(writer_horest_features, horest_model.get_features(image)[0].tolist())
             print('Texture Features')
             # writer_texture_features.append(texture_model.get_features(cv2.imread(filename))[0].tolist())
-            writer_texture_features = np.append(writer_texture_features, texture_model.get_features(cv2.imread(filename))[0].tolist())
+            writer_texture_features = np.append(writer_texture_features, texture_model.get_features(image)[0].tolist())
             print('Sift Model')
             name = Path(filename).name
-            SDS, SOH = sift_model.get_features(filename, name)
+            SDS, SOH = sift_model.get_features(name, image=image)
             SDS_train.append(SDS[0].tolist())
             SOH_train.append(SOH[0].tolist())
 
