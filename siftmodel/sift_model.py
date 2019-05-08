@@ -121,7 +121,7 @@ class SiftModel:
             D1, D2 = matching.calculate_distances(u=SDS, v=SDS_train[i], x=SOH, y=SOH_train[i])
             manhattan.append(D1)
             chi_square.append(D2)
-        prediction = matching.match(manhattan, chi_square, w=0.75)
+        prediction = matching.match2(manhattan, chi_square, w=0.75)
 
         return prediction
 

@@ -11,6 +11,8 @@ from server.utils.writerencoder import *
 from server.models.features import *
 from server.models.writer import *
 import cv2
+import json
+
 
 app = Flask(__name__)
 
@@ -20,7 +22,7 @@ writers_dao = Writers(db.get_collection())
 horest_model = HorestWriterIdentification()
 texture_model = TextureWriterIdentification()
 sift_model = SiftModel()
-UPLOAD_FOLDER = 'uploads/'
+UPLOAD_FOLDER = 'D:/Uni/Graduation Project/LIWI/uploads/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.json_encoder = WriterEncoder
 
@@ -56,7 +58,8 @@ def get_prediction():
             testing_image = cv2.imread(UPLOAD_FOLDER + filename)
 
             # get features of the writers
-            writers_ids = request.get_json()['writers_ids']
+            writers_ids = request.form['writers_ids']
+            writers_ids = list(map(int, writers_ids[1:len(writers_ids)-1].split(',')))
             writers = writers_dao.get_features(writers_ids)
 
             # process features to fit classifier
@@ -77,7 +80,7 @@ def get_prediction():
 
             for writer in writers:
                 # processing horest_features
-                horest_features = writer.feature.horest_features
+                horest_features = writer.features.horest_features
                 num_current_examples_horest = len(horest_features)
                 labels_horest = np.append(labels_horest,
                                           np.full(shape=(1, num_current_examples_horest), fill_value=writer.id))
@@ -87,7 +90,7 @@ def get_prediction():
                                                            (1,
                                                             num_current_examples_horest * horest_model.get_num_features())))
                 # processing texture_features
-                texture_features = writer.feature.texture_features
+                texture_features = writer.features.texture_feature
                 num_current_examples_texture = len(texture_features)
                 labels_texture = np.append(labels_texture,
                                            np.full(shape=(1, num_current_examples_texture), fill_value=writer.id))
@@ -98,8 +101,8 @@ def get_prediction():
                                                              num_current_examples_texture * texture_model.get_num_features())))
 
                 # appending sift features
-                SDS_train.append(writer.feature.sift_SDS)
-                SOH_train.append(writer.feature.sift_SOH)
+                SDS_train.append(writer.features.sift_SDS)
+                SOH_train.append(writer.features.sift_SOH)
 
             # fit horest classifier
             all_features_horest = np.reshape(all_features_horest,
@@ -124,14 +127,22 @@ def get_prediction():
 
             pool.close()
             pool.join()
-            predictions = [x.get() for x in async_results]
+            # predictions = [x.get() for x in async_results]
 
             # used to match the probablity with classes
             horest_classes = horest_model.get_classifier_classes()
-            texture_classes = texture_model.get_classifier_classes()
+            horest_predictions=async_results[0].get()
+            print(horest_predictions)
 
-            print(predictions)
+            texture_classes = texture_model.get_classifier_classes()
+            texture_predictions=async_results[1].get()
+            print(texture_predictions)
+
+            #todo check error here
+            sift_prediction=async_results[2].get()
+            print(sift_prediction)
             # todo get the prediction from the probabilities, by summing them and get max prob
+        return 'success', 200
 
     except KeyError as e:
         return 'error', 404
@@ -192,7 +203,7 @@ def set_writers():
              "Khaled Hesham", "Karim Hossam",
              "Omar Nasharty", "Rayhana Ayman"]
     # loop on the writers
-    for class_number in range(1, num_classes + 1):
+    for class_number in range(11, num_classes + 1):
         writer_name = names[class_number - 1]
 
         writer_horest_features = []
