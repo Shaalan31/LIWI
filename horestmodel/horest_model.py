@@ -31,7 +31,7 @@ class HorestWriterIdentification:
         example_copy = example.copy()
 
         # Calculate Contours
-        contours, hierarchy = cv2.findContours(example_copy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        _, contours, hierarchy = cv2.findContours(example_copy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         hierarchy = hierarchy[0]
         contours = np.asarray(contours)
 

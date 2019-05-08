@@ -10,6 +10,7 @@ from server.httpexceptions.exceptions import *
 from server.utils.writerencoder import *
 from server.models.features import *
 from server.models.writer import *
+import cv2
 
 app = Flask(__name__)
 
@@ -18,6 +19,7 @@ db.connect()
 writers_dao = Writers(db.get_collection())
 horest_model = HorestWriterIdentification()
 texture_model = TextureWriterIdentification()
+sift_model = SiftModel()
 UPLOAD_FOLDER = 'uploads/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.json_encoder = WriterEncoder
@@ -36,9 +38,11 @@ def hello_world():
     return 'Hello World!'
 
 
-@app.route("/users")
-def get_users():
-    return writers_dao.get_writers()
+@app.route("/writers")
+def get_writers():
+    status_code, message, data = writers_dao.get_writers()
+
+    raise ExceptionHandler(message=message.value, status_code=status_code.value, data=data)
 
 
 @app.route("/predict", methods=['POST'])
@@ -123,49 +127,110 @@ def get_prediction():
         return 'error', 404
 
 
-@app.route("/setUsers")
-def set_users():
+@app.route("/setWriters")
+def set_writers():
     num_classes = 100
     id = 0
-    names = ["", "", "", ""]
+    names = ["Abdul Ahad", "Abdul Ali",
+             "Abdul Alim", "Abdul Azim",
+             "Abu Abdullah", "Abu Hamza",
+             "Ahmed Tijani", "Ali Reza",
+             "Aman Ali", "Anisur Rahman",
+             "Azizur Rahman", "Badr al-Din",
+             "Baha' al-Din", "Barkat Ali",
+             "Burhan al-Din", "Fakhr al-Din",
+             "Fazl UrRahman", "Fazlul Karim",
+             "Fazlul Haq", "Ghulam Faruq",
+             "Ghiyath al-Din", "Ghulam Mohiuddin",
+             "Habib ElRahman", "Hamid al-Din",
+             "Hibat Allah", "Husam ad-Din",
+             "Ikhtiyar al-Din", "Imad al-Din",
+             "Izz al-Din", "Jalal ad-Din",
+             "Jamal ad-Din", "Kamal ad-Din",
+             "Lutfur Rahman", "Mizanur Rahman",
+             "Mohammad Taqi", "Nasir al-Din",
+             "Seif ilislam", "Sadr al-Din",
+             "Sddam Hussein", "Samar Gamal",
+             "May Ahmed", "Ahmed Khairy",
+             "Omar Ali", "Salma Ibrahim",
+             "Ahmed Gamal", "Hadeer Hossam",
+             "Hanaa Ahmed", "Gamal Saad",
+             "Bisa Dewidar", "Ahmed Said",
+             "Nachwa Ahmed", "Ezz Farhan",
+             "Nourhan Farhan", "Mariam Farhan",
+             "Mouhab Farhan", "Sherif Ahmed",
+             "Noha Ahmed", "Yasmine Sherif",
+             "Eslam Sherif", "Ahmed Sherif",
+             "Mohamed Ahmed", "Zeinab Khairy",
+             "Khaled Ali", "Rana Ali",
+             "Ali Shaalan", "Ahmed Youssry",
+             "AbdelRahman Nasser", "Youssra Hussein",
+             "Ingy Alaa", "Rana Afifi",
+             "Nour Attya", "Amani Tarek",
+             "Salma Ahmed", "Iman Fouad",
+             "Karim ElRashidy", "Ziad Mansour",
+             "Mohamed Salah", "Anas ElShazly",
+             "Hazem Aly", "Youssef Maraghy",
+             "Ebram Hossam", "Mohamed Nour",
+             "Mohamed Ossama", "Hussein Hosny",
+             "Ahmed Samy", "Youmna Helmy",
+             "Kareem Haggag", "Nour Yasser",
+             "Farah Mohamed", "Ahmed Hisham",
+             "Omar Nashaat", "Mohamed Yasser",
+             "Sara Hassan", "Ahmed keraidy",
+             "Magdy Hafez", "Waleed Mostafa",
+             "Khaled Hesham", "Karim Hossam",
+             "Omar Nasharty", "Rayhana Ayman"]
     # loop on the writers
     for class_number in range(1, num_classes + 1):
-        name = names[id]
+        writer_name = names[id]
         id += 1
 
-        writer_horest_features = np.asarray([])
-        writer_texture_features = np.asarray([])
+        writer_horest_features = []
+        writer_texture_features = []
+        SDS_train = []
+        SOH_train = []
         horest_model.num_lines_per_class = 0
         texture_model.num_blocks_per_class = 0
+        print('Class' + str(class_number) + ':')
 
         # loop on training data for each writer
         for filename in glob.glob(
-                'D:/Uni/Graduation Project/All Test Cases/IAMJPG/Samples/Class' + str(class_number) + '/*.jpg'):
+                'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCasesCompressed/Samples/Class' + str(class_number) + '/*.jpg'):
             print(filename)
-            writer_horest_features = np.append(writer_horest_features, horest_model.get_features(cv2.imread(filename)))
-            writer_texture_features = np.append(writer_texture_features,
-                                                texture_model.get_features(cv2.imread(filename)))
-            # todo calculate SDS SOH to training images per writer
+            print('Horest Features')
+            # writer_horest_features.append(horest_model.get_features(cv2.imread(filename))[0].tolist())
+            writer_horest_features = np.append(writer_horest_features, horest_model.get_features(cv2.imread(filename))[0].tolist())
+            print('Texture Features')
+            # writer_texture_features.append(texture_model.get_features(cv2.imread(filename))[0].tolist())
+            writer_texture_features = np.append(writer_texture_features, texture_model.get_features(cv2.imread(filename))[0].tolist())
+            print('Sift Model')
+            name = Path(filename).name
+            SDS, SOH = sift_model.get_features(filename, name)
+            SDS_train.append(SDS[0].tolist())
+            SOH_train.append(SOH[0].tolist())
 
         writer_horest_features = horest_model.adjust_nan_values(
-            np.reshape(writer_horest_features, (horest_model.num_lines_per_class, horest_model.get_num_features())))
+            np.reshape(writer_horest_features, (horest_model.num_lines_per_class, horest_model.get_num_features()))).tolist()
         writer_texture_features = texture_model.adjust_nan_values(
-            np.reshape(writer_texture_features, (texture_model.num_blocks_per_class, texture_model.get_num_features())))
-        # todo adjust nan for sift features
+            np.reshape(writer_texture_features, (texture_model.num_blocks_per_class, texture_model.get_num_features()))).tolist()
 
         writer = Writer()
         features = Features()
         features.horest_features = writer_horest_features
         features.texture_feature = writer_texture_features
-        # Todo set sift features
+        features.sift_SDS = SDS_train
+        features.sift_SOH = SOH_train
 
         writer.features = features
         writer.id = id
-        writer.name = name
+        writer.name = writer_name
         name_splitted = writer.name.split()
         writer.username = name_splitted[0][0].lower() + name_splitted[1].lower() + str(writer.id)
         status_code, message = writers_dao.create_writer(writer)
-        raise ExceptionHandler(message=message.value, status_code=status_code.value)
+        print(message.value)
+
+    raise ExceptionHandler(message=message.value, status_code=status_code.value)
 
 
 # def addNum(num1,num2):
