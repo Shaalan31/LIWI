@@ -183,7 +183,7 @@ def set_writers():
              "Omar Nasharty", "Rayhana Ayman"]
     # loop on the writers
     for class_number in range(1, num_classes + 1):
-        writer_name = names[id]
+        writer_name = names[class_number - 1]
         id += 1
 
         writer_horest_features = []
@@ -223,7 +223,7 @@ def set_writers():
         features.sift_SOH = SOH_train
 
         writer.features = features
-        writer.id = id
+        writer.id = class_number
         writer.name = writer_name
         name_splitted = writer.name.split()
         writer.username = name_splitted[0][0].lower() + name_splitted[1].lower() + str(writer.id)
