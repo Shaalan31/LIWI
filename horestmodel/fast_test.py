@@ -162,7 +162,9 @@ def start():
             # print(test_combination[classNum])
             test_vector = (testing_dict[class_number]).copy()
             test_vector = (test_vector - mu) / sigma
-            prediction = classifier.predict(test_vector.reshape(1, -1))
+            prediction = classifier.predict_proba(test_vector.reshape(1, -1))
+            classes = classifier.classes_
+            prediction=classes[np.argmax(prediction)]
             # print(prediction)
 
             if prediction == class_number:

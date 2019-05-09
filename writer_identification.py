@@ -2,15 +2,19 @@ from texturemodel.texture_model import *
 from horestmodel.horest_model import *
 import pickle
 from siftmodel.sift_model import *
+#
+# textureMethod = TextureWriterIdentification('D:/Uni/Graduation Project/All Test Cases/KHATT/Samples/Class',
+#                                             'D:/Uni/Graduation Project/All Test Cases/KHATT/TestCases/testing')
+# textureMethod.run()
 
 # textureMethod = TextureWriterIdentification('D:/Uni/Graduation Project/All Test Cases/KHATT/Samples/Class',
 #                                             'D:/Uni/Graduation Project/All Test Cases/KHATT/TestCases/testing')
 # textureMethod.run()
 
 #Horst Writer identification
-# horestMethod = HorestWriterIdentification('D:/Uni/Graduation Project/All Test Cases/IAM/Samples/Class',
-#                                             'D:/Uni/Graduation Project/All Test Cases/IAM/TestCases/testing')
-# horestMethod.run()
+horestMethod = HorestWriterIdentification('D:/Uni/Graduation Project/All Test Cases/IAM/Samples/Class',
+                                            'D:/Uni/Graduation Project/All Test Cases/IAM/TestCases/testing')
+horestMethod.run()
 
 #SAMAR
 # code book
