@@ -20,7 +20,7 @@ class SiftModel:
         self.features = FeaturesExtraction()
         self.accuracy = None
 
-    def get_features(self, name, path="", image=None):
+    def get_features(self, name, image=None, path=""):
 
         if image is None:
             image = cv2.imread(path)
