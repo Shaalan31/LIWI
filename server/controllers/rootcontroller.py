@@ -8,11 +8,11 @@ from siftmodel.sift_model import *
 from multiprocessing import Pool
 from server.httpexceptions.exceptions import *
 from server.utils.writerencoder import *
-from server.models.features import *
 from server.models.writer import *
+from server.views.writervo import *
+from server.httpresponses.errors import *
+from server.httpresponses.messages import *
 import cv2
-import json
-
 
 app = Flask(__name__)
 
@@ -49,6 +49,7 @@ def get_writers():
 
 @app.route("/predict", methods=['POST'])
 def get_prediction():
+    print("New prediction request")
     try:
         if 'captured_image' in request.files:
             # get image from request
@@ -59,11 +60,10 @@ def get_prediction():
 
             # get features of the writers
             writers_ids = request.form['writers_ids']
-            writers_ids = list(map(int, writers_ids[1:len(writers_ids)-1].split(',')))
+            writers_ids = list(map(int, writers_ids[1:len(writers_ids) - 1].split(',')))
             writers = writers_dao.get_features(writers_ids)
 
             # process features to fit classifier
-            label = 1
             # declaring variables for horest
             labels_horest = []
             all_features_horest = []
@@ -74,9 +74,10 @@ def get_prediction():
             all_features_texture = []
             num_training_examples_texture = 0
 
-            #declaring variable for sift
+            # declaring variable for sift
             SDS_train = []
             SOH_train = []
+            writers_lookup_array = []
 
             for writer in writers:
                 # processing horest_features
@@ -101,8 +102,10 @@ def get_prediction():
                                                              num_current_examples_texture * texture_model.get_num_features())))
 
                 # appending sift features
-                SDS_train.append(writer.features.sift_SDS)
-                SOH_train.append(writer.features.sift_SOH)
+                for i in range(len(writer.features.sift_SDS)):
+                    SDS_train.append(np.array([writer.features.sift_SDS[i]]))
+                    SOH_train.append(np.array([writer.features.sift_SOH[i]]))
+                    writers_lookup_array.append(writer.id)
 
             # fit horest classifier
             all_features_horest = np.reshape(all_features_horest,
@@ -127,26 +130,37 @@ def get_prediction():
 
             pool.close()
             pool.join()
-            # predictions = [x.get() for x in async_results]
 
             # used to match the probablity with classes
             horest_classes = horest_model.get_classifier_classes()
-            horest_predictions=async_results[0].get()
-            print(horest_predictions)
+            horest_predictions = async_results[0].get()[0]
+            horest_indecies_sorted = np.argsort(horest_classes, axis=0)
+            sorted_horest_classes = horest_classes[horest_indecies_sorted[::-1]]
+            sorted_horest_predictions = horest_predictions[horest_indecies_sorted[::-1]]
 
             texture_classes = texture_model.get_classifier_classes()
-            texture_predictions=async_results[1].get()
-            print(texture_predictions)
+            texture_predictions = async_results[1].get()[0]
+            texture_indecies_sorted = np.argsort(texture_classes, axis=0)
+            sorted_texture_predictions = texture_predictions[texture_indecies_sorted[::-1]]
 
-            #todo check error here
-            sift_prediction=async_results[2].get()
+            score = sorted_horest_predictions + sorted_texture_predictions
+            prediction_horest_texture = sorted_horest_classes[np.argmax(score)]
+            print(prediction_horest_texture)
+
+            sift_prediction = async_results[2].get()
+            sift_prediction = writers_lookup_array[sift_prediction]
+            score[np.argwhere(sift_prediction)] += (1 / 3)
             print(sift_prediction)
-            # todo get the prediction from the probabilities, by summing them and get max prob
-        return 'success', 200
 
+            final_prediction = int(sorted_horest_classes[np.argmax(score)])
+            print(final_prediction)
+
+            vfunc = np.vectorize(func)
+            writer_predicted = writers[np.where(vfunc(writers)==final_prediction)[0][0]]
+            writer_vo= WriterVo(writer_predicted.id,writer_predicted.name,writer_predicted.username)
+        raise ExceptionHandler(message=HttpMessages.SUCCESS.value, status_code=HttpErrors.SUCCESS.value, data=writer_vo)
     except KeyError as e:
-        return 'error', 404
-
+        raise ExceptionHandler(message=HttpMessages.CONFLICT_PREDICTION.value, status_code=HttpErrors.CONFLICT.value)
 
 @app.route("/setWriters")
 def set_writers():
@@ -232,9 +246,11 @@ def set_writers():
             SOH_train.append(SOH[0].tolist())
 
         writer_horest_features = horest_model.adjust_nan_values(
-            np.reshape(writer_horest_features, (horest_model.num_lines_per_class, horest_model.get_num_features()))).tolist()
+            np.reshape(writer_horest_features,
+                       (horest_model.num_lines_per_class, horest_model.get_num_features()))).tolist()
         writer_texture_features = texture_model.adjust_nan_values(
-            np.reshape(writer_texture_features, (texture_model.num_blocks_per_class, texture_model.get_num_features()))).tolist()
+            np.reshape(writer_texture_features,
+                       (texture_model.num_blocks_per_class, texture_model.get_num_features()))).tolist()
 
         writer = Writer()
         features = Features()
@@ -264,6 +280,7 @@ def set_writers():
 #     print("in mul num")
 #
 #     return num1*num2
-
+def func(writer):
+    return writer.id
 if __name__ == '__main__':
     app.run()
