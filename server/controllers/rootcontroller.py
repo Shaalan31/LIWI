@@ -13,6 +13,7 @@ from server.views.writervo import *
 from server.httpresponses.errors import *
 from server.httpresponses.messages import *
 import cv2
+import json
 
 app = Flask(__name__)
 
@@ -156,11 +157,50 @@ def get_prediction():
             print(final_prediction)
 
             vfunc = np.vectorize(func)
-            writer_predicted = writers[np.where(vfunc(writers)==final_prediction)[0][0]]
-            writer_vo= WriterVo(writer_predicted.id,writer_predicted.name,writer_predicted.username)
+            writer_predicted = writers[np.where(vfunc(writers) == final_prediction)[0][0]]
+            writer_vo = WriterVo(writer_predicted.id, writer_predicted.name, writer_predicted.username)
         raise ExceptionHandler(message=HttpMessages.SUCCESS.value, status_code=HttpErrors.SUCCESS.value, data=writer_vo)
     except KeyError as e:
         raise ExceptionHandler(message=HttpMessages.CONFLICT_PREDICTION.value, status_code=HttpErrors.CONFLICT.value)
+
+
+@app.route("/writer", methods=['POST'])
+def create_writer():
+    print("New create writer request")
+    new_writer = request.get_json()
+    username = new_writer["_username"]
+    writer = Writer()
+    writer.username = username
+    status_code, message = writers_dao.create_writer(writer)
+    raise ExceptionHandler(message=message.value, status_code=status_code.value)
+
+@app.route("/writer",methods=['PUT'])
+def update_writer_features():
+    try:
+        if 'captured_image' in request.files:
+            # get image from request
+            images = request.files['captured_image']
+            filename = str(int(time.time())) + '.jpg'
+            images.save(UPLOAD_FOLDER + filename)
+            training_image = cv2.imread(UPLOAD_FOLDER + filename)
+
+            # get writer
+            writers_id = int(request.form['id'])
+            writer = writers_dao.get_writer(writers_id)
+
+            pool = Pool(3)
+            async_results = []
+            async_results += [pool.apply_async(horest_model.get_features, (training_image))]
+            async_results += [pool.apply_async(texture_model.get_features, (training_image))]
+            async_results += [pool.apply_async(sift_model.get_features, (filename,training_image))]
+
+            pool.close()
+            pool.join()
+
+            status_code, message = writers_dao.update_writer(writer)
+    except KeyError as e:
+        raise ExceptionHandler(message=HttpMessages.NOTFOUND.value, status_code=HttpErrors.NOTFOUND.value)
+
 
 @app.route("/setWriters")
 def set_writers():
@@ -217,7 +257,7 @@ def set_writers():
              "Khaled Hesham", "Karim Hossam",
              "Omar Nasharty", "Rayhana Ayman"]
     # loop on the writers
-    for class_number in range(11, num_classes + 1):
+    for class_number in range(70, num_classes + 1):
         writer_name = names[class_number - 1]
 
         writer_horest_features = []
@@ -282,5 +322,7 @@ def set_writers():
 #     return num1*num2
 def func(writer):
     return writer.id
+
+
 if __name__ == '__main__':
     app.run()
