@@ -22,7 +22,7 @@ writers_dao = Writers(db.get_collection())
 horest_model = HorestWriterIdentification()
 texture_model = TextureWriterIdentification()
 sift_model = SiftModel()
-UPLOAD_FOLDER = 'D:/Uni/Graduation Project/LIWI/uploads/'
+UPLOAD_FOLDER = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/uploads/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.json_encoder = WriterEncoder
 

@@ -13,7 +13,7 @@ class SiftModel:
         self.base_test = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCases/'
         self.first_class = first_class
         self.last_class = last_class
-        self.code_book = pickle.load(open("D:/Uni/Graduation Project/LIWI/siftmodel/centers.pkl", "rb"))
+        self.code_book = pickle.load(open("C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/siftmodel/centers.pkl", "rb"))
         # create needed objects
         self.segmentation = WordSegmentation()
         self.preprocess = Preprocessing()
