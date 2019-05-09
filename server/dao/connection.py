@@ -12,6 +12,7 @@ class Database:
         self.client = pymongo.MongoClient("mongodb://localhost:27017/")
         self.db = None
         self.collection = None
+        self.collection_arabic = None
 
     def create_database(self):
         """
@@ -32,6 +33,9 @@ class Database:
         if "writers" not in collections:
             self.db.create_collection("writers")
 
+        if "writers_arabic" not in collections:
+            self.db.create_collection("writers_arabic")
+
     def connect(self):
         """
         Connect to database
@@ -50,6 +54,11 @@ class Database:
             self.collection = self.db["writers"]
         else:
             print('Collection not created')
+
+        if "writers_arabic" in collections:
+            self.collection_arabic = self.db["writers_arabic"]
+        else:
+            print('Collection Arabic not created')
 
     def get_client(self):
         """
@@ -71,3 +80,10 @@ class Database:
         :return:
         """
         return self.collection
+
+    def get_collection_arabic(self):
+        """
+        Returns arabic collection
+        :return:
+        """
+        return self.collection_arabic

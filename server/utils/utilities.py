@@ -32,8 +32,6 @@ def dict_to_writer(writer_dict):
     features = Features()
     features.horest_features = features_dict["_horest_features"]
     features.texture_feature = features_dict["_texture_feature"]
-    features.average_horest = features_dict["_average_horest"]
-    features.average_texture = features_dict["_average_texture"]
     features.sift_SDS = features_dict["_sift_SDS"]
     features.sift_SOH = features_dict["_sift_SOH"]
 

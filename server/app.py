@@ -26,8 +26,6 @@ def test():
     writers = Writers(db.get_collection())
     writer = Writer()
     features = Features()
-    features.average_horest = np.zeros((1, 18))[0].tolist()
-    features.average_texture = np.zeros((1, 18))[0].tolist()
 
     dummy = np.zeros((1, 18))[0].tolist()
     dummy_SDS = np.ones((1, 300))[0].tolist()
