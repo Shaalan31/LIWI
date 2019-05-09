@@ -86,4 +86,10 @@ class Writers:
         else:
             return HttpErrors.NOTFOUND, HttpMessages.NOWRITERS, None
 
+    def get_writers_count(self):
+        """
+        Get All Writers count
+        :return: Writers Count
+        """
+        return self.collection.count()
 
