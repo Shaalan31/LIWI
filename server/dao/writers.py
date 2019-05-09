@@ -20,7 +20,7 @@ class Writers:
         :param writer: writer model
         :return: HttpErrors, HttpMessages
         """
-        writer_exists = self.collection.find({"_id": writer.id, "_username": writer.username})
+        writer_exists = self.collection.find({"_username": writer.username})
         if writer_exists.count() == 0:
             writer_dict = writer_to_dict(writer)
             self.collection.insert_one(writer_dict)
