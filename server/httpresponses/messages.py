@@ -9,3 +9,6 @@ class HttpMessages(Enum):
     CONFLICT = "Writer already exists"
     CONFLICT_PREDICTION = "Error in prediction"
     NOWRITERS = "No writers found"
+    UPLOADFAIL = "Upload image failed"
+    INVALIDPHONE =  "Phone is invalid"
+    INVALIDNID =  "National ID is invalid"

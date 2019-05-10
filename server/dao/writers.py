@@ -1,7 +1,7 @@
 from server.httpresponses.errors import *
 from server.httpresponses.messages import *
 from server.utils.utilities import *
-from server.models.writers import *
+
 
 class Writers:
     """
@@ -55,7 +55,6 @@ class Writers:
             writer_obj = dict_to_writer(writer[0])
             return writer_obj
         else: return None
-
 
     def get_features(self, writers_ids):
         """

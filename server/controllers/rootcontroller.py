@@ -8,12 +8,10 @@ from siftmodel.sift_model import *
 from multiprocessing import Pool
 from server.httpexceptions.exceptions import *
 from server.utils.writerencoder import *
-from server.models.writer import *
 from server.views.writervo import *
-from server.httpresponses.errors import *
-from server.httpresponses.messages import *
+from server.utils.utilities import *
+import uuid
 import cv2
-import json
 
 app = Flask(__name__)
 
@@ -34,11 +32,6 @@ def handle_invalid_usage(error):
     response.status_code = error.status_code
 
     return response
-
-
-@app.route('/')
-def hello_world():
-    return 'Hello World!'
 
 
 @app.route("/writers")
@@ -164,17 +157,72 @@ def get_prediction():
         raise ExceptionHandler(message=HttpMessages.CONFLICT_PREDICTION.value, status_code=HttpErrors.CONFLICT.value)
 
 
+@app.route("/image", methods=['POST'])
+def upload_image():
+    """
+    API for uploading images
+    request: image: file of the image
+    :parameter: path: query parameter in url to identify the folder to upload in
+    :raise: Exception contains
+            - response message:
+                "OK" for success, "Upload image failed" for any fail in upload
+            - response status code:
+                200 for success, 409 for any fail in upload
+    """
+    try:
+        path = request.args.get('path', None)
+        image = request.files["image"]
+        image_name = str(uuid.uuid1()) + '.jpg'
+        image.save(UPLOAD_FOLDER + path + '/' + image_name)
+
+        raise ExceptionHandler(message=HttpMessages.SUCCESS.value, status_code=HttpErrors.SUCCESS.value, data=image_name)
+    except KeyError as e:
+        raise ExceptionHandler(message=HttpMessages.UPLOADFAIL.value, status_code=HttpErrors.CONFLICT.value)
+
+
 @app.route("/writer", methods=['POST'])
 def create_writer():
-    print("New create writer request")
+    """
+    API for creating a new writer
+    :parameter: request contains
+                - writer name: _name
+                - writer username: _username
+                - image name: _image
+                - address: _address
+                - phone: _phone
+                - national id: _nid
+    :raise: Exception contains
+            - response message:
+                "OK" for success, "Writer already exists" for duplicate username
+            - response status code:
+                200 for success, 409 for duplicate username
+    """
+
+    # request parameters
     new_writer = request.get_json()
-    username = new_writer["_username"]
-    writer = Writer()
-    writer.username = username
-    status_code, message = writers_dao.create_writer(writer)
+
+    status_code, message = validate_writer_request(new_writer)
+    if status_code.value == 200:
+        writer = Writer()
+        writer.name = new_writer["_name"]
+        writer.username = new_writer["_username"]
+        writer.address = new_writer["_address"]
+        writer.phone = new_writer["_phone"]
+        writer.nid = new_writer["_nid"]
+        writer.image = new_writer["_image"]
+        writer.id = writers_dao.get_writers_count() + 2
+
+        status_code, message = writers_dao.create_writer(writer)
+
     raise ExceptionHandler(message=message.value, status_code=status_code.value)
 
-@app.route("/writer",methods=['PUT'])
+
+# @app.route("/profile", methods=['GET'])
+# def get_profile():
+#     writer_id = request.args.get('id', None)
+
+
+@app.route("/writer", methods=['PUT'])
 def update_writer_features():
     try:
         if 'captured_image' in request.files:
@@ -205,7 +253,7 @@ def update_writer_features():
 @app.route("/setWriters")
 def set_writers():
     num_classes = 100
-    id = 0
+
     names = ["Abdul Ahad", "Abdul Ali",
              "Abdul Alim", "Abdul Azim",
              "Abu Abdullah", "Abu Hamza",
@@ -308,20 +356,6 @@ def set_writers():
         print(message.value)
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value)
-
-
-# def addNum(num1,num2):
-#     for i in range(10000000):
-#         continue
-#     print("in add num")
-#     return num1+num2
-#
-# def mulNum(num1,num2):
-#     print("in mul num")
-#
-#     return num1*num2
-def func(writer):
-    return writer.id
 
 
 if __name__ == '__main__':

@@ -1,6 +1,9 @@
 from server.models.writer import *
-from server.models.writers import *
+from server.views.writersvo import *
 from server.models.features import *
+from server.httpresponses.errors import *
+from server.httpresponses.messages import *
+import re
 
 
 def writer_to_dict(writer):
@@ -46,9 +49,44 @@ def dict_to_writers(writer_dict):
     :param writer_dict: dictionary returned from database
     :return: writer object of writers model
     """
-    writer = Writers()
+    writer = WritersVo()
     writer.id = writer_dict["_id"]
     writer.name = writer_dict["_name"]
     writer.username = writer_dict["_username"]
 
     return writer
+
+
+def validate_writer_request(request):
+    """
+    Validate the create writer request regarding phone format, and national ID format
+    :param request:
+    :return: HTTP Error code:
+                - 200 for success
+                - 400 if validation failed
+             HTTP Message:
+                - "OK" for success
+                - "Phone is invalid" for invalid phone format
+                - "National ID is invalid" for invalid National ID format
+    """
+    phone_pattern = re.compile("(01)[0 1 2 5][0-9]{8}")
+    match_phone = phone_pattern.match(request["_phone"])
+
+    nid_pattern = re.compile("(2|3)[0-9][1-9][0-1][1-9][0-3][1-9](01|02|03|04|11|12|13|14|15|16|17|18|19|21|22|23|24|25|26|27|28|29|31|32|33|34|35|88)\d\d\d\d\d")
+    match_nid = nid_pattern.match(request["_nid"])
+
+    if match_phone is None:
+        return HttpErrors.BADREQUEST, HttpMessages.INVALIDPHONE
+    elif match_nid is None:
+        return HttpErrors.BADREQUEST, HttpMessages.INVALIDNID
+    else:
+        return HttpErrors.SUCCESS, HttpMessages.SUCCESS
+
+
+def func(writer):
+    """
+    Function to return attribute writer id
+    :param writer: writer model object
+    :return: attribute id
+    """
+    return writer.id
