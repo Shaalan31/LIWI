@@ -17,6 +17,7 @@ app = Flask(__name__)
 
 db = Database()
 db.connect()
+db.create_collection()
 writers_dao = Writers(db.get_collection())
 horest_model = HorestWriterIdentification()
 texture_model = TextureWriterIdentification()
@@ -73,6 +74,7 @@ def get_prediction():
 
             # get features of the writers
             writers_ids = request.form['writers_ids']
+            # print(writers_ids)
             writers_ids = list(map(int, writers_ids[1:len(writers_ids) - 1].split(',')))
             writers = writers_dao.get_features(writers_ids)
 
@@ -293,16 +295,43 @@ def update_writer_features():
             writers_id = int(request.form['id'])
             writer = writers_dao.get_writer(writers_id)
 
+            # initialization for variables
+            # horest_model.num_lines_per_class= len(writer.features.horest_features)
+            # texture_model.num_blocks_per_class= len(writer.features.texture_feature)
+
+            # get features
             pool = Pool(3)
             async_results = []
-            async_results += [pool.apply_async(horest_model.get_features, (training_image))]
-            async_results += [pool.apply_async(texture_model.get_features, (training_image))]
-            async_results += [pool.apply_async(sift_model.get_features, (filename,training_image))]
+            async_results += [pool.apply_async(horest_model.get_features, (training_image,))]
+            async_results += [pool.apply_async(texture_model.get_features, (training_image,))]
+            async_results += [pool.apply_async(sift_model.get_features, (filename, training_image))]
 
             pool.close()
             pool.join()
+            num_lines, horest_features = async_results[0].get()
+            num_blocks, texture_features = async_results[1].get()
+            SDS, SOH = async_results[2].get()
+
+            # adjust nan
+            horest_features = horest_model.adjust_nan_values(
+                np.reshape(horest_features,
+                           (num_lines, horest_model.get_num_features()))).tolist()
+            texture_features = texture_model.adjust_nan_values(
+                np.reshape(texture_features,
+                           (num_blocks,
+                            texture_model.get_num_features()))).tolist()
+
+            # set features
+            features = writer.features
+            features.horest_features.extend(horest_features)
+            features.texture_feature.extend(texture_features)
+
+            features.sift_SDS.append(SDS[0].tolist())
+            features.sift_SOH.append(SOH[0].tolist())
 
             status_code, message = writers_dao.update_writer(writer)
+            raise ExceptionHandler(message=message.value, status_code=status_code.value)
+
     except KeyError as e:
         raise ExceptionHandler(message=HttpMessages.NOTFOUND.value, status_code=HttpErrors.NOTFOUND.value)
 
@@ -380,10 +409,12 @@ def set_writers():
             image = cv2.imread(filename)
             print('Horest Features')
             # writer_horest_features.append(horest_model.get_features(cv2.imread(filename))[0].tolist())
-            writer_horest_features = np.append(writer_horest_features, horest_model.get_features(image)[0].tolist())
+            _, horest_features = horest_model.get_features(image)
+            writer_horest_features = np.append(writer_horest_features, horest_features[0].tolist())
             print('Texture Features')
             # writer_texture_features.append(texture_model.get_features(cv2.imread(filename))[0].tolist())
-            writer_texture_features = np.append(writer_texture_features, texture_model.get_features(image)[0].tolist())
+            _, texture_features = texture_model.get_features(image)
+            writer_texture_features = np.append(writer_texture_features, texture_features[0].tolist())
             print('Sift Model')
             name = Path(filename).name
             SDS, SOH = sift_model.get_features(name, image=image)
@@ -416,4 +447,4 @@ def set_writers():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='127.0.0.1', port='5000')

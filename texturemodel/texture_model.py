@@ -125,7 +125,7 @@ class TextureWriterIdentification:
         for block in writer_blocks:
             all_features_class = np.append(all_features_class, self.feature_extraction(block))
 
-        return np.reshape(all_features_class, (1, num_blocks * self.num_features))
+        return num_blocks,np.reshape(all_features_class, (1, num_blocks * self.num_features))
 
     def run(self):
 
