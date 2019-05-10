@@ -187,7 +187,7 @@ class HorestWriterIdentification:
         for line in writer_lines:
             all_features_class = np.append(all_features_class, self.feature_extraction(line, image.shape))
 
-        return np.reshape(all_features_class, (1, num_lines * self.num_features))
+        return num_lines,np.reshape(all_features_class, (1, num_lines * self.num_features))
 
     def fit_classifier(self, all_features, labels):
         self.classifier.fit(all_features, labels)
@@ -197,3 +197,4 @@ class HorestWriterIdentification:
 
     def get_num_features(self):
         return self.num_features
+
