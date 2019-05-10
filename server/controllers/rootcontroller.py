@@ -178,109 +178,6 @@ def get_prediction():
         raise ExceptionHandler(message=HttpMessages.CONFLICT_PREDICTION.value, status_code=HttpErrors.CONFLICT.value)
 
 
-@app.route("/writer", methods=['POST'])
-def create_writer():
-    """
-    API for creating a new writer
-    :parameter: request contains
-                - writer name: _name
-                - writer username: _username
-                - image name: _image
-                - address: _address
-                - phone: _phone
-                - national id: _nid
-    :raise: Exception contains
-            - response message:
-                "OK" for success, "Writer already exists" for duplicate username
-            - response status code:
-                200 for success, 409 for duplicate username
-    """
-    # request parameters
-    new_writer = request.get_json()
-
-    status_code, message = validate_writer_request(new_writer)
-    if status_code.value == 200:
-        writer = Writer()
-        writer.name = new_writer["_name"]
-        writer.username = new_writer["_username"]
-        writer.address = new_writer["_address"]
-        writer.phone = new_writer["_phone"]
-        writer.nid = new_writer["_nid"]
-        writer.image = new_writer["_image"]
-        writer.id = writers_dao.get_writers_count() + 1
-
-        status_code, message = writers_dao.create_writer(writer)
-
-    raise ExceptionHandler(message=message.value, status_code=status_code.value)
-
-
-@app.route("/profile", methods=['GET'])
-def get_profile():
-    """
-    API to get writer's profile
-    :raise: Exception containing:
-            message:
-            - "OK" for success
-            - "Writer is not found" if writer does not exist
-            status_code:
-            - 200 for success
-            - 404 if writer does not exist
-            data:
-            - ProfileVo object containing writer's: id, name, username, address, phone, nid
-            - None if writer does not exist
-    """
-    writer_id = request.args.get('id', None)
-
-    status_code, message, profile_vo = writers_dao.get_writer_profile(writer_id)
-
-    raise ExceptionHandler(message=message.value, status_code=status_code.value, data=profile_vo)
-
-
-@app.route("/image/<path>", methods=['POST'])
-def upload_image(path):
-    """
-    API for uploading images
-    request: image: file of the image
-    :param: path: path variable to identify the folder to upload in
-            - writers: for writers
-            - testing: for testing
-            - training: for training
-    :raise: Exception contains
-            - response message:
-                "OK" for success, "Upload image failed" for any fail in upload
-            - response status code:
-                200 for success, 409 for any fail in upload
-    """
-    try:
-        path = request.view_args['path']
-        image = request.files["image"]
-        image_name = str(uuid.uuid1()) + '.jpg'
-        image.save(UPLOAD_FOLDER + path + '/' + image_name)
-
-        raise ExceptionHandler(message=HttpMessages.SUCCESS.value, status_code=HttpErrors.SUCCESS.value, data=image_name)
-    except KeyError as e:
-        raise ExceptionHandler(message=HttpMessages.UPLOADFAIL.value, status_code=HttpErrors.CONFLICT.value)
-
-
-@app.route("/image/<path>/<filename>", methods=['GET'])
-def get_image(path, filename):
-    """
-    API to get the image
-    :param path: path variable for folder to get the image from
-                - writers: for writers
-                - testing: for testing
-                - training: for training
-    :param filename: path variable for image name
-    :return:
-    """
-    try:
-        path = request.view_args['path'] + '/' + request.view_args['filename']
-
-        return send_from_directory(UPLOAD_FOLDER, path)
-    except:
-        raise ExceptionHandler(message=HttpMessages.IMAGENOTFOUND.value, status_code=HttpErrors.NOTFOUND.value)
-
-
 @app.route("/writer", methods=['PUT'])
 def update_writer_features():
     try:
@@ -336,60 +233,135 @@ def update_writer_features():
         raise ExceptionHandler(message=HttpMessages.NOTFOUND.value, status_code=HttpErrors.NOTFOUND.value)
 
 
+@app.route("/writer", methods=['POST'])
+def create_writer():
+    """
+    API for creating a new writer
+    :parameter: request contains
+                - writer name: _name
+                - writer username: _username
+                - image name: _image
+                - address: _address
+                - phone: _phone
+                - national id: _nid
+                - birthday: _birthday
+    :raise: Exception contains
+            - response message:
+                "OK" for success, "Writer already exists" for duplicate username
+            - response status code:
+                200 for success, 409 for duplicate username
+    """
+    # request parameters
+    new_writer = request.get_json()
+
+    status_code, message = validate_writer_request(new_writer)
+    if status_code.value == 200:
+        writer = Writer()
+        writer.name = new_writer["_name"]
+        writer.username = new_writer["_username"]
+        writer.address = new_writer["_address"]
+        writer.phone = new_writer["_phone"]
+        writer.nid = new_writer["_nid"]
+        writer.image = new_writer["_image"]
+        writer.birthday = new_writer["_birthday"]
+        writer.id = writers_dao.get_writers_count() + 2
+
+        status_code, message = writers_dao.create_writer(writer)
+
+    raise ExceptionHandler(message=message.value, status_code=status_code.value)
+
+
+@app.route("/profile", methods=['GET'])
+def get_profile():
+    """
+    API to get writer's profile
+    :raise: Exception containing:
+            message:
+            - "OK" for success
+            - "Writer is not found" if writer does not exist
+            status_code:
+            - 200 for success
+            - 404 if writer does not exist
+            data:
+            - ProfileVo object containing writer's: id, name, username, address, phone, nid, birthday, image name
+            - None if writer does not exist
+    """
+    writer_id = request.args.get('id', None)
+
+    status_code, message, profile_vo = writers_dao.get_writer_profile(writer_id)
+
+    raise ExceptionHandler(message=message.value, status_code=status_code.value, data=profile_vo)
+
+
+@app.route("/image/<path>", methods=['POST'])
+def upload_image(path):
+    """
+    API for uploading images
+    request: image: file of the image
+    :param: path: path variable to identify the folder to upload in
+            - writers: for writers
+            - testing: for testing
+            - training: for training
+    :raise: Exception contains
+            - response message:
+                "OK" for success, "Upload image failed" for any fail in upload
+            - response status code:
+                200 for success, 409 for any fail in upload
+    """
+    try:
+        path = request.view_args['path']
+        image = request.files["image"]
+        image_name = str(uuid.uuid1()) + '.jpg'
+        image.save(UPLOAD_FOLDER + path + '/' + image_name)
+
+        raise ExceptionHandler(message=HttpMessages.SUCCESS.value, status_code=HttpErrors.SUCCESS.value, data=image_name)
+    except KeyError as e:
+        raise ExceptionHandler(message=HttpMessages.UPLOADFAIL.value, status_code=HttpErrors.CONFLICT.value)
+
+
+@app.route("/image/<path>/<filename>", methods=['GET'])
+def get_image(path, filename):
+    """
+    API to get the image
+    :param path: path variable for folder to get the image from
+                - writers: for writers
+                - testing: for testing
+                - training: for training
+    :param filename: path variable for image name
+    :return:
+    """
+    try:
+        path = request.view_args['path'] + '/' + request.view_args['filename']
+
+        return send_from_directory(UPLOAD_FOLDER, path)
+    except:
+        raise ExceptionHandler(message=HttpMessages.IMAGENOTFOUND.value, status_code=HttpErrors.NOTFOUND.value)
+
+
 @app.route("/setWriters")
 def set_writers():
     num_classes = 100
 
-    names = ["Abdul Ahad", "Abdul Ali",
-             "Abdul Alim", "Abdul Azim",
-             "Abu Abdullah", "Abu Hamza",
-             "Ahmed Tijani", "Ali Reza",
-             "Aman Ali", "Anisur Rahman",
-             "Azizur Rahman", "Badr al-Din",
-             "Baha' al-Din", "Barkat Ali",
-             "Burhan al-Din", "Fakhr al-Din",
-             "Fazl UrRahman", "Fazlul Karim",
-             "Fazlul Haq", "Ghulam Faruq",
-             "Ghiyath al-Din", "Ghulam Mohiuddin",
-             "Habib ElRahman", "Hamid al-Din",
-             "Hibat Allah", "Husam ad-Din",
-             "Ikhtiyar al-Din", "Imad al-Din",
-             "Izz al-Din", "Jalal ad-Din",
-             "Jamal ad-Din", "Kamal ad-Din",
-             "Lutfur Rahman", "Mizanur Rahman",
-             "Mohammad Taqi", "Nasir al-Din",
-             "Seif ilislam", "Sadr al-Din",
-             "Sddam Hussein", "Samar Gamal",
-             "May Ahmed", "Ahmed Khairy",
-             "Omar Ali", "Salma Ibrahim",
-             "Ahmed Gamal", "Hadeer Hossam",
-             "Hanaa Ahmed", "Gamal Saad",
-             "Bisa Dewidar", "Ahmed Said",
-             "Nachwa Ahmed", "Ezz Farhan",
-             "Nourhan Farhan", "Mariam Farhan",
-             "Mouhab Farhan", "Sherif Ahmed",
-             "Noha Ahmed", "Yasmine Sherif",
-             "Eslam Sherif", "Ahmed Sherif",
-             "Mohamed Ahmed", "Zeinab Khairy",
-             "Khaled Ali", "Rana Ali",
-             "Ali Shaalan", "Ahmed Youssry",
-             "AbdelRahman Nasser", "Youssra Hussein",
-             "Ingy Alaa", "Rana Afifi",
-             "Nour Attya", "Amani Tarek",
-             "Salma Ahmed", "Iman Fouad",
-             "Karim ElRashidy", "Ziad Mansour",
-             "Mohamed Salah", "Anas ElShazly",
-             "Hazem Aly", "Youssef Maraghy",
-             "Ebram Hossam", "Mohamed Nour",
-             "Mohamed Ossama", "Hussein Hosny",
-             "Ahmed Samy", "Youmna Helmy",
-             "Kareem Haggag", "Nour Yasser",
-             "Farah Mohamed", "Ahmed Hisham",
-             "Omar Nashaat", "Mohamed Yasser",
-             "Sara Hassan", "Ahmed keraidy",
-             "Magdy Hafez", "Waleed Mostafa",
-             "Khaled Hesham", "Karim Hossam",
-             "Omar Nasharty", "Rayhana Ayman"]
+    names = ["Abdul Ahad", "Abdul Ali", "Abdul Alim", "Abdul Azim", "Abu Abdullah", "Abu Hamza", "Ahmed Tijani", "Ali Reza",
+             "Aman Ali", "Anisur Rahman", "Azizur Rahman", "Badr al-Din", "Baha' al-Din", "Barkat Ali", "Burhan al-Din", "Fakhr al-Din",
+             "Fazl UrRahman", "Fazlul Karim", "Fazlul Haq", "Ghulam Faruq", "Ghiyath al-Din", "Ghulam Mohiuddin", "Habib ElRahman", "Hamid al-Din",
+             "Hibat Allah", "Husam ad-Din", "Ikhtiyar al-Din", "Imad al-Din", "Izz al-Din", "Jalal ad-Din", "Jamal ad-Din", "Kamal ad-Din",
+             "Lutfur Rahman", "Mizanur Rahman", "Mohammad Taqi", "Nasir al-Din", "Seif ilislam", "Sadr al-Din", "Sddam Hussein", "Samar Gamal",
+             "May Ahmed", "Ahmed Khairy", "Omar Ali", "Salma Ibrahim", "Ahmed Gamal", "Hadeer Hossam", "Hanaa Ahmed", "Gamal Saad",
+             "Bisa Dewidar", "Ahmed Said", "Nachwa Ahmed", "Ezz Farhan", "Nourhan Farhan", "Mariam Farhan", "Mouhab Farhan", "Sherif Ahmed",
+             "Noha Ahmed", "Yasmine Sherif", "Eslam Sherif", "Ahmed Sherif", "Mohamed Ahmed", "Zeinab Khairy", "Khaled Ali", "Rana Ali", "Ali Shaalan", "Ahmed Youssry",
+             "AbdelRahman Nasser", "Youssra Hussein", "Ingy Alaa", "Rana Afifi", "Nour Attya", "Amani Tarek", "Salma Ahmed", "Iman Fouad", "Karim ElRashidy", "Ziad Mansour",
+             "Mohamed Salah", "Anas ElShazly", "Hazem Aly", "Youssef Maraghy", "Ebram Hossam", "Mohamed Nour", "Mohamed Ossama", "Hussein Hosny",
+             "Ahmed Samy", "Youmna Helmy", "Kareem Haggag", "Nour Yasser", "Farah Mohamed", "Ahmed Hisham", "Omar Nashaat", "Mohamed Yasser",
+             "Sara Hassan", "Ahmed keraidy", "Magdy Hafez", "Waleed Mostafa", "Khaled Hesham", "Karim Hossam", "Omar Nasharty", "Rayhana Ayman"]
+
+    addresses = ["36 El Salam St. - El Saada City - Shoubra El Khima - Cairo - Egypt",
+                 "Mahdi St., Azbakiya, Cairo",
+                 "125 Shoubra St. -Cairo - Egypt",
+                 "67 Mohamad El Nadi Street, Cairo Egypt",
+                 "12 Sherif Basha El Kbeer ST, Abdeen"]
+
+    birthdays = ["4/9/1974", "8/3/1984", "3/24/1985", "1/24/1993", "11/10/1991"]
     # loop on the writers
     for class_number in range(70, num_classes + 1):
         writer_name = names[class_number - 1]

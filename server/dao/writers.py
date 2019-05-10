@@ -1,5 +1,3 @@
-from server.httpresponses.errors import *
-from server.httpresponses.messages import *
 from server.utils.utilities import *
 
 
@@ -104,7 +102,7 @@ class Writers:
                 - "Writer not found" if writer is not found
                 ProfileVo Object or None if writer is not found
         """
-        writer = self.collection.find({"_id": int(writer_id)}, {"_id": 1, "_name": 1, "_username": 1, "_address": 1, "_phone": 1, "_nid": 1, "_image": 1})
+        writer = self.collection.find({"_id": int(writer_id)}, {"_id": 1, "_name": 1, "_username": 1, "_address": 1, "_phone": 1, "_nid": 1, "_image": 1, "_birthday": 1})
         if writer.count() == 1:
             profile_obj = dict_to_profile(writer[0])
             return HttpErrors.SUCCESS, HttpMessages.SUCCESS, profile_obj

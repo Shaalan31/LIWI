@@ -13,6 +13,7 @@ class ProfileVo:
         self._phone = None
         self._nid = None
         self._image = None
+        self._birthday = None
 
     @property
     def id(self):
@@ -42,6 +43,10 @@ class ProfileVo:
     def image(self):
         return self._image
 
+    @property
+    def birthday(self):
+        return self._birthday
+
     @id.setter
     def id(self, value):
         self._id = value
@@ -69,3 +74,7 @@ class ProfileVo:
     @image.setter
     def image(self, value):
         self._image = value
+
+    @birthday.setter
+    def birthday(self, value):
+        self._birthday = value

@@ -58,6 +58,7 @@ def dict_to_profile(writer_dict):
     profile.phone = writer_dict["_phone"]
     profile.nid = writer_dict["_nid"]
     profile.image = writer_dict["_image"]
+    profile.birthday = writer_dict["_birthday"]
 
     return profile
 

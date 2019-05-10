@@ -20,6 +20,7 @@ class Writer:
         self._phone = None
         self._nid = None
         self._image = None
+        self._birthday = None
         self._features = Features()
 
     @property
@@ -49,6 +50,10 @@ class Writer:
     @property
     def image(self):
         return self._image
+
+    @property
+    def birthday(self):
+        return self._birthday
 
     @property
     def features(self):
@@ -81,6 +86,10 @@ class Writer:
     @image.setter
     def image(self, value):
         self._image = value
+
+    @birthday.setter
+    def birthday(self, value):
+        self._birthday = value
 
     @features.setter
     def features(self, value):
