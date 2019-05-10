@@ -1,5 +1,5 @@
 import time
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from server.dao.connection import Database
 from server.dao.writers import Writers
 from texturemodel.texture_model import *
@@ -28,6 +28,12 @@ app.json_encoder = WriterEncoder
 
 @app.errorhandler(ExceptionHandler)
 def handle_invalid_usage(error):
+    """
+    Error Handler for class Exception Handler
+    :param error:
+    :return: response containing:
+             status code, message, and data
+    """
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
 
@@ -36,6 +42,19 @@ def handle_invalid_usage(error):
 
 @app.route("/writers")
 def get_writers():
+    """
+    API to get all writers
+    :raise: Exception containing:
+            message:
+            - "OK" for success
+            - "No writers found"  if there is no writer
+            status_code:
+            - 200 for success
+            - 404 if there is no writer
+            data:
+            - list of WritersVo: each writervo contains id, name, username
+            - None if there is no writer
+    """
     status_code, message, data = writers_dao.get_writers()
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value, data=data)
@@ -157,29 +176,6 @@ def get_prediction():
         raise ExceptionHandler(message=HttpMessages.CONFLICT_PREDICTION.value, status_code=HttpErrors.CONFLICT.value)
 
 
-@app.route("/image", methods=['POST'])
-def upload_image():
-    """
-    API for uploading images
-    request: image: file of the image
-    :parameter: path: query parameter in url to identify the folder to upload in
-    :raise: Exception contains
-            - response message:
-                "OK" for success, "Upload image failed" for any fail in upload
-            - response status code:
-                200 for success, 409 for any fail in upload
-    """
-    try:
-        path = request.args.get('path', None)
-        image = request.files["image"]
-        image_name = str(uuid.uuid1()) + '.jpg'
-        image.save(UPLOAD_FOLDER + path + '/' + image_name)
-
-        raise ExceptionHandler(message=HttpMessages.SUCCESS.value, status_code=HttpErrors.SUCCESS.value, data=image_name)
-    except KeyError as e:
-        raise ExceptionHandler(message=HttpMessages.UPLOADFAIL.value, status_code=HttpErrors.CONFLICT.value)
-
-
 @app.route("/writer", methods=['POST'])
 def create_writer():
     """
@@ -197,7 +193,6 @@ def create_writer():
             - response status code:
                 200 for success, 409 for duplicate username
     """
-
     # request parameters
     new_writer = request.get_json()
 
@@ -210,16 +205,78 @@ def create_writer():
         writer.phone = new_writer["_phone"]
         writer.nid = new_writer["_nid"]
         writer.image = new_writer["_image"]
-        writer.id = writers_dao.get_writers_count() + 2
+        writer.id = writers_dao.get_writers_count() + 1
 
         status_code, message = writers_dao.create_writer(writer)
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value)
 
 
-# @app.route("/profile", methods=['GET'])
-# def get_profile():
-#     writer_id = request.args.get('id', None)
+@app.route("/profile", methods=['GET'])
+def get_profile():
+    """
+    API to get writer's profile
+    :raise: Exception containing:
+            message:
+            - "OK" for success
+            - "Writer is not found" if writer does not exist
+            status_code:
+            - 200 for success
+            - 404 if writer does not exist
+            data:
+            - ProfileVo object containing writer's: id, name, username, address, phone, nid
+            - None if writer does not exist
+    """
+    writer_id = request.args.get('id', None)
+
+    status_code, message, profile_vo = writers_dao.get_writer_profile(writer_id)
+
+    raise ExceptionHandler(message=message.value, status_code=status_code.value, data=profile_vo)
+
+
+@app.route("/image/<path>", methods=['POST'])
+def upload_image(path):
+    """
+    API for uploading images
+    request: image: file of the image
+    :param: path: path variable to identify the folder to upload in
+            - writers: for writers
+            - testing: for testing
+            - training: for training
+    :raise: Exception contains
+            - response message:
+                "OK" for success, "Upload image failed" for any fail in upload
+            - response status code:
+                200 for success, 409 for any fail in upload
+    """
+    try:
+        path = request.view_args['path']
+        image = request.files["image"]
+        image_name = str(uuid.uuid1()) + '.jpg'
+        image.save(UPLOAD_FOLDER + path + '/' + image_name)
+
+        raise ExceptionHandler(message=HttpMessages.SUCCESS.value, status_code=HttpErrors.SUCCESS.value, data=image_name)
+    except KeyError as e:
+        raise ExceptionHandler(message=HttpMessages.UPLOADFAIL.value, status_code=HttpErrors.CONFLICT.value)
+
+
+@app.route("/image/<path>/<filename>", methods=['GET'])
+def get_image(path, filename):
+    """
+    API to get the image
+    :param path: path variable for folder to get the image from
+                - writers: for writers
+                - testing: for testing
+                - training: for training
+    :param filename: path variable for image name
+    :return:
+    """
+    try:
+        path = request.view_args['path'] + '/' + request.view_args['filename']
+
+        return send_from_directory(UPLOAD_FOLDER, path)
+    except:
+        raise ExceptionHandler(message=HttpMessages.IMAGENOTFOUND.value, status_code=HttpErrors.NOTFOUND.value)
 
 
 @app.route("/writer", methods=['PUT'])

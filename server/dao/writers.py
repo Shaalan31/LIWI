@@ -50,7 +50,7 @@ class Writers:
         :param writer_id: int
         :return: writer model if it exists, if it does not return none
         """
-        writer = self.collection.find({"_id": writer_id})
+        writer = self.collection.find({"_id": writer_id}, {"_id": 1, "_name": 1, "_username": 1, "_features": 1})
         if writer.count() == 1:
             writer_obj = dict_to_writer(writer[0])
             return writer_obj
@@ -91,4 +91,23 @@ class Writers:
         :return: Writers Count
         """
         return self.collection.count()
+
+    def get_writer_profile(self, writer_id):
+        """
+        Get Writer's Profile from database
+        :param writer_id: writer id
+        :return: HttpErrors:
+                - 200 for success
+                - 404 for not found
+                HttpMessages:
+                - "OK" for success
+                - "Writer not found" if writer is not found
+                ProfileVo Object or None if writer is not found
+        """
+        writer = self.collection.find({"_id": int(writer_id)}, {"_id": 1, "_name": 1, "_username": 1, "_address": 1, "_phone": 1, "_nid": 1, "_image": 1})
+        if writer.count() == 1:
+            profile_obj = dict_to_profile(writer[0])
+            return HttpErrors.SUCCESS, HttpMessages.SUCCESS, profile_obj
+        else:
+            return HttpErrors.NOTFOUND, HttpMessages.NOTFOUND, None
 

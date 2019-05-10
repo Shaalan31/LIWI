@@ -12,3 +12,4 @@ class HttpMessages(Enum):
     UPLOADFAIL = "Upload image failed"
     INVALIDPHONE =  "Phone is invalid"
     INVALIDNID =  "National ID is invalid"
+    IMAGENOTFOUND = "Image is not found"

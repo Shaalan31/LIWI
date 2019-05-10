@@ -1,5 +1,6 @@
 from server.models.writer import *
 from server.views.writersvo import *
+from server.views.profilevo import *
 from server.models.features import *
 from server.httpresponses.errors import *
 from server.httpresponses.messages import *
@@ -41,6 +42,24 @@ def dict_to_writer(writer_dict):
     writer.features = features
 
     return writer
+
+
+def dict_to_profile(writer_dict):
+    """
+    Convert writer dictionary into ProfileVo object
+    :param writer_dict: dictionary contains writer's attributes
+    :return: ProfileVo object
+    """
+    profile = ProfileVo()
+    profile.id = writer_dict["_id"]
+    profile.name = writer_dict["_name"]
+    profile.username = writer_dict["_username"]
+    profile.address = writer_dict["_address"]
+    profile.phone = writer_dict["_phone"]
+    profile.nid = writer_dict["_nid"]
+    profile.image = writer_dict["_image"]
+
+    return profile
 
 
 def dict_to_writers(writer_dict):
