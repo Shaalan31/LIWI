@@ -1,4 +1,4 @@
-class Writers:
+class WritersVo:
     """
     Class for writers model, to return it to the application
     """
