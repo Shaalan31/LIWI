@@ -146,19 +146,18 @@ class Som_iam:
 
 class Som_KHATT:
 
-    def __init__(self,new = False):
-        config_file = open(config_file_path, "r")
-        #Array of configurations
-        config = config_file.read().split(',')
+    def __init__(self,new = True):
 
         self.descriptors = None
         self.load_descriptors()
+        print(self.descriptors.shape)
         self.sofm = None
+        self.centers = None
         if not new:
             self.init_sofm()
         else:
             self.read_sofm()
-
+        print(self.sofm)
 
 
     # load descriptors if already done before
@@ -168,7 +167,7 @@ class Som_KHATT:
 
 
     def init_sofm(self,lr=0.5):
-        self.sofm = algorithms.SOFM(n_inputs=128,n_outputs=430,step=lr,learning_radius=0,weight='init_pca',shuffle_data=True,verbose =True)
+        self.sofm = algorithms.SOFM(n_inputs=128,n_outputs=300,step=lr,learning_radius=0,weight='init_pca',shuffle_data=True,verbose =True)
         with open('sofm_KHATT.pkl', 'wb') as output:
             pickle.dump(self.sofm, output, pickle.HIGHEST_PROTOCOL)
 
@@ -182,19 +181,22 @@ class Som_KHATT:
             pickle.dump(self.sofm, output, pickle.HIGHEST_PROTOCOL)
 
 
-    def generate_codebook(self,sofm):
-        centers=(sofm.weight).transpose()
+    def generate_codebook(self):
+        self.centers=(self.sofm.weight).transpose()
         with open('centers_KHATT.pkl', 'wb') as output:
-            pickle.dump(centers, output, pickle.HIGHEST_PROTOCOL)
-        print(centers)
-        print("centers shape are : ",centers.shape)
+            pickle.dump(self.centers, output, pickle.HIGHEST_PROTOCOL)
+        print(self.centers)
+        print("centers shape are : ",self.centers.shape)
 
 
     def read_codebook(self):
         with open('centers_KHATT.pkl', 'rb') as input:
-            centers = pickle.load(input)
-        return centers
+            self.centers = pickle.load(input)
 
+
+    def train_loop(self,ep=1):
+        self.train_sofm(ep)
+        self.generate_codebook()
 
     # def codebook_generation(self,num_batches, sofm, epoch):
     #
