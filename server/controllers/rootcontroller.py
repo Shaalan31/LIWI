@@ -1,3 +1,4 @@
+import time
 from flask import Flask, request, jsonify, send_from_directory
 from server.dao.connection import Database
 from server.dao.writers import Writers
@@ -10,7 +11,6 @@ from server.utils.writerencoder import *
 from server.views.writervo import *
 from server.utils.utilities import *
 import uuid
-import time
 import cv2
 
 app = Flask(__name__)
@@ -22,7 +22,7 @@ writers_dao = Writers(db.get_collection())
 horest_model = HorestWriterIdentification()
 texture_model = TextureWriterIdentification()
 sift_model = SiftModel()
-UPLOAD_FOLDER = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/uploads/'
+UPLOAD_FOLDER = 'D:/Uni/Graduation Project/LIWI/uploads/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.json_encoder = WriterEncoder
 
@@ -77,13 +77,14 @@ def get_prediction():
     print("New prediction request")
     try:
         # get image from request
-        filename = request.get_json['_filename']
-        testing_image = cv2.imread(UPLOAD_FOLDER+'testing/' + filename)
+        filename = request.get_json()['_filename']
+        testing_image = cv2.imread(UPLOAD_FOLDER + 'testing/' + filename)
 
         # get features of the writers
-        writers_ids = request.get_json['writers_ids']
-        # print(writers_ids)
-        writers_ids = list(map(int, writers_ids[1:len(writers_ids) - 1].split(',')))
+        writers_ids = request.get_json()['writers_ids']
+        if len(writers_ids) > 30:
+            raise ExceptionHandler(message=HttpMessages.MAXIMUM_EXCEEDED.value,
+                                   status_code=HttpErrors.BADREQUEST.value)
         writers = writers_dao.get_features(writers_ids)
 
         # process features to fit classifier
@@ -154,34 +155,47 @@ def get_prediction():
         pool.close()
         pool.join()
 
+        predictions = []
         # used to match the probablity with classes
         horest_classes = horest_model.get_classifier_classes()
         horest_predictions = async_results[0].get()[0]
+        predictions.append(horest_classes[np.argmax(horest_predictions)])
         horest_indecies_sorted = np.argsort(horest_classes, axis=0)
         sorted_horest_classes = horest_classes[horest_indecies_sorted[::-1]]
         sorted_horest_predictions = horest_predictions[horest_indecies_sorted[::-1]]
 
         texture_classes = texture_model.get_classifier_classes()
         texture_predictions = async_results[1].get()[0]
+        predictions.append(texture_classes[np.argmax(texture_predictions)])
         texture_indecies_sorted = np.argsort(texture_classes, axis=0)
         sorted_texture_predictions = texture_predictions[texture_indecies_sorted[::-1]]
 
         score = sorted_horest_predictions + sorted_texture_predictions
         prediction_horest_texture = sorted_horest_classes[np.argmax(score)]
-        print(prediction_horest_texture)
 
         sift_prediction = async_results[2].get()
         sift_prediction = writers_lookup_array[sift_prediction]
+        predictions.append(sift_prediction)
+
         score[np.argwhere(sift_prediction)] += (1 / 3)
-        print(sift_prediction)
 
         final_prediction = int(sorted_horest_classes[np.argmax(score)])
-        print(final_prediction)
 
+        writers_predicted = []
         vfunc = np.vectorize(func)
         writer_predicted = writers[np.where(vfunc(writers) == final_prediction)[0][0]]
         writer_vo = WriterVo(writer_predicted.id, writer_predicted.name, writer_predicted.username)
-        raise ExceptionHandler(message=HttpMessages.SUCCESS.value, status_code=HttpErrors.SUCCESS.value, data=writer_vo)
+        writers_predicted.append(writer_vo)
+
+        predictions = np.unique(predictions)
+        if len(predictions) > 1:
+            for prediction in predictions:
+                if prediction!=final_prediction:
+                    writer_predicted = writers[np.where(vfunc(writers) == prediction)[0][0]]
+                    writer_vo = WriterVo(writer_predicted.id, writer_predicted.name, writer_predicted.username)
+                    writers_predicted.append(writer_vo)
+
+        raise ExceptionHandler(message=HttpMessages.SUCCESS.value, status_code=HttpErrors.SUCCESS.value, data=writers_predicted)
     except KeyError as e:
         raise ExceptionHandler(message=HttpMessages.CONFLICT_PREDICTION.value, status_code=HttpErrors.CONFLICT.value)
 
@@ -197,15 +211,19 @@ def create_writer():
                 - address: _address
                 - phone: _phone
                 - national id: _nid
-                - birthday: _birthday
     :raise: Exception contains
             - response message:
                 "OK" for success, "Writer already exists" for duplicate username
             - response status code:
                 200 for success, 409 for duplicate username
     """
+
     # request parameters
     new_writer = request.get_json()
+    language = request.args.get('lang', None)
+    dao=writers_dao
+    if language == "ar":
+        dao = Writers(db.get_collection_arabic())
 
     status_code, message = validate_writer_request(new_writer)
     if status_code.value == 200:
@@ -216,17 +234,88 @@ def create_writer():
         writer.phone = new_writer["_phone"]
         writer.nid = new_writer["_nid"]
         writer.image = new_writer["_image"]
-        writer.birthday = new_writer["_birthday"]
-        writer.id = writers_dao.get_writers_count() + 1
+        writer.id = dao.get_writers_count() + 1
 
-        status_code, message = writers_dao.create_writer(writer)
+        status_code, message = dao.create_writer(writer)
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value)
 
 
+@app.route("/profile", methods=['GET'])
+def get_profile():
+    """
+    API to get writer's profile
+    :raise: Exception containing:
+            message:
+            - "OK" for success
+            - "Writer is not found" if writer does not exist
+            status_code:
+            - 200 for success
+            - 404 if writer does not exist
+            data:
+            - ProfileVo object containing writer's: id, name, username, address, phone, nid
+            - None if writer does not exist
+    """
+    writer_id = request.args.get('id', None)
+
+    language = request.args.get('lang', None)
+    dao=writers_dao
+    if language == "ar":
+        dao = Writers(db.get_collection_arabic())
+
+    status_code, message, profile_vo = dao.get_writer_profile(writer_id)
+
+    raise ExceptionHandler(message=message.value, status_code=status_code.value, data=profile_vo)
+
+
+@app.route("/image/<path>", methods=['POST'])
+def upload_image(path):
+    """
+    API for uploading images
+    request: image: file of the image
+    :param: path: path variable to identify the folder to upload in
+            - writers: for writers
+            - testing: for testing
+            - training: for training
+    :raise: Exception contains
+            - response message:
+                "OK" for success, "Upload image failed" for any fail in upload
+            - response status code:
+                200 for success, 409 for any fail in upload
+    """
+    try:
+        path = request.view_args['path']
+        image = request.files["image"]
+        image_name = str(uuid.uuid1()) + '.jpg'
+        image.save(UPLOAD_FOLDER + path + '/' + image_name)
+
+        raise ExceptionHandler(message=HttpMessages.SUCCESS.value, status_code=HttpErrors.SUCCESS.value,
+                               data=image_name)
+    except KeyError as e:
+        raise ExceptionHandler(message=HttpMessages.UPLOADFAIL.value, status_code=HttpErrors.CONFLICT.value)
+
+
+@app.route("/image/<path>/<filename>", methods=['GET'])
+def get_image(path, filename):
+    """
+    API to get the image
+    :param path: path variable for folder to get the image from
+                - writers: for writers
+                - testing: for testing
+                - training: for training
+    :param filename: path variable for image name
+    :return:
+    """
+    try:
+        path = request.view_args['path'] + '/' + request.view_args['filename']
+
+        return send_from_directory(UPLOAD_FOLDER, path)
+    except:
+        raise ExceptionHandler(message=HttpMessages.IMAGENOTFOUND.value, status_code=HttpErrors.NOTFOUND.value)
+
+
 @app.route("/writer", methods=['PUT'])
 def update_writer_features():
-
     """
     API for updating a writer features
     :parameter: request contains
@@ -240,11 +329,11 @@ def update_writer_features():
     """
     try:
         # get image from request
-        filename = request.get_json['_filename']
-        training_image = cv2.imread(UPLOAD_FOLDER+'training/' + filename)
+        filename = request.get_json()['_filename']
+        training_image = cv2.imread(UPLOAD_FOLDER + 'training/' + filename)
 
         # get writer
-        writer_id = int(request.get_json['_id'])
+        writer_id = int(request.get_json()['_id'])
         writer = writers_dao.get_writer(writer_id)
 
         # initialization for variables
@@ -288,81 +377,62 @@ def update_writer_features():
         raise ExceptionHandler(message=HttpMessages.NOTFOUND.value, status_code=HttpErrors.NOTFOUND.value)
 
 
-@app.route("/profile", methods=['GET'])
-def get_profile():
-    """
-    API to get writer's profile
-    :raise: Exception containing:
-            message:
-            - "OK" for success
-            - "Writer is not found" if writer does not exist
-            status_code:
-            - 200 for success
-            - 404 if writer does not exist
-            data:
-            - ProfileVo object containing writer's: id, name, username, address, phone, nid, birthday, image name
-            - None if writer does not exist
-    """
-    writer_id = request.args.get('id', None)
-
-    status_code, message, profile_vo = writers_dao.get_writer_profile(writer_id)
-
-    raise ExceptionHandler(message=message.value, status_code=status_code.value, data=profile_vo)
-
-
-@app.route("/image/<path>", methods=['POST'])
-def upload_image(path):
-    """
-    API for uploading images
-    request: image: file of the image
-    :param: path: path variable to identify the folder to upload in
-            - writers: for writers
-            - testing: for testing
-            - training: for training
-    :raise: Exception contains
-            - response message:
-                "OK" for success, "Upload image failed" for any fail in upload
-            - response status code:
-                200 for success, 409 for any fail in upload
-    """
-    try:
-        path = request.view_args['path']
-        image = request.files["image"]
-        image_name = str(uuid.uuid1()) + '.jpg'
-        image.save(UPLOAD_FOLDER + path + '/' + image_name)
-
-        raise ExceptionHandler(message=HttpMessages.SUCCESS.value, status_code=HttpErrors.SUCCESS.value, data=image_name)
-    except KeyError as e:
-        raise ExceptionHandler(message=HttpMessages.UPLOADFAIL.value, status_code=HttpErrors.CONFLICT.value)
-
-
-@app.route("/image/<path>/<filename>", methods=['GET'])
-def get_image(path, filename):
-    """
-    API to get the image
-    :param path: path variable for folder to get the image from
-                - writers: for writers
-                - testing: for testing
-                - training: for training
-    :param filename: path variable for image name
-    :return:
-    """
-    try:
-        path = request.view_args['path'] + '/' + request.view_args['filename']
-
-        return send_from_directory(UPLOAD_FOLDER, path)
-    except:
-        raise ExceptionHandler(message=HttpMessages.IMAGENOTFOUND.value, status_code=HttpErrors.NOTFOUND.value)
-
-
 @app.route("/setWriters")
 def set_writers():
     num_classes = 100
 
-    names, birthdays, phones, addresses, nid = fake_data()
-
+    names = ["Abdul Ahad", "Abdul Ali",
+             "Abdul Alim", "Abdul Azim",
+             "Abu Abdullah", "Abu Hamza",
+             "Ahmed Tijani", "Ali Reza",
+             "Aman Ali", "Anisur Rahman",
+             "Azizur Rahman", "Badr al-Din",
+             "Baha' al-Din", "Barkat Ali",
+             "Burhan al-Din", "Fakhr al-Din",
+             "Fazl UrRahman", "Fazlul Karim",
+             "Fazlul Haq", "Ghulam Faruq",
+             "Ghiyath al-Din", "Ghulam Mohiuddin",
+             "Habib ElRahman", "Hamid al-Din",
+             "Hibat Allah", "Husam ad-Din",
+             "Ikhtiyar al-Din", "Imad al-Din",
+             "Izz al-Din", "Jalal ad-Din",
+             "Jamal ad-Din", "Kamal ad-Din",
+             "Lutfur Rahman", "Mizanur Rahman",
+             "Mohammad Taqi", "Nasir al-Din",
+             "Seif ilislam", "Sadr al-Din",
+             "Sddam Hussein", "Samar Gamal",
+             "May Ahmed", "Ahmed Khairy",
+             "Omar Ali", "Salma Ibrahim",
+             "Ahmed Gamal", "Hadeer Hossam",
+             "Hanaa Ahmed", "Gamal Saad",
+             "Bisa Dewidar", "Ahmed Said",
+             "Nachwa Ahmed", "Ezz Farhan",
+             "Nourhan Farhan", "Mariam Farhan",
+             "Mouhab Farhan", "Sherif Ahmed",
+             "Noha Ahmed", "Yasmine Sherif",
+             "Eslam Sherif", "Ahmed Sherif",
+             "Mohamed Ahmed", "Zeinab Khairy",
+             "Khaled Ali", "Rana Ali",
+             "Ali Shaalan", "Ahmed Youssry",
+             "AbdelRahman Nasser", "Youssra Hussein",
+             "Ingy Alaa", "Rana Afifi",
+             "Nour Attya", "Amani Tarek",
+             "Salma Ahmed", "Iman Fouad",
+             "Karim ElRashidy", "Ziad Mansour",
+             "Mohamed Salah", "Anas ElShazly",
+             "Hazem Aly", "Youssef Maraghy",
+             "Ebram Hossam", "Mohamed Nour",
+             "Mohamed Ossama", "Hussein Hosny",
+             "Ahmed Samy", "Youmna Helmy",
+             "Kareem Haggag", "Nour Yasser",
+             "Farah Mohamed", "Ahmed Hisham",
+             "Omar Nashaat", "Mohamed Yasser",
+             "Sara Hassan", "Ahmed keraidy",
+             "Magdy Hafez", "Waleed Mostafa",
+             "Khaled Hesham", "Karim Hossam",
+             "Omar Nasharty", "Rayhana Ayman"]
     # loop on the writers
-    for class_number in range(39, num_classes + 1):
+    for class_number in range(70, num_classes + 1):
         writer_name = names[class_number - 1]
 
         writer_horest_features = []
@@ -375,7 +445,7 @@ def set_writers():
 
         # loop on training data for each writer
         for filename in glob.glob(
-                'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCasesCompressed/Samples/Class' + str(class_number) + '/*.jpg'):
+                'D:/Uni/Graduation Project/All Test Cases/IAMJPG/Samples/Class' + str(class_number) + '/*.jpg'):
             print(filename)
             image = cv2.imread(filename)
             print('Horest Features')
@@ -409,10 +479,6 @@ def set_writers():
         writer.features = features
         writer.id = class_number
         writer.name = writer_name
-        writer.birthday = birthdays[class_number - 1]
-        writer.address = addresses[class_number - 1]
-        writer.phone = phones[class_number - 1]
-        writer.nid = nid[class_number - 1]
         name_splitted = writer.name.split()
         writer.username = name_splitted[0][0].lower() + name_splitted[1].lower() + str(writer.id)
         status_code, message = writers_dao.create_writer(writer)
