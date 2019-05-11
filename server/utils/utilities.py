@@ -38,6 +38,7 @@ def dict_to_writer(writer_dict):
     writer.id = writer_dict["_id"]
     writer.name = writer_dict["_name"]
     writer.username = writer_dict["_username"]
+    writer.image = writer_dict["_image"]
 
     features_dict = writer_dict["_features"]
     features = Features()
@@ -109,14 +110,6 @@ def validate_writer_request(request):
     else:
         return HttpErrors.SUCCESS, HttpMessages.SUCCESS
 
-
-def func(writer):
-    """
-    Function to return attribute writer id
-    :param writer: writer model object
-    :return: attribute id
-    """
-    return writer.id
 
 
 def fake_data():

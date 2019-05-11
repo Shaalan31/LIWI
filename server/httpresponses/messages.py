@@ -13,3 +13,4 @@ class HttpMessages(Enum):
     INVALIDPHONE =  "Phone is invalid"
     INVALIDNID =  "National ID is invalid"
     IMAGENOTFOUND = "Image is not found"
+    MAXIMUM_EXCEEDED = "Maximum number of writers exceeded"
