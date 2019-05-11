@@ -164,7 +164,7 @@ class Som_KHATT:
 
 
     def init_sofm(self,lr=0.5):
-        self.sofm = algorithms.SOFM(n_inputs=128,n_outputs=500,step=lr,learning_radius=0,weight='init_pca',shuffle_data=True,verbose =True)
+        self.sofm = algorithms.SOFM(n_inputs=128,n_outputs=430,step=lr,learning_radius=0,weight='init_pca',shuffle_data=True,verbose =True)
         with open('sofm_iam.pkl', 'wb') as output:
             pickle.dump(self.sofm, output, pickle.HIGHEST_PROTOCOL)
 
