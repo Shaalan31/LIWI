@@ -16,7 +16,7 @@ class SiftModel:
         self.test_class = test_classes
         self.code_book = code_book
         # create needed objects
-
+        self.thesis = np.zeros(1)
         self.accuracy = None
 
     def get_features(self, name, pathSOH,pathSDS):
@@ -95,7 +95,7 @@ class SiftModel:
                 total_test_cases += 1
 
                 accuracy = (right_test_cases / total_test_cases) * 100
-
+                self.thesis = np.append(self.thesis,accuracy)
                 print('Accuracy:  ' + str(accuracy) + '%')
 
             # break

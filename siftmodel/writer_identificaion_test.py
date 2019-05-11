@@ -10,10 +10,10 @@ code_book = pickle.load( open( "centers.pkl", "rb" ) )
 #writer identification using SIFT
 accuracy = None
 print('start')
-class_labels = list(range(2, 160))
-classCombinations = list(combinations(class_labels, r=158))
-total = len(classCombinations)
-print(total)
+class_labels = list(range(1, 160))
+classCombinations = combinations(class_labels, r=159)
+# total = len(classCombinations)
+# print(total)
 count = 0
 for x in classCombinations:
     print(x)
@@ -25,6 +25,7 @@ for x in classCombinations:
         accuracy = np.append(accuracy,sift_model.accuracy,axis=1)
     print('Total accuracy',accuracy[0,count]/accuracy[1,count])
     np.savetxt("accuracyTester.csv", accuracy, delimiter=",")
+    np.savetxt("varinacc.csv", sift_model.thesis, delimiter=",")
     count +=1
     print(accuracy.shape)
 
