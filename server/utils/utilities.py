@@ -35,6 +35,7 @@ def dict_to_writer(writer_dict):
     writer.id = writer_dict["_id"]
     writer.name = writer_dict["_name"]
     writer.username = writer_dict["_username"]
+    writer.image = writer_dict["_image"]
 
     features_dict = writer_dict["_features"]
     features = Features()

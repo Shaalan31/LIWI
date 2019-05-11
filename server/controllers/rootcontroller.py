@@ -17,7 +17,7 @@ db.connect()
 db.create_collection()
 writers_dao = Writers(db.get_collection())
 
-UPLOAD_FOLDER = 'D:/Uni/Graduation Project/LIWI/uploads/'
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), '../../uploads/')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.json_encoder = WriterEncoder
 
@@ -82,13 +82,15 @@ def get_prediction():
 
         # get features of the writers
         writers_ids = request.get_json()['writers_ids']
-
         language = request.args.get('lang', None)
+        image_base_url = request.host_url + '/image/writers/'
+
         if language == "ar":
             status, message, writers_predicted = predict_writer_arabic(testing_image, filename, writers_ids,
-                                                                       Writers(db.get_collection_arabic()))
+                                                                       Writers(db.get_collection_arabic()), image_base_url)
         else:
-            status, message, writers_predicted = predict_writer(testing_image, filename, writers_ids, writers_dao)
+            status, message, writers_predicted = predict_writer(testing_image, filename, writers_ids, writers_dao,
+                                                                image_base_url)
 
         raise ExceptionHandler(message=message.value, status_code=status.value,
                                data=writers_predicted)

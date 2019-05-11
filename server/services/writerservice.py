@@ -13,7 +13,7 @@ texture_model = TextureWriterIdentification()
 sift_model = SiftModel()
 
 
-def predict_writer(testing_image, filename, writers_ids, dao):
+def predict_writer(testing_image, filename, writers_ids, dao,url):
     """
         Service to get predicted English writers
         :parameter: request contains
@@ -128,7 +128,7 @@ def predict_writer(testing_image, filename, writers_ids, dao):
     writers_predicted = []
     vfunc = np.vectorize(func)
     writer_predicted = writers[np.where(vfunc(writers) == final_prediction)[0][0]]
-    writer_vo = WriterVo(writer_predicted.id, writer_predicted.name, writer_predicted.username)
+    writer_vo = WriterVo(writer_predicted.id, writer_predicted.name, writer_predicted.username,url+writer_predicted.image)
     writers_predicted.append(writer_vo)
 
     predictions = np.unique(predictions)
@@ -136,13 +136,13 @@ def predict_writer(testing_image, filename, writers_ids, dao):
         for prediction in predictions:
             if prediction != final_prediction:
                 writer_predicted = writers[np.where(vfunc(writers) == prediction)[0][0]]
-                writer_vo = WriterVo(writer_predicted.id, writer_predicted.name, writer_predicted.username)
+                writer_vo = WriterVo(writer_predicted.id, writer_predicted.name, writer_predicted.username,url+writer_predicted.image)
                 writers_predicted.append(writer_vo)
 
-    return HttpErrors.SUCCESS, HttpMessages.OK, writers_predicted
+    return HttpErrors.SUCCESS, HttpMessages.SUCCESS, writers_predicted
 
 
-def predict_writer_arabic(testing_image, filename, writers_ids, dao):
+def predict_writer_arabic(testing_image, filename, writers_ids, dao,url):
     """
          Service to get predicted Arabic writers
          :parameter: request contains
@@ -230,7 +230,7 @@ def predict_writer_arabic(testing_image, filename, writers_ids, dao):
     writers_predicted = []
     vfunc = np.vectorize(func)
     writer_predicted = writers[np.where(vfunc(writers) == final_prediction)[0][0]]
-    writer_vo = WriterVo(writer_predicted.id, writer_predicted.name, writer_predicted.username)
+    writer_vo = WriterVo(writer_predicted.id, writer_predicted.name, writer_predicted.username,url+writer_predicted.image)
     writers_predicted.append(writer_vo)
 
     predictions = np.unique(predictions)
@@ -238,7 +238,7 @@ def predict_writer_arabic(testing_image, filename, writers_ids, dao):
         for prediction in predictions:
             if prediction != final_prediction:
                 writer_predicted = writers[np.where(vfunc(writers) == prediction)[0][0]]
-                writer_vo = WriterVo(writer_predicted.id, writer_predicted.name, writer_predicted.username)
+                writer_vo = WriterVo(writer_predicted.id, writer_predicted.name, writer_predicted.username,url+writer_predicted.image)
                 writers_predicted.append(writer_vo)
 
     return HttpErrors.SUCCESS, HttpMessages.OK, writers_predicted
