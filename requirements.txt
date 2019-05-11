@@ -40,3 +40,4 @@ Werkzeug==0.15.1
 scikit-image==0.14.1
 scikit-learn==0.20.1
 faker==1.0.5
+flask==1.0.2

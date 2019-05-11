@@ -1,4 +1,3 @@
-import time
 from flask import Flask, request, jsonify, send_from_directory
 from server.dao.connection import Database
 from server.dao.writers import Writers
