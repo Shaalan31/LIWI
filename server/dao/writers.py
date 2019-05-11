@@ -90,7 +90,7 @@ class Writers:
         """
         return self.collection.count()
 
-    def get_writer_profile(self, writer_id):
+    def get_writer_profile(self, writer_id, host_url):
         """
         Get Writer's Profile from database
         :param writer_id: writer id
@@ -104,7 +104,7 @@ class Writers:
         """
         writer = self.collection.find({"_id": int(writer_id)}, {"_id": 1, "_name": 1, "_username": 1, "_address": 1, "_phone": 1, "_nid": 1, "_image": 1, "_birthday": 1})
         if writer.count() == 1:
-            profile_obj = dict_to_profile(writer[0])
+            profile_obj = dict_to_profile(writer[0], host_url)
             return HttpErrors.SUCCESS, HttpMessages.SUCCESS, profile_obj
         else:
             return HttpErrors.NOTFOUND, HttpMessages.NOTFOUND, None

@@ -10,7 +10,6 @@ from server.utils.writerencoder import *
 from server.views.writervo import *
 from server.utils.utilities import *
 import uuid
-import time
 import cv2
 
 app = Flask(__name__)
@@ -181,7 +180,9 @@ def get_prediction():
         vfunc = np.vectorize(func)
         writer_predicted = writers[np.where(vfunc(writers) == final_prediction)[0][0]]
         writer_vo = WriterVo(writer_predicted.id, writer_predicted.name, writer_predicted.username)
+
         raise ExceptionHandler(message=HttpMessages.SUCCESS.value, status_code=HttpErrors.SUCCESS.value, data=writer_vo)
+
     except KeyError as e:
         raise ExceptionHandler(message=HttpMessages.CONFLICT_PREDICTION.value, status_code=HttpErrors.CONFLICT.value)
 
@@ -306,7 +307,7 @@ def get_profile():
     """
     writer_id = request.args.get('id', None)
 
-    status_code, message, profile_vo = writers_dao.get_writer_profile(writer_id)
+    status_code, message, profile_vo = writers_dao.get_writer_profile(writer_id, request.host_url)
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value, data=profile_vo)
 
@@ -360,10 +361,10 @@ def get_image(path, filename):
 def set_writers():
     num_classes = 100
 
-    names, birthdays, phones, addresses, nid = fake_data()
+    names, birthdays, phones, addresses, nid, images = fake_data()
 
     # loop on the writers
-    for class_number in range(39, num_classes + 1):
+    for class_number in range(1, num_classes + 1):
         writer_name = names[class_number - 1]
 
         writer_horest_features = []
@@ -414,6 +415,7 @@ def set_writers():
         writer.address = addresses[class_number - 1]
         writer.phone = phones[class_number - 1]
         writer.nid = nid[class_number - 1]
+        writer.image = images[class_number - 1]
         name_splitted = writer.name.split()
         writer.username = name_splitted[0][0].lower() + name_splitted[1].lower() + str(writer.id)
         status_code, message = writers_dao.create_writer(writer)
