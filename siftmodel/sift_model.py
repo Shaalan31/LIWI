@@ -15,7 +15,7 @@ class SiftModel:
         self.last_class = last_class
         if lang == 'en':
             fn = os.path.join(os.path.dirname(__file__), 'centers.pkl')
-        else
+        elif lang == 'ar':
             fn = os.path.join(os.path.dirname(__file__), 'centers_KHATT.pkl')
         self.code_book = pickle.load(open(fn, "rb"))
         # create needed objects
