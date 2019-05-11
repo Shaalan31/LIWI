@@ -1,4 +1,3 @@
-import time
 from flask import Flask, request, jsonify, send_from_directory
 from server.dao.connection import Database
 from server.dao.writers import Writers
@@ -11,6 +10,7 @@ from server.utils.writerencoder import *
 from server.views.writervo import *
 from server.utils.utilities import *
 import uuid
+import time
 import cv2
 
 app = Flask(__name__)
@@ -264,7 +264,7 @@ def create_writer():
         writer.nid = new_writer["_nid"]
         writer.image = new_writer["_image"]
         writer.birthday = new_writer["_birthday"]
-        writer.id = writers_dao.get_writers_count() + 2
+        writer.id = writers_dao.get_writers_count() + 1
 
         status_code, message = writers_dao.create_writer(writer)
 
@@ -342,28 +342,10 @@ def get_image(path, filename):
 def set_writers():
     num_classes = 100
 
-    names = ["Abdul Ahad", "Abdul Ali", "Abdul Alim", "Abdul Azim", "Abu Abdullah", "Abu Hamza", "Ahmed Tijani", "Ali Reza",
-             "Aman Ali", "Anisur Rahman", "Azizur Rahman", "Badr al-Din", "Baha' al-Din", "Barkat Ali", "Burhan al-Din", "Fakhr al-Din",
-             "Fazl UrRahman", "Fazlul Karim", "Fazlul Haq", "Ghulam Faruq", "Ghiyath al-Din", "Ghulam Mohiuddin", "Habib ElRahman", "Hamid al-Din",
-             "Hibat Allah", "Husam ad-Din", "Ikhtiyar al-Din", "Imad al-Din", "Izz al-Din", "Jalal ad-Din", "Jamal ad-Din", "Kamal ad-Din",
-             "Lutfur Rahman", "Mizanur Rahman", "Mohammad Taqi", "Nasir al-Din", "Seif ilislam", "Sadr al-Din", "Sddam Hussein", "Samar Gamal",
-             "May Ahmed", "Ahmed Khairy", "Omar Ali", "Salma Ibrahim", "Ahmed Gamal", "Hadeer Hossam", "Hanaa Ahmed", "Gamal Saad",
-             "Bisa Dewidar", "Ahmed Said", "Nachwa Ahmed", "Ezz Farhan", "Nourhan Farhan", "Mariam Farhan", "Mouhab Farhan", "Sherif Ahmed",
-             "Noha Ahmed", "Yasmine Sherif", "Eslam Sherif", "Ahmed Sherif", "Mohamed Ahmed", "Zeinab Khairy", "Khaled Ali", "Rana Ali", "Ali Shaalan", "Ahmed Youssry",
-             "AbdelRahman Nasser", "Youssra Hussein", "Ingy Alaa", "Rana Afifi", "Nour Attya", "Amani Tarek", "Salma Ahmed", "Iman Fouad", "Karim ElRashidy", "Ziad Mansour",
-             "Mohamed Salah", "Anas ElShazly", "Hazem Aly", "Youssef Maraghy", "Ebram Hossam", "Mohamed Nour", "Mohamed Ossama", "Hussein Hosny",
-             "Ahmed Samy", "Youmna Helmy", "Kareem Haggag", "Nour Yasser", "Farah Mohamed", "Ahmed Hisham", "Omar Nashaat", "Mohamed Yasser",
-             "Sara Hassan", "Ahmed keraidy", "Magdy Hafez", "Waleed Mostafa", "Khaled Hesham", "Karim Hossam", "Omar Nasharty", "Rayhana Ayman"]
+    names, birthdays, phones, addresses, nid = fake_data()
 
-    addresses = ["36 El Salam St. - El Saada City - Shoubra El Khima - Cairo - Egypt",
-                 "Mahdi St., Azbakiya, Cairo",
-                 "125 Shoubra St. -Cairo - Egypt",
-                 "67 Mohamad El Nadi Street, Cairo Egypt",
-                 "12 Sherif Basha El Kbeer ST, Abdeen"]
-
-    birthdays = ["4/9/1974", "8/3/1984", "3/24/1985", "1/24/1993", "11/10/1991"]
     # loop on the writers
-    for class_number in range(70, num_classes + 1):
+    for class_number in range(39, num_classes + 1):
         writer_name = names[class_number - 1]
 
         writer_horest_features = []
@@ -376,7 +358,7 @@ def set_writers():
 
         # loop on training data for each writer
         for filename in glob.glob(
-                'D:/Uni/Graduation Project/All Test Cases/IAMJPG/Samples/Class' + str(class_number) + '/*.jpg'):
+                'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCasesCompressed/Samples/Class' + str(class_number) + '/*.jpg'):
             print(filename)
             image = cv2.imread(filename)
             print('Horest Features')
@@ -410,6 +392,10 @@ def set_writers():
         writer.features = features
         writer.id = class_number
         writer.name = writer_name
+        writer.birthday = birthdays[class_number - 1]
+        writer.address = addresses[class_number - 1]
+        writer.phone = phones[class_number - 1]
+        writer.nid = nid[class_number - 1]
         name_splitted = writer.name.split()
         writer.username = name_splitted[0][0].lower() + name_splitted[1].lower() + str(writer.id)
         status_code, message = writers_dao.create_writer(writer)
