@@ -107,14 +107,6 @@ def validate_writer_request(request):
         return HttpErrors.SUCCESS, HttpMessages.SUCCESS
 
 
-def func(writer):
-    """
-    Function to return attribute writer id
-    :param writer: writer model object
-    :return: attribute id
-    """
-    return writer.id
-
 
 def fake_data():
     """

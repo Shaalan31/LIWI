@@ -2,14 +2,11 @@ import time
 from flask import Flask, request, jsonify, send_from_directory
 from server.dao.connection import Database
 from server.dao.writers import Writers
-from texturemodel.texture_model import *
-from horestmodel.horest_model import *
-from siftmodel.sift_model import *
-from multiprocessing import Pool
-from server.httpexceptions.exceptions import *
+from server.httpexceptions.exceptions import ExceptionHandler
 from server.utils.writerencoder import *
-from server.views.writervo import *
 from server.utils.utilities import *
+from server.services.writerservice import *
+
 import uuid
 import cv2
 
@@ -19,9 +16,7 @@ db = Database()
 db.connect()
 db.create_collection()
 writers_dao = Writers(db.get_collection())
-horest_model = HorestWriterIdentification()
-texture_model = TextureWriterIdentification()
-sift_model = SiftModel()
+
 UPLOAD_FOLDER = 'D:/Uni/Graduation Project/LIWI/uploads/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.json_encoder = WriterEncoder
@@ -56,7 +51,12 @@ def get_writers():
             - list of WritersVo: each writervo contains id, name, username
             - None if there is no writer
     """
-    status_code, message, data = writers_dao.get_writers()
+    language = request.args.get('lang', None)
+    dao = writers_dao
+    if language == "ar":
+        dao = Writers(db.get_collection_arabic())
+
+    status_code, message, data = dao.get_writers()
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value, data=data)
 
@@ -70,9 +70,9 @@ def get_prediction():
                   - image name: _filename
       :raise: Exception contains
               - response message:
-                  "OK" for success, "Error in prediction" for prediction conflict
+                  "OK" for success, "Error in prediction" for prediction conflict,"Maximum number of writers exceeded" for exceeding maximum numbers
               - response status code:
-                  200 for success, 500 for prediction conflict
+                  200 for success, 500 for prediction conflict,400 for exceeding maximum number
       """
     print("New prediction request")
     try:
@@ -82,120 +82,16 @@ def get_prediction():
 
         # get features of the writers
         writers_ids = request.get_json()['writers_ids']
-        if len(writers_ids) > 30:
-            raise ExceptionHandler(message=HttpMessages.MAXIMUM_EXCEEDED.value,
-                                   status_code=HttpErrors.BADREQUEST.value)
-        writers = writers_dao.get_features(writers_ids)
 
-        # process features to fit classifier
-        # declaring variables for horest
-        labels_horest = []
-        all_features_horest = []
-        num_training_examples_horest = 0
+        language = request.args.get('lang', None)
+        if language == "ar":
+            status, message, writers_predicted = predict_writer_arabic(testing_image, filename, writers_ids,
+                                                                       Writers(db.get_collection_arabic()))
+        else:
+            status, message, writers_predicted = predict_writer(testing_image, filename, writers_ids, writers_dao)
 
-        # declaring variables for texture
-        labels_texture = []
-        all_features_texture = []
-        num_training_examples_texture = 0
-
-        # declaring variable for sift
-        SDS_train = []
-        SOH_train = []
-        writers_lookup_array = []
-
-        for writer in writers:
-            # processing horest_features
-            horest_features = writer.features.horest_features
-            num_current_examples_horest = len(horest_features)
-            labels_horest = np.append(labels_horest,
-                                      np.full(shape=(1, num_current_examples_horest), fill_value=writer.id))
-            num_training_examples_horest += num_current_examples_horest
-            all_features_horest = np.append(all_features_horest,
-                                            np.reshape(horest_features.copy(),
-                                                       (1,
-                                                        num_current_examples_horest * horest_model.get_num_features())))
-            # processing texture_features
-            texture_features = writer.features.texture_feature
-            num_current_examples_texture = len(texture_features)
-            labels_texture = np.append(labels_texture,
-                                       np.full(shape=(1, num_current_examples_texture), fill_value=writer.id))
-            num_training_examples_texture += num_current_examples_texture
-            all_features_texture = np.append(all_features_texture,
-                                             np.reshape(texture_features.copy(),
-                                                        (1,
-                                                         num_current_examples_texture * texture_model.get_num_features())))
-
-            # appending sift features
-            for i in range(len(writer.features.sift_SDS)):
-                SDS_train.append(np.array([writer.features.sift_SDS[i]]))
-                SOH_train.append(np.array([writer.features.sift_SOH[i]]))
-                writers_lookup_array.append(writer.id)
-
-        # fit horest classifier
-        all_features_horest = np.reshape(all_features_horest,
-                                         (num_training_examples_horest, horest_model.get_num_features()))
-        all_features_horest, mu_horest, sigma_horest = horest_model.feature_normalize(all_features_horest)
-        horest_model.fit_classifier(all_features_horest, labels_horest)
-
-        # fit texture classifier
-        all_features_texture = np.reshape(all_features_texture,
-                                          (num_training_examples_texture, texture_model.get_num_features()))
-        all_features_texture, mu_texture, sigma_texture = texture_model.feature_normalize(all_features_texture)
-        pca = decomposition.PCA(n_components=min(all_features_texture.shape[0], all_features_texture.shape[1]),
-                                svd_solver='full')
-        all_features_texture = pca.fit_transform(all_features_texture)
-        texture_model.fit_classifier(all_features_texture, labels_texture)
-
-        pool = Pool(3)
-        async_results = []
-        async_results += [pool.apply_async(horest_model.test, (testing_image, mu_horest, sigma_horest))]
-        async_results += [pool.apply_async(texture_model.test, (testing_image, mu_texture, sigma_texture, pca))]
-        async_results += [pool.apply_async(sift_model.predict, (SDS_train, SOH_train, testing_image, filename))]
-
-        pool.close()
-        pool.join()
-
-        predictions = []
-        # used to match the probablity with classes
-        horest_classes = horest_model.get_classifier_classes()
-        horest_predictions = async_results[0].get()[0]
-        predictions.append(horest_classes[np.argmax(horest_predictions)])
-        horest_indecies_sorted = np.argsort(horest_classes, axis=0)
-        sorted_horest_classes = horest_classes[horest_indecies_sorted[::-1]]
-        sorted_horest_predictions = horest_predictions[horest_indecies_sorted[::-1]]
-
-        texture_classes = texture_model.get_classifier_classes()
-        texture_predictions = async_results[1].get()[0]
-        predictions.append(texture_classes[np.argmax(texture_predictions)])
-        texture_indecies_sorted = np.argsort(texture_classes, axis=0)
-        sorted_texture_predictions = texture_predictions[texture_indecies_sorted[::-1]]
-
-        score = sorted_horest_predictions + sorted_texture_predictions
-        prediction_horest_texture = sorted_horest_classes[np.argmax(score)]
-
-        sift_prediction = async_results[2].get()
-        sift_prediction = writers_lookup_array[sift_prediction]
-        predictions.append(sift_prediction)
-
-        score[np.argwhere(sift_prediction)] += (1 / 3)
-
-        final_prediction = int(sorted_horest_classes[np.argmax(score)])
-
-        writers_predicted = []
-        vfunc = np.vectorize(func)
-        writer_predicted = writers[np.where(vfunc(writers) == final_prediction)[0][0]]
-        writer_vo = WriterVo(writer_predicted.id, writer_predicted.name, writer_predicted.username)
-        writers_predicted.append(writer_vo)
-
-        predictions = np.unique(predictions)
-        if len(predictions) > 1:
-            for prediction in predictions:
-                if prediction!=final_prediction:
-                    writer_predicted = writers[np.where(vfunc(writers) == prediction)[0][0]]
-                    writer_vo = WriterVo(writer_predicted.id, writer_predicted.name, writer_predicted.username)
-                    writers_predicted.append(writer_vo)
-
-        raise ExceptionHandler(message=HttpMessages.SUCCESS.value, status_code=HttpErrors.SUCCESS.value, data=writers_predicted)
+        raise ExceptionHandler(message=message.value, status_code=status.value,
+                               data=writers_predicted)
     except KeyError as e:
         raise ExceptionHandler(message=HttpMessages.CONFLICT_PREDICTION.value, status_code=HttpErrors.CONFLICT.value)
 
@@ -221,7 +117,7 @@ def create_writer():
     # request parameters
     new_writer = request.get_json()
     language = request.args.get('lang', None)
-    dao=writers_dao
+    dao = writers_dao
     if language == "ar":
         dao = Writers(db.get_collection_arabic())
 
@@ -259,7 +155,7 @@ def get_profile():
     writer_id = request.args.get('id', None)
 
     language = request.args.get('lang', None)
-    dao=writers_dao
+    dao = writers_dao
     if language == "ar":
         dao = Writers(db.get_collection_arabic())
 
@@ -334,43 +230,14 @@ def update_writer_features():
 
         # get writer
         writer_id = int(request.get_json()['_id'])
-        writer = writers_dao.get_writer(writer_id)
 
-        # initialization for variables
-        # horest_model.num_lines_per_class= len(writer.features.horest_features)
-        # texture_model.num_blocks_per_class= len(writer.features.texture_feature)
+        language = request.args.get('lang', None)
+        if language == "ar":
+            status_code, message = update_features_arabic(training_image, filename, writer_id,
+                                                          Writers(db.get_collection_arabic()))
+        else:
+            status_code, message = update_features(training_image, filename, writer_id, writers_dao)
 
-        # get features
-        pool = Pool(3)
-        async_results = []
-        async_results += [pool.apply_async(horest_model.get_features, (training_image,))]
-        async_results += [pool.apply_async(texture_model.get_features, (training_image,))]
-        async_results += [pool.apply_async(sift_model.get_features, (filename, training_image))]
-
-        pool.close()
-        pool.join()
-        num_lines, horest_features = async_results[0].get()
-        num_blocks, texture_features = async_results[1].get()
-        SDS, SOH = async_results[2].get()
-
-        # adjust nan
-        horest_features = horest_model.adjust_nan_values(
-            np.reshape(horest_features,
-                       (num_lines, horest_model.get_num_features()))).tolist()
-        texture_features = texture_model.adjust_nan_values(
-            np.reshape(texture_features,
-                       (num_blocks,
-                        texture_model.get_num_features()))).tolist()
-
-        # set features
-        features = writer.features
-        features.horest_features.extend(horest_features)
-        features.texture_feature.extend(texture_features)
-
-        features.sift_SDS.append(SDS[0].tolist())
-        features.sift_SOH.append(SOH[0].tolist())
-
-        status_code, message = writers_dao.update_writer(writer)
         raise ExceptionHandler(message=message.value, status_code=status_code.value)
 
     except KeyError as e:
@@ -381,58 +248,10 @@ def update_writer_features():
 def set_writers():
     num_classes = 100
 
-    names = ["Abdul Ahad", "Abdul Ali",
-             "Abdul Alim", "Abdul Azim",
-             "Abu Abdullah", "Abu Hamza",
-             "Ahmed Tijani", "Ali Reza",
-             "Aman Ali", "Anisur Rahman",
-             "Azizur Rahman", "Badr al-Din",
-             "Baha' al-Din", "Barkat Ali",
-             "Burhan al-Din", "Fakhr al-Din",
-             "Fazl UrRahman", "Fazlul Karim",
-             "Fazlul Haq", "Ghulam Faruq",
-             "Ghiyath al-Din", "Ghulam Mohiuddin",
-             "Habib ElRahman", "Hamid al-Din",
-             "Hibat Allah", "Husam ad-Din",
-             "Ikhtiyar al-Din", "Imad al-Din",
-             "Izz al-Din", "Jalal ad-Din",
-             "Jamal ad-Din", "Kamal ad-Din",
-             "Lutfur Rahman", "Mizanur Rahman",
-             "Mohammad Taqi", "Nasir al-Din",
-             "Seif ilislam", "Sadr al-Din",
-             "Sddam Hussein", "Samar Gamal",
-             "May Ahmed", "Ahmed Khairy",
-             "Omar Ali", "Salma Ibrahim",
-             "Ahmed Gamal", "Hadeer Hossam",
-             "Hanaa Ahmed", "Gamal Saad",
-             "Bisa Dewidar", "Ahmed Said",
-             "Nachwa Ahmed", "Ezz Farhan",
-             "Nourhan Farhan", "Mariam Farhan",
-             "Mouhab Farhan", "Sherif Ahmed",
-             "Noha Ahmed", "Yasmine Sherif",
-             "Eslam Sherif", "Ahmed Sherif",
-             "Mohamed Ahmed", "Zeinab Khairy",
-             "Khaled Ali", "Rana Ali",
-             "Ali Shaalan", "Ahmed Youssry",
-             "AbdelRahman Nasser", "Youssra Hussein",
-             "Ingy Alaa", "Rana Afifi",
-             "Nour Attya", "Amani Tarek",
-             "Salma Ahmed", "Iman Fouad",
-             "Karim ElRashidy", "Ziad Mansour",
-             "Mohamed Salah", "Anas ElShazly",
-             "Hazem Aly", "Youssef Maraghy",
-             "Ebram Hossam", "Mohamed Nour",
-             "Mohamed Ossama", "Hussein Hosny",
-             "Ahmed Samy", "Youmna Helmy",
-             "Kareem Haggag", "Nour Yasser",
-             "Farah Mohamed", "Ahmed Hisham",
-             "Omar Nashaat", "Mohamed Yasser",
-             "Sara Hassan", "Ahmed keraidy",
-             "Magdy Hafez", "Waleed Mostafa",
-             "Khaled Hesham", "Karim Hossam",
-             "Omar Nasharty", "Rayhana Ayman"]
+    names, birthdays, phones, addresses, nid = fake_data()
+
     # loop on the writers
-    for class_number in range(70, num_classes + 1):
+    for class_number in range(39, num_classes + 1):
         writer_name = names[class_number - 1]
 
         writer_horest_features = []
@@ -479,6 +298,10 @@ def set_writers():
         writer.features = features
         writer.id = class_number
         writer.name = writer_name
+        writer.birthday = birthdays[class_number - 1]
+        writer.address = addresses[class_number - 1]
+        writer.phone = phones[class_number - 1]
+        writer.nid = nid[class_number - 1]
         name_splitted = writer.name.split()
         writer.username = name_splitted[0][0].lower() + name_splitted[1].lower() + str(writer.id)
         status_code, message = writers_dao.create_writer(writer)
@@ -488,4 +311,4 @@ def set_writers():
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port='5000')
+    app.run(host='192.168.1.11', port='5000')
