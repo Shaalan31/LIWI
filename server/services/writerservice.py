@@ -1,6 +1,3 @@
-from server.httpresponses.errors import HttpErrors
-from server.httpresponses.messages import HttpMessages
-
 from texturemodel.texture_model import *
 from horestmodel.horest_model import *
 from siftmodel.sift_model import *
