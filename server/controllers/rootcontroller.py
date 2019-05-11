@@ -292,6 +292,7 @@ def update_writer_features():
 def get_profile():
     """
     API to get writer's profile
+    :parameter: query parameter id
     :raise: Exception containing:
             message:
             - "OK" for success
