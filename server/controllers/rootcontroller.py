@@ -82,7 +82,7 @@ def get_prediction():
         # get features of the writers
         writers_ids = request.get_json()['writers_ids']
         language = request.args.get('lang', None)
-        image_base_url = request.host_url + '/image/writers/'
+        image_base_url = request.host_url + 'image/writers/'
 
         if language == "ar":
             status, message, writers_predicted = predict_writer_arabic(testing_image, filename, writers_ids,
