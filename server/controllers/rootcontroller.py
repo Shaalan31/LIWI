@@ -63,174 +63,127 @@ def get_writers():
 
 @app.route("/predict", methods=['POST'])
 def get_prediction():
+    """
+      API for predicting a writer of the image
+      :parameter: request contains
+                  - writers ids: writers_ids
+                  - image name: _filename
+      :raise: Exception contains
+              - response message:
+                  "OK" for success, "Error in prediction" for prediction conflict
+              - response status code:
+                  200 for success, 500 for prediction conflict
+      """
     print("New prediction request")
     try:
-        if 'captured_image' in request.files:
-            # get image from request
-            images = request.files['captured_image']
-            filename = str(int(time.time())) + '.jpg'
-            images.save(UPLOAD_FOLDER + filename)
-            testing_image = cv2.imread(UPLOAD_FOLDER + filename)
+        # get image from request
+        filename = request.get_json['_filename']
+        testing_image = cv2.imread(UPLOAD_FOLDER+'testing/' + filename)
 
-            # get features of the writers
-            writers_ids = request.form['writers_ids']
-            # print(writers_ids)
-            writers_ids = list(map(int, writers_ids[1:len(writers_ids) - 1].split(',')))
-            writers = writers_dao.get_features(writers_ids)
+        # get features of the writers
+        writers_ids = request.get_json['writers_ids']
+        # print(writers_ids)
+        writers_ids = list(map(int, writers_ids[1:len(writers_ids) - 1].split(',')))
+        writers = writers_dao.get_features(writers_ids)
 
-            # process features to fit classifier
-            # declaring variables for horest
-            labels_horest = []
-            all_features_horest = []
-            num_training_examples_horest = 0
+        # process features to fit classifier
+        # declaring variables for horest
+        labels_horest = []
+        all_features_horest = []
+        num_training_examples_horest = 0
 
-            # declaring variables for texture
-            labels_texture = []
-            all_features_texture = []
-            num_training_examples_texture = 0
+        # declaring variables for texture
+        labels_texture = []
+        all_features_texture = []
+        num_training_examples_texture = 0
 
-            # declaring variable for sift
-            SDS_train = []
-            SOH_train = []
-            writers_lookup_array = []
+        # declaring variable for sift
+        SDS_train = []
+        SOH_train = []
+        writers_lookup_array = []
 
-            for writer in writers:
-                # processing horest_features
-                horest_features = writer.features.horest_features
-                num_current_examples_horest = len(horest_features)
-                labels_horest = np.append(labels_horest,
-                                          np.full(shape=(1, num_current_examples_horest), fill_value=writer.id))
-                num_training_examples_horest += num_current_examples_horest
-                all_features_horest = np.append(all_features_horest,
-                                                np.reshape(horest_features.copy(),
-                                                           (1,
-                                                            num_current_examples_horest * horest_model.get_num_features())))
-                # processing texture_features
-                texture_features = writer.features.texture_feature
-                num_current_examples_texture = len(texture_features)
-                labels_texture = np.append(labels_texture,
-                                           np.full(shape=(1, num_current_examples_texture), fill_value=writer.id))
-                num_training_examples_texture += num_current_examples_texture
-                all_features_texture = np.append(all_features_texture,
-                                                 np.reshape(texture_features.copy(),
-                                                            (1,
-                                                             num_current_examples_texture * texture_model.get_num_features())))
+        for writer in writers:
+            # processing horest_features
+            horest_features = writer.features.horest_features
+            num_current_examples_horest = len(horest_features)
+            labels_horest = np.append(labels_horest,
+                                      np.full(shape=(1, num_current_examples_horest), fill_value=writer.id))
+            num_training_examples_horest += num_current_examples_horest
+            all_features_horest = np.append(all_features_horest,
+                                            np.reshape(horest_features.copy(),
+                                                       (1,
+                                                        num_current_examples_horest * horest_model.get_num_features())))
+            # processing texture_features
+            texture_features = writer.features.texture_feature
+            num_current_examples_texture = len(texture_features)
+            labels_texture = np.append(labels_texture,
+                                       np.full(shape=(1, num_current_examples_texture), fill_value=writer.id))
+            num_training_examples_texture += num_current_examples_texture
+            all_features_texture = np.append(all_features_texture,
+                                             np.reshape(texture_features.copy(),
+                                                        (1,
+                                                         num_current_examples_texture * texture_model.get_num_features())))
 
-                # appending sift features
-                for i in range(len(writer.features.sift_SDS)):
-                    SDS_train.append(np.array([writer.features.sift_SDS[i]]))
-                    SOH_train.append(np.array([writer.features.sift_SOH[i]]))
-                    writers_lookup_array.append(writer.id)
+            # appending sift features
+            for i in range(len(writer.features.sift_SDS)):
+                SDS_train.append(np.array([writer.features.sift_SDS[i]]))
+                SOH_train.append(np.array([writer.features.sift_SOH[i]]))
+                writers_lookup_array.append(writer.id)
 
-            # fit horest classifier
-            all_features_horest = np.reshape(all_features_horest,
-                                             (num_training_examples_horest, horest_model.get_num_features()))
-            all_features_horest, mu_horest, sigma_horest = horest_model.feature_normalize(all_features_horest)
-            horest_model.fit_classifier(all_features_horest, labels_horest)
+        # fit horest classifier
+        all_features_horest = np.reshape(all_features_horest,
+                                         (num_training_examples_horest, horest_model.get_num_features()))
+        all_features_horest, mu_horest, sigma_horest = horest_model.feature_normalize(all_features_horest)
+        horest_model.fit_classifier(all_features_horest, labels_horest)
 
-            # fit texture classifier
-            all_features_texture = np.reshape(all_features_texture,
-                                              (num_training_examples_texture, texture_model.get_num_features()))
-            all_features_texture, mu_texture, sigma_texture = texture_model.feature_normalize(all_features_texture)
-            pca = decomposition.PCA(n_components=min(all_features_texture.shape[0], all_features_texture.shape[1]),
-                                    svd_solver='full')
-            all_features_texture = pca.fit_transform(all_features_texture)
-            texture_model.fit_classifier(all_features_texture, labels_texture)
+        # fit texture classifier
+        all_features_texture = np.reshape(all_features_texture,
+                                          (num_training_examples_texture, texture_model.get_num_features()))
+        all_features_texture, mu_texture, sigma_texture = texture_model.feature_normalize(all_features_texture)
+        pca = decomposition.PCA(n_components=min(all_features_texture.shape[0], all_features_texture.shape[1]),
+                                svd_solver='full')
+        all_features_texture = pca.fit_transform(all_features_texture)
+        texture_model.fit_classifier(all_features_texture, labels_texture)
 
-            pool = Pool(3)
-            async_results = []
-            async_results += [pool.apply_async(horest_model.test, (testing_image, mu_horest, sigma_horest))]
-            async_results += [pool.apply_async(texture_model.test, (testing_image, mu_texture, sigma_texture, pca))]
-            async_results += [pool.apply_async(sift_model.predict, (SDS_train, SOH_train, testing_image, filename))]
+        pool = Pool(3)
+        async_results = []
+        async_results += [pool.apply_async(horest_model.test, (testing_image, mu_horest, sigma_horest))]
+        async_results += [pool.apply_async(texture_model.test, (testing_image, mu_texture, sigma_texture, pca))]
+        async_results += [pool.apply_async(sift_model.predict, (SDS_train, SOH_train, testing_image, filename))]
 
-            pool.close()
-            pool.join()
+        pool.close()
+        pool.join()
 
-            # used to match the probablity with classes
-            horest_classes = horest_model.get_classifier_classes()
-            horest_predictions = async_results[0].get()[0]
-            horest_indecies_sorted = np.argsort(horest_classes, axis=0)
-            sorted_horest_classes = horest_classes[horest_indecies_sorted[::-1]]
-            sorted_horest_predictions = horest_predictions[horest_indecies_sorted[::-1]]
+        # used to match the probablity with classes
+        horest_classes = horest_model.get_classifier_classes()
+        horest_predictions = async_results[0].get()[0]
+        horest_indecies_sorted = np.argsort(horest_classes, axis=0)
+        sorted_horest_classes = horest_classes[horest_indecies_sorted[::-1]]
+        sorted_horest_predictions = horest_predictions[horest_indecies_sorted[::-1]]
 
-            texture_classes = texture_model.get_classifier_classes()
-            texture_predictions = async_results[1].get()[0]
-            texture_indecies_sorted = np.argsort(texture_classes, axis=0)
-            sorted_texture_predictions = texture_predictions[texture_indecies_sorted[::-1]]
+        texture_classes = texture_model.get_classifier_classes()
+        texture_predictions = async_results[1].get()[0]
+        texture_indecies_sorted = np.argsort(texture_classes, axis=0)
+        sorted_texture_predictions = texture_predictions[texture_indecies_sorted[::-1]]
 
-            score = sorted_horest_predictions + sorted_texture_predictions
-            prediction_horest_texture = sorted_horest_classes[np.argmax(score)]
-            print(prediction_horest_texture)
+        score = sorted_horest_predictions + sorted_texture_predictions
+        prediction_horest_texture = sorted_horest_classes[np.argmax(score)]
+        print(prediction_horest_texture)
 
-            sift_prediction = async_results[2].get()
-            sift_prediction = writers_lookup_array[sift_prediction]
-            score[np.argwhere(sift_prediction)] += (1 / 3)
-            print(sift_prediction)
+        sift_prediction = async_results[2].get()
+        sift_prediction = writers_lookup_array[sift_prediction]
+        score[np.argwhere(sift_prediction)] += (1 / 3)
+        print(sift_prediction)
 
-            final_prediction = int(sorted_horest_classes[np.argmax(score)])
-            print(final_prediction)
+        final_prediction = int(sorted_horest_classes[np.argmax(score)])
+        print(final_prediction)
 
-            vfunc = np.vectorize(func)
-            writer_predicted = writers[np.where(vfunc(writers) == final_prediction)[0][0]]
-            writer_vo = WriterVo(writer_predicted.id, writer_predicted.name, writer_predicted.username)
+        vfunc = np.vectorize(func)
+        writer_predicted = writers[np.where(vfunc(writers) == final_prediction)[0][0]]
+        writer_vo = WriterVo(writer_predicted.id, writer_predicted.name, writer_predicted.username)
         raise ExceptionHandler(message=HttpMessages.SUCCESS.value, status_code=HttpErrors.SUCCESS.value, data=writer_vo)
     except KeyError as e:
         raise ExceptionHandler(message=HttpMessages.CONFLICT_PREDICTION.value, status_code=HttpErrors.CONFLICT.value)
-
-
-@app.route("/writer", methods=['PUT'])
-def update_writer_features():
-    try:
-        if 'captured_image' in request.files:
-            # get image from request
-            images = request.files['captured_image']
-            filename = str(int(time.time())) + '.jpg'
-            images.save(UPLOAD_FOLDER + filename)
-            training_image = cv2.imread(UPLOAD_FOLDER + filename)
-
-            # get writer
-            writers_id = int(request.form['id'])
-            writer = writers_dao.get_writer(writers_id)
-
-            # initialization for variables
-            # horest_model.num_lines_per_class= len(writer.features.horest_features)
-            # texture_model.num_blocks_per_class= len(writer.features.texture_feature)
-
-            # get features
-            pool = Pool(3)
-            async_results = []
-            async_results += [pool.apply_async(horest_model.get_features, (training_image,))]
-            async_results += [pool.apply_async(texture_model.get_features, (training_image,))]
-            async_results += [pool.apply_async(sift_model.get_features, (filename, training_image))]
-
-            pool.close()
-            pool.join()
-            num_lines, horest_features = async_results[0].get()
-            num_blocks, texture_features = async_results[1].get()
-            SDS, SOH = async_results[2].get()
-
-            # adjust nan
-            horest_features = horest_model.adjust_nan_values(
-                np.reshape(horest_features,
-                           (num_lines, horest_model.get_num_features()))).tolist()
-            texture_features = texture_model.adjust_nan_values(
-                np.reshape(texture_features,
-                           (num_blocks,
-                            texture_model.get_num_features()))).tolist()
-
-            # set features
-            features = writer.features
-            features.horest_features.extend(horest_features)
-            features.texture_feature.extend(texture_features)
-
-            features.sift_SDS.append(SDS[0].tolist())
-            features.sift_SOH.append(SOH[0].tolist())
-
-            status_code, message = writers_dao.update_writer(writer)
-            raise ExceptionHandler(message=message.value, status_code=status_code.value)
-
-    except KeyError as e:
-        raise ExceptionHandler(message=HttpMessages.NOTFOUND.value, status_code=HttpErrors.NOTFOUND.value)
 
 
 @app.route("/writer", methods=['POST'])
@@ -269,6 +222,70 @@ def create_writer():
         status_code, message = writers_dao.create_writer(writer)
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value)
+
+
+@app.route("/writer", methods=['PUT'])
+def update_writer_features():
+
+    """
+    API for updating a writer features
+    :parameter: request contains
+                - image name: _filename
+                - writer id: _id
+    :raise: Exception contains
+            - response message:
+                "OK" for success, "Not found" for image not found
+            - response status code:
+                200 for success, 400 for image not found
+    """
+    try:
+        # get image from request
+        filename = request.get_json['_filename']
+        training_image = cv2.imread(UPLOAD_FOLDER+'training/' + filename)
+
+        # get writer
+        writer_id = int(request.get_json['_id'])
+        writer = writers_dao.get_writer(writer_id)
+
+        # initialization for variables
+        # horest_model.num_lines_per_class= len(writer.features.horest_features)
+        # texture_model.num_blocks_per_class= len(writer.features.texture_feature)
+
+        # get features
+        pool = Pool(3)
+        async_results = []
+        async_results += [pool.apply_async(horest_model.get_features, (training_image,))]
+        async_results += [pool.apply_async(texture_model.get_features, (training_image,))]
+        async_results += [pool.apply_async(sift_model.get_features, (filename, training_image))]
+
+        pool.close()
+        pool.join()
+        num_lines, horest_features = async_results[0].get()
+        num_blocks, texture_features = async_results[1].get()
+        SDS, SOH = async_results[2].get()
+
+        # adjust nan
+        horest_features = horest_model.adjust_nan_values(
+            np.reshape(horest_features,
+                       (num_lines, horest_model.get_num_features()))).tolist()
+        texture_features = texture_model.adjust_nan_values(
+            np.reshape(texture_features,
+                       (num_blocks,
+                        texture_model.get_num_features()))).tolist()
+
+        # set features
+        features = writer.features
+        features.horest_features.extend(horest_features)
+        features.texture_feature.extend(texture_features)
+
+        features.sift_SDS.append(SDS[0].tolist())
+        features.sift_SOH.append(SOH[0].tolist())
+
+        status_code, message = writers_dao.update_writer(writer)
+        raise ExceptionHandler(message=message.value, status_code=status_code.value)
+
+    except KeyError as e:
+        raise ExceptionHandler(message=HttpMessages.NOTFOUND.value, status_code=HttpErrors.NOTFOUND.value)
 
 
 @app.route("/profile", methods=['GET'])
