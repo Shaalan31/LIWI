@@ -90,6 +90,8 @@ def predict_writer(testing_image, filename, writers_ids, dao, url):
     all_features_texture = pca.fit_transform(all_features_texture)
     texture_model.fit_classifier(all_features_texture, labels_texture)
 
+    #set english code book for sift
+    sift_model.set_code_book("en")
     pool = Pool(3)
     async_results = []
     async_results += [pool.apply_async(horest_model.test, (testing_image, mu_horest, sigma_horest))]
@@ -186,10 +188,10 @@ def predict_writer_arabic(testing_image, filename, writers_ids, dao, url):
                                                      num_current_examples_texture * texture_model.get_num_features())))
 
         # appending sift features
-        # for i in range(len(writer.features.sift_SDS)):
-        #     SDS_train.append(np.array([writer.features.sift_SDS[i]]))
-        #     SOH_train.append(np.array([writer.features.sift_SOH[i]]))
-        #     writers_lookup_array.append(writer.id)
+        for i in range(len(writer.features.sift_SDS)):
+            SDS_train.append(np.array([writer.features.sift_SDS[i]]))
+            SOH_train.append(np.array([writer.features.sift_SOH[i]]))
+            writers_lookup_array.append(writer.id)
 
     # fit texture classifier
     all_features_texture = np.reshape(all_features_texture,
@@ -200,11 +202,13 @@ def predict_writer_arabic(testing_image, filename, writers_ids, dao, url):
     all_features_texture = pca.fit_transform(all_features_texture)
     texture_model.fit_classifier(all_features_texture, labels_texture)
 
-    # pool = Pool(2)
-    pool = Pool(1)
+    #set arabic code book for sift
+    sift_model.set_code_book("ar")
+
+    pool = Pool(2)
     async_results = []
     async_results += [pool.apply_async(texture_model.test, (testing_image, mu_texture, sigma_texture, pca))]
-    # async_results += [pool.apply_async(sift_model.predict, (SDS_train, SOH_train, testing_image, filename))]
+    async_results += [pool.apply_async(sift_model.predict, (SDS_train, SOH_train, testing_image, filename))]
 
     pool.close()
     pool.join()
@@ -212,7 +216,7 @@ def predict_writer_arabic(testing_image, filename, writers_ids, dao, url):
     predictions = []
     # used to match the probability with classes
     texture_classes = texture_model.get_classifier_classes()
-    texture_predictions = async_results[1].get()[0]
+    texture_predictions = async_results[0].get()[0]
     predictions.append(texture_classes[np.argmax(texture_predictions)])
     texture_indecies_sorted = np.argsort(texture_classes, axis=0)
     sorted_texture_predictions = texture_predictions[texture_indecies_sorted[::-1]]
@@ -220,11 +224,11 @@ def predict_writer_arabic(testing_image, filename, writers_ids, dao, url):
 
     score = sorted_texture_predictions
 
-    # sift_prediction = async_results[2].get()
-    # sift_prediction = writers_lookup_array[sift_prediction]
-    # predictions.append(sift_prediction)
+    sift_prediction = async_results[1].get()
+    sift_prediction = writers_lookup_array[sift_prediction]
+    predictions.append(sift_prediction)
 
-    # score[np.argwhere(sift_prediction)] += (1 / 3)
+    score[np.argwhere(sift_prediction)] += (1 / 3)
 
     final_prediction = int(sorted_texture_classes[np.argmax(score)])
 
@@ -260,6 +264,9 @@ def update_features(training_image, filename, writer_id, dao):
                      -message
    """
     writer = dao.get_writer(writer_id)
+
+    #set english code book
+    sift_model.set_code_book("en")
 
     # get features
     pool = Pool(3)
@@ -308,19 +315,20 @@ def update_features_arabic(training_image, filename, writer_id, dao):
                  -message
    """
     writer = dao.get_writer(writer_id)
+    #set arabic code book
+    sift_model.set_code_book("ar")
 
     # get features
-    pool = Pool(1)
-    # pool = Pool(2)
+    pool = Pool(2)
     async_results = []
     async_results += [pool.apply_async(texture_model.get_features, (training_image,))]
-    # async_results += [pool.apply_async(sift_model.get_features, (filename, training_image))]
+    async_results += [pool.apply_async(sift_model.get_features, (filename, training_image))]
 
     pool.close()
     pool.join()
 
-    num_blocks, texture_features = async_results[1].get()
-    # SDS, SOH = async_results[2].get()
+    num_blocks, texture_features = async_results[0].get()
+    SDS, SOH = async_results[1].get()
 
     # adjust nan
     texture_features = texture_model.adjust_nan_values(
@@ -332,8 +340,8 @@ def update_features_arabic(training_image, filename, writer_id, dao):
     features = writer.features
     features.texture_feature.extend(texture_features)
 
-    # features.sift_SDS.append(SDS[0].tolist())
-    # features.sift_SOH.append(SOH[0].tolist())
+    features.sift_SDS.append(SDS[0].tolist())
+    features.sift_SOH.append(SOH[0].tolist())
 
     status_code, message = dao.update_writer(writer)
     return status_code, message
