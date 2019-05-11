@@ -1,28 +1,31 @@
 import cv2
-import numpy as np
 import glob
 from pathlib import Path
 from siftmodel.features import *
 from siftmodel.word_segmentation import *
 from siftmodel.feature_matching import *
-
+import pickle
+import os
 
 class SiftModel:
-    def __init__(self, first_class, last_class, code_book):
+    def __init__(self, first_class=1, last_class=1):
         self.base_train = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/Samples/'
         self.base_test = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCases/'
         self.first_class = first_class
         self.last_class = last_class
-        self.code_book = code_book
+        fn = os.path.join(os.path.dirname(__file__), 'centers.pkl')
+
+        self.code_book = pickle.load(open(fn, "rb"))
         # create needed objects
         self.segmentation = WordSegmentation()
         self.preprocess = Preprocessing()
         self.features = FeaturesExtraction()
         self.accuracy = None
 
-    def get_features(self, path, name):
+    def get_features(self, name, image=None, path=""):
 
-        image = cv2.imread(path)
+        if image is None:
+            image = cv2.imread(path)
         image = self.preprocess.remove_shadow(image)
 
         # extract handwriting from image
@@ -56,7 +59,7 @@ class SiftModel:
                     print(name)
 
                     # Feature Extraction
-                    SDS, SOH = self.get_features(self.base_train + 'Class' + str(count) + '/' + name, name)
+                    SDS, SOH = self.get_features(name, path=self.base_train + 'Class' + str(count) + '/' + name)
                     SDS_train.append(SDS)
                     SOH_train.append(SOH)
 
@@ -80,7 +83,7 @@ class SiftModel:
                 name = Path(filename).name
 
                 # Feature Extraction
-                SDS, SOH = self.get_features(self.base_test + name, name)
+                SDS, SOH = self.get_features(name, path=self.base_test + name)
 
                 # Feature Matching and Fusion
                 manhattan = []
@@ -91,12 +94,11 @@ class SiftModel:
                     chi_square.append(D2)
                 prediction = matching.match(manhattan, chi_square, w=0.75)
 
-
                 class_numb = int(prediction / 2) + self.first_class
-                print(name + ' , class number: ' +  str(class_numb))
-                
+                print(name + ' , class number: ' + str(class_numb))
+
                 # Calculate accuracy
-                if(class_numb == count):
+                if (class_numb == count):
                     right_test_cases += 1
                 total_test_cases += 1
 
@@ -107,6 +109,22 @@ class SiftModel:
                 # break
             count += 1
         self.accuracy = np.array([[right_test_cases], [total_test_cases]])
+
+    def predict(self, SDS_train, SOH_train, testing_image, name):
+        matching = FeatureMatching()
+        # Feature Extraction
+        SDS, SOH = self.get_features(name, image=testing_image)
+
+        # Feature Matching and Fusion
+        manhattan = []
+        chi_square = []
+        for i in range(0, len(SDS_train)):
+            D1, D2 = matching.calculate_distances(u=SDS, v=SDS_train[i], x=SOH, y=SOH_train[i])
+            manhattan.append(D1)
+            chi_square.append(D2)
+        prediction = matching.match2(manhattan, chi_square, w=0.75)
+
+        return prediction
 
     def run(self):
         SDS, SOH = self.train()

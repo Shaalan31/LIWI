@@ -37,3 +37,14 @@ class FeatureMatching:
         D = w * manhattan + (1 - w) * chi_square
 
         return np.argmin(D)
+
+    def match2(self, manhattan, chi_square, w):
+
+        # normalize two distances
+        manhattan = (manhattan - np.min(manhattan)) / (np.max(manhattan) - np.min(manhattan))
+        chi_square = (chi_square - np.min(chi_square)) / (np.max(chi_square) - np.min(chi_square))
+
+        # D new distance to measure the dissimilarity between I1 and I2
+        D = w * manhattan + (1 - w) * chi_square
+        result = np.array([np.argmin(D),0,0])
+        return np.argmin(D)

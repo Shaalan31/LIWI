@@ -123,10 +123,10 @@ def start():
     class_labels = list(range(1, num_classes + 1))
     classCombinations = combinations(class_labels, r=30)
 
-    classifier = svm.SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
-                         decision_function_shape='ovr', degree=3, gamma='scale', kernel='rbf',
-                         max_iter=-1, probability=False, random_state=None, shrinking=True,
-                         tol=0.001, verbose=False)
+    classifier = svm.SVC(C=10.0, cache_size=200, class_weight=None, coef0=0.0,
+                             decision_function_shape='ovr', degree=3, gamma='scale', kernel='rbf',
+                             max_iter=-1, probability=True, random_state=1545481387, shrinking=True,
+                             tol=0.001, verbose=False)
 
     avg = np.array([])
     for class_combination in classCombinations:
@@ -156,8 +156,10 @@ def start():
             # print(test_combination[classNum])
             test_vector = (testing_dict[class_number]).copy()
             test_vector = (test_vector - mu) / sigma
-            prediction = classifier.predict(pca.transform(test_vector.reshape(1, -1)))
-            # print(prediction)
+            prediction = classifier.predict_proba(pca.transform(test_vector.reshape(1, -1)))
+            classes = classifier.classes_
+            prediction = classes[np.argmax(prediction)]
+            print(prediction)
 
             if prediction == class_number:
                 correct_answers += 1

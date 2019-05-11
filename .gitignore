@@ -4,6 +4,7 @@ TestCases/
 Samples/
 test/
 iAm/
+uploads/
 *.pdf
 Datasets/
 *.txt
