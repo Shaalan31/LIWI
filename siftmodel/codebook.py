@@ -146,48 +146,52 @@ class Som_iam:
 
 class Som_KHATT:
 
-    def __init__(self,config_file_path):
+    def __init__(self,new = False):
         config_file = open(config_file_path, "r")
         #Array of configurations
         config = config_file.read().split(',')
 
         self.descriptors = None
+        self.load_descriptors()
         self.sofm = None
-        self.data = None
+        if not new:
+            self.init_sofm()
+        else:
+            self.read_sofm()
 
 
 
     # load descriptors if already done before
-    def load_descriptors(self,filename):
-        with open(filename, 'rb') as input:
-            self.descriptors = pickle.load(input)
+    def load_descriptors(self,filename = 'C:/Users/omars/Documents/Github/LIWI/Datasets/KHATT/AData.h5' ):
+        with h5py.File(filename, 'r') as hf:
+            self.descriptors = hf['keypoints-batch'][:]
 
 
     def init_sofm(self,lr=0.5):
         self.sofm = algorithms.SOFM(n_inputs=128,n_outputs=430,step=lr,learning_radius=0,weight='init_pca',shuffle_data=True,verbose =True)
-        with open('sofm_iam.pkl', 'wb') as output:
+        with open('sofm_KHATT.pkl', 'wb') as output:
             pickle.dump(self.sofm, output, pickle.HIGHEST_PROTOCOL)
 
     def read_sofm(self):
-        with open('sofm_iam.pkl', 'rb') as input:
+        with open('sofm_KHATT.pkl', 'rb') as input:
             self.sofm = pickle.load(input)
 
-    def train_sofm(self,data,ep=1):
-        self.sofm.train(data,epochs=ep)
-        with open('sofm_iam.pkl', 'wb') as output:
+    def train_sofm(self,ep=1):
+        self.sofm.train(self.descriptors,epochs=ep)
+        with open('sofm_KHATT.pkl', 'wb') as output:
             pickle.dump(self.sofm, output, pickle.HIGHEST_PROTOCOL)
 
 
     def generate_codebook(self,sofm):
         centers=(sofm.weight).transpose()
-        with open('centers_iam.pkl', 'wb') as output:
+        with open('centers_KHATT.pkl', 'wb') as output:
             pickle.dump(centers, output, pickle.HIGHEST_PROTOCOL)
         print(centers)
         print("centers shape are : ",centers.shape)
 
 
     def read_codebook(self):
-        with open('centers_iam.pkl', 'rb') as input:
+        with open('centers_KHATT.pkl', 'rb') as input:
             centers = pickle.load(input)
         return centers
 
