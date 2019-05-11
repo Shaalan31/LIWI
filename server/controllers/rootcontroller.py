@@ -253,7 +253,7 @@ def set_writers():
     names, birthdays, phones, addresses, nid, images = fake_data()
 
     # loop on the writers
-    for class_number in range(1, num_classes + 1):
+    for class_number in range(2, num_classes + 1):
         writer_name = names[class_number - 1]
 
         writer_horest_features = []
@@ -266,7 +266,7 @@ def set_writers():
 
         # loop on training data for each writer
         for filename in glob.glob(
-                'D:/Uni/Graduation Project/All Test Cases/IAMJPG/Samples/Class' + str(class_number) + '/*.jpg'):
+                'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCasesCompressed/Samples/Class' + str(class_number) + '/*.jpg'):
             print(filename)
             image = cv2.imread(filename)
             print('Horest Features')
@@ -314,4 +314,4 @@ def set_writers():
 
 
 if __name__ == '__main__':
-    app.run(host='192.168.1.11', port='5000')
+    app.run(host='127.0.0.1', port='5000')
