@@ -3,9 +3,7 @@ from server.dao.connection import Database
 from server.dao.writers import Writers
 from server.httpexceptions.exceptions import ExceptionHandler
 from server.utils.writerencoder import *
-from server.utils.utilities import *
 from server.services.writerservice import *
-
 import uuid
 import cv2
 
