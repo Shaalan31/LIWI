@@ -86,7 +86,8 @@ def get_prediction():
 
         if language == "ar":
             status, message, writers_predicted = predict_writer_arabic(testing_image, filename, writers_ids,
-                                                                       Writers(db.get_collection_arabic()), image_base_url)
+                                                                       Writers(db.get_collection_arabic()),
+                                                                       image_base_url)
         else:
             status, message, writers_predicted = predict_writer(testing_image, filename, writers_ids, writers_dao,
                                                                 image_base_url)
@@ -248,67 +249,24 @@ def update_writer_features():
 
 @app.route("/setWriters")
 def set_writers():
-    num_classes = 100
-
-    names, birthdays, phones, addresses, nid, images = fake_data()
-
-    # loop on the writers
-    for class_number in range(2, num_classes + 1):
-        writer_name = names[class_number - 1]
-
-        writer_horest_features = []
-        writer_texture_features = []
-        SDS_train = []
-        SOH_train = []
-        horest_model.num_lines_per_class = 0
-        texture_model.num_blocks_per_class = 0
-        print('Class' + str(class_number) + ':')
-
-        # loop on training data for each writer
-        for filename in glob.glob(
-                'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCasesCompressed/Samples/Class' + str(class_number) + '/*.jpg'):
-            print(filename)
-            image = cv2.imread(filename)
-            print('Horest Features')
-            # writer_horest_features.append(horest_model.get_features(cv2.imread(filename))[0].tolist())
-            _, horest_features = horest_model.get_features(image)
-            writer_horest_features = np.append(writer_horest_features, horest_features[0].tolist())
-            print('Texture Features')
-            # writer_texture_features.append(texture_model.get_features(cv2.imread(filename))[0].tolist())
-            _, texture_features = texture_model.get_features(image)
-            writer_texture_features = np.append(writer_texture_features, texture_features[0].tolist())
-            print('Sift Model')
-            name = Path(filename).name
-            SDS, SOH = sift_model.get_features(name, image=image)
-            SDS_train.append(SDS[0].tolist())
-            SOH_train.append(SOH[0].tolist())
-
-        writer_horest_features = horest_model.adjust_nan_values(
-            np.reshape(writer_horest_features,
-                       (horest_model.num_lines_per_class, horest_model.get_num_features()))).tolist()
-        writer_texture_features = texture_model.adjust_nan_values(
-            np.reshape(writer_texture_features,
-                       (texture_model.num_blocks_per_class, texture_model.get_num_features()))).tolist()
-
-        writer = Writer()
-        features = Features()
-        features.horest_features = writer_horest_features
-        features.texture_feature = writer_texture_features
-        features.sift_SDS = SDS_train
-        features.sift_SOH = SOH_train
-
-        writer.features = features
-        writer.id = class_number
-        writer.name = writer_name
-        writer.birthday = birthdays[class_number - 1]
-        writer.address = addresses[class_number - 1]
-        writer.phone = phones[class_number - 1]
-        writer.nid = nid[class_number - 1]
-        writer.image = images[class_number - 1]
-        name_splitted = writer.name.split()
-        writer.username = name_splitted[0][0].lower() + name_splitted[1].lower() + str(writer.id)
-        status_code, message = writers_dao.create_writer(writer)
-        print(message.value)
+    """
+       API for filling database collection with dummy data
+       :raise: Exception contains
+               - response message:
+                   "OK" for success
+               - response status code:
+                   200 for success
+       """
+    start_class = 1
+    end_class = 100
+    language = request.args.get('lang', None)
+    if language == "ar":
+        base_path = 'D:/Uni/Graduation Project/All Test Cases/KHATT/Samples/Class'
+        status_code, message = fill_collection_arabic(start_class, end_class, base_path,
+                                                      Writers(db.get_collection_arabic()))
+    else:
+        base_path = 'D:/Uni/Graduation Project/All Test Cases/IAMJPG/Samples/Class'
+        status_code, message = fill_collection(start_class, end_class, base_path, writers_dao)
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value)
 
