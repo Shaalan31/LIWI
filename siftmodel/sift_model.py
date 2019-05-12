@@ -7,6 +7,7 @@ from siftmodel.feature_matching import *
 import pickle
 import os
 
+
 class SiftModel:
     def __init__(self, first_class=1, last_class=1):
         self.base_train = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/Samples/'
@@ -15,24 +16,27 @@ class SiftModel:
         self.last_class = last_class
         self.code_book = None
         # create needed objects
-        self.segmentation = WordSegmentation()
         self.preprocess = Preprocessing()
         self.features = FeaturesExtraction()
         self.accuracy = None
 
-    def get_features(self, name, image=None, path=""):
+    def get_features(self, name, lang="en", image=None, path=""):
 
         if image is None:
             image = cv2.imread(path)
         image = self.preprocess.remove_shadow(image)
 
         # extract handwriting from image
-        top, bottom = self.preprocess.extract_text(image)
-        image = image[top:bottom, :]
+        if lang == "en":
+            top, bottom = self.preprocess.extract_text(image)
+            image = image[top:bottom, :]
+        else:
+            image= cv2.copyMakeBorder(image,10,10,10,10,cv2.BORDER_CONSTANT,value=[255,255,255])
+
         # cv2.imwrite('image_extract_text.png', image)
 
         # segment words and get its sift descriptors and orientations
-        sd, so = self.segmentation.word_segmentation(image, name)
+        sd, so = WordSegmentation(lang).word_segmentation(image, name)
 
         # calculate SDS and SOH
         SDS = self.features.sds(sd, self.code_book, t=1)
@@ -108,10 +112,10 @@ class SiftModel:
             count += 1
         self.accuracy = np.array([[right_test_cases], [total_test_cases]])
 
-    def predict(self, SDS_train, SOH_train, testing_image, name):
+    def predict(self, SDS_train, SOH_train, testing_image, name,lang="en"):
         matching = FeatureMatching()
         # Feature Extraction
-        SDS, SOH = self.get_features(name, image=testing_image)
+        SDS, SOH = self.get_features(name, image=testing_image,lang=lang)
 
         # Feature Matching and Fusion
         manhattan = []
@@ -128,7 +132,7 @@ class SiftModel:
         SDS, SOH = self.train()
         self.test(SDS_train=SDS, SOH_train=SOH)
 
-    def set_code_book(self,lang):
+    def set_code_book(self, lang):
         if lang == 'en':
             fn = os.path.join(os.path.dirname(__file__), 'centers.pkl')
         elif lang == 'ar':

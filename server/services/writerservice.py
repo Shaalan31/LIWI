@@ -96,7 +96,7 @@ def predict_writer(testing_image, filename, writers_ids, dao, url):
     async_results = []
     async_results += [pool.apply_async(horest_model.test, (testing_image, mu_horest, sigma_horest))]
     async_results += [pool.apply_async(texture_model.test, (testing_image, mu_texture, sigma_texture, pca))]
-    async_results += [pool.apply_async(sift_model.predict, (SDS_train, SOH_train, testing_image, filename))]
+    async_results += [pool.apply_async(sift_model.predict, (SDS_train, SOH_train, testing_image, filename,"en"))]
 
     pool.close()
     pool.join()
@@ -208,7 +208,7 @@ def predict_writer_arabic(testing_image, filename, writers_ids, dao, url):
     pool = Pool(2)
     async_results = []
     async_results += [pool.apply_async(texture_model.test, (testing_image, mu_texture, sigma_texture, pca))]
-    async_results += [pool.apply_async(sift_model.predict, (SDS_train, SOH_train, testing_image, filename))]
+    async_results += [pool.apply_async(sift_model.predict, (SDS_train, SOH_train, testing_image, filename,"ar"))]
 
     pool.close()
     pool.join()
@@ -273,7 +273,7 @@ def update_features(training_image, filename, writer_id, dao):
     async_results = []
     async_results += [pool.apply_async(horest_model.get_features, (training_image,))]
     async_results += [pool.apply_async(texture_model.get_features, (training_image,))]
-    async_results += [pool.apply_async(sift_model.get_features, (filename, training_image))]
+    async_results += [pool.apply_async(sift_model.get_features, (filename,"en", training_image))]
 
     pool.close()
     pool.join()
@@ -322,7 +322,7 @@ def update_features_arabic(training_image, filename, writer_id, dao):
     pool = Pool(2)
     async_results = []
     async_results += [pool.apply_async(texture_model.get_features, (training_image,))]
-    async_results += [pool.apply_async(sift_model.get_features, (filename, training_image))]
+    async_results += [pool.apply_async(sift_model.get_features, (filename,"ar", training_image))]
 
     pool.close()
     pool.join()
@@ -372,6 +372,9 @@ def fill_collection(start_class, end_class, base_path, dao):
 
     names, birthdays, phones, addresses, nid, images = fake_data()
 
+    # set English code book
+    sift_model.set_code_book("en")
+
     # loop on the writers
     for class_number in range(start_class, num_classes + 1):
         writer_name = names[class_number - 1]
@@ -380,6 +383,7 @@ def fill_collection(start_class, end_class, base_path, dao):
         writer_texture_features = []
         SDS_train = []
         SOH_train = []
+
         horest_model.num_lines_per_class = 0
         texture_model.num_blocks_per_class = 0
         print('Class' + str(class_number) + ':')
@@ -399,7 +403,7 @@ def fill_collection(start_class, end_class, base_path, dao):
             writer_texture_features = np.append(writer_texture_features, texture_features[0].tolist())
             print('Sift Model')
             name = Path(filename).name
-            SDS, SOH = sift_model.get_features(name, image=image)
+            SDS, SOH = sift_model.get_features(name, image=image,lang="en")
             SDS_train.append(SDS[0].tolist())
             SOH_train.append(SOH[0].tolist())
 
@@ -448,20 +452,23 @@ def fill_collection_arabic(start_class, end_class, base_path, dao):
 
     names, birthdays, phones, addresses, nid, images = fake_data()
 
+    # set arabic code book
+    sift_model.set_code_book("ar")
+
     # loop on the writers
     for class_number in range(start_class, num_classes + 1):
         writer_name = names[class_number - 1]
 
         writer_texture_features = []
-        # SDS_train = []
-        # SOH_train = []
+        SDS_train = []
+        SOH_train = []
         horest_model.num_lines_per_class = 0
         texture_model.num_blocks_per_class = 0
         print('Class' + str(class_number) + ':')
 
         # loop on training data for each writer
         for filename in glob.glob(
-                base_path + str(class_number) + '/*.jpg'):
+                base_path + str(class_number) + '/*.tif'):
             print(filename)
             image = cv2.imread(filename)
 
@@ -469,11 +476,11 @@ def fill_collection_arabic(start_class, end_class, base_path, dao):
             _, texture_features = texture_model.get_features(image)
             writer_texture_features = np.append(writer_texture_features, texture_features[0].tolist())
 
-            # print('Sift Model')
-            # name = Path(filename).name
-            # SDS, SOH = sift_model.get_features(name, image=image)
-            # SDS_train.append(SDS[0].tolist())
-            # SOH_train.append(SOH[0].tolist())
+            print('Sift Model')
+            name = Path(filename).name
+            SDS, SOH = sift_model.get_features(name, image=image,lang="ar")
+            SDS_train.append(SDS[0].tolist())
+            SOH_train.append(SOH[0].tolist())
 
         writer_texture_features = texture_model.adjust_nan_values(
             np.reshape(writer_texture_features,
@@ -482,8 +489,8 @@ def fill_collection_arabic(start_class, end_class, base_path, dao):
         writer = Writer()
         features = Features()
         features.texture_feature = writer_texture_features
-        # features.sift_SDS = SDS_train
-        # features.sift_SOH = SOH_train
+        features.sift_SDS = SDS_train
+        features.sift_SOH = SOH_train
 
         writer.features = features
         writer.id = class_number
