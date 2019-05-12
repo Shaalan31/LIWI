@@ -154,9 +154,9 @@ db = Database()
 db.connect()
 db.create_collection()
 writers_dao = Writers(db.get_collection())
-count = 1
-first_class = 1
-last_class = 30
+first_class = 31
+last_class = 60
+count = first_class
 total_test_cases = 0
 right_test_cases = 0
 while count <= last_class:
