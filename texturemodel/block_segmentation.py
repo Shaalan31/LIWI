@@ -3,8 +3,13 @@ from skimage.filters import gaussian
 from skimage.filters import threshold_otsu
 
 class BlockSegmentation:
-    def __init__(self,image):
+    def __init__(self,image,h_coeff=None):
         self.image=image
+        if h_coeff is None:
+            self.h_coeff=0.5
+        else:
+            self.h_coeff=h_coeff
+
     def segment(self):
         # image = remove_shadow(image)
 
@@ -61,7 +66,7 @@ class BlockSegmentation:
 
             if x == 256:
                 x = 0
-                y += int((np.average(heights)) / 2)
+                y += int((np.average(heights)) *self.h_coeff)
                 heights = np.asarray([])
 
             if y == 256:

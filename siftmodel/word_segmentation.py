@@ -1,14 +1,18 @@
 import cv2
 from siftmodel.sift import *
 from siftmodel.preprocessing import *
-
+from utils.common_functions import *
 
 class WordSegmentation:
-    def __init__(self):
+    def __init__(self,lang="en"):
+        if lang=="en":
+            self._black_percentage_threshold = 1
+        else:
+            self._black_percentage_threshold = 3.5
+
         pass
 
-    @staticmethod
-    def segment(image_gray):
+    def segment(self,image_gray):
         # Noise removal with gaussian
         image_gray = gaussian(image_gray, 1)
 
@@ -17,7 +21,7 @@ class WordSegmentation:
         threshold = np.round(threshold_otsu(image_gray) * 1.1)
         image_gray[(image_gray > threshold)] = 255
         image_gray[(image_gray <= threshold)] = 0
-
+        # show_images([image_gray])
         indexes_lines = []
         line_start = 0
         found_line = False
@@ -30,11 +34,11 @@ class WordSegmentation:
             countWhite = count[1]
             total = countWhite + countBlack
             percentageBlack = (countBlack / total) * 100
-            if percentageBlack > 1 and not found_line:
+            if percentageBlack > self._black_percentage_threshold and not found_line:
                 found_line = True
                 line_start = line_index
             else:
-                if found_line and percentageBlack < 1:
+                if found_line and percentageBlack < self._black_percentage_threshold:
                     if line_index - line_start > (image_gray.shape[0] / 60):
                         indexes_lines.append([line_start, line_index])
                     found_line = False
