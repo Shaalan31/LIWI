@@ -123,7 +123,7 @@ def predict_writer(testing_image, filename, writers_ids, dao, url):
     sift_prediction = writers_lookup_array[sift_prediction]
     predictions.append(sift_prediction)
 
-    score[np.argwhere(sift_prediction)] += (1 / 3)
+    score[np.argwhere(sorted_horest_classes == sift_prediction)] += (1 / 3)
 
     final_prediction = int(sorted_horest_classes[np.argmax(score)])
 
@@ -227,7 +227,7 @@ def predict_writer_arabic(testing_image, filename, writers_ids, dao, url):
     # sift_prediction = writers_lookup_array[sift_prediction]
     # predictions.append(sift_prediction)
 
-    # score[np.argwhere(sift_prediction)] += (1 / 3)
+    # score[np.argwhere(sorted_texture_classes == sift_prediction)] += (1 / 3)
 
     final_prediction = int(sorted_texture_classes[np.argmax(score)])
 

@@ -143,7 +143,7 @@ def predict_writer(testing_image, filename, writers_ids, dao):
     sift_prediction = writers_lookup_array[sift_prediction]
     print("Sift Prediction:" + str(sift_prediction))
 
-    score[np.argwhere(sift_prediction)] += (1 / 3)
+    score[np.argwhere(sorted_texture_classes == sift_prediction)] += (1 / 3)
     final_prediction = int(sorted_horest_classes[np.argmax(score)])
     print("Common Prediction: " + str(final_prediction))
 
