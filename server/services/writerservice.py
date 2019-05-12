@@ -116,13 +116,13 @@ def predict_writer(testing_image, filename, writers_ids, dao, url):
     texture_indecies_sorted = np.argsort(texture_classes, axis=0)
     sorted_texture_predictions = texture_predictions[texture_indecies_sorted[::-1]]
 
-    score = sorted_horest_predictions + sorted_texture_predictions
+    score = 0.25 * sorted_horest_predictions + 0.25 * sorted_texture_predictions
 
     sift_prediction = async_results[2].get()
     sift_prediction = writers_lookup_array[sift_prediction]
     predictions.append(sift_prediction)
 
-    score[np.argwhere(sift_prediction)] += (1 / 3)
+    score[np.argwhere(sorted_horest_classes == sift_prediction)] += (1 / 2)
 
     final_prediction = int(sorted_horest_classes[np.argmax(score)])
 

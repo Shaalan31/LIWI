@@ -136,14 +136,14 @@ def predict_writer(testing_image, filename, writers_ids, dao):
     sorted_texture_classes = texture_classes[texture_indecies_sorted[::-1]]
     print("Texture Prediction:" + str(sorted_texture_classes[np.argmax(sorted_texture_predictions)]))
 
-    score = sorted_horest_predictions + sorted_texture_predictions
+    score = 0.25 * sorted_horest_predictions + 0.25 * sorted_texture_predictions
 
     print("Starting Sift Testing")
     sift_prediction = sift_model.predict(SDS_train, SOH_train, testing_image, filename)
     sift_prediction = writers_lookup_array[sift_prediction]
     print("Sift Prediction:" + str(sift_prediction))
 
-    score[np.argwhere(sift_prediction)] += (1 / 3)
+    score[np.argwhere(sorted_texture_classes == sift_prediction)] += (1 / 2)
     final_prediction = int(sorted_horest_classes[np.argmax(score)])
     print("Common Prediction: " + str(final_prediction))
 
@@ -154,9 +154,9 @@ db = Database()
 db.connect()
 db.create_collection()
 writers_dao = Writers(db.get_collection())
-count = 1
-first_class = 1
-last_class = 30
+first_class = 31
+last_class = 60
+count = first_class
 total_test_cases = 0
 right_test_cases = 0
 while count <= last_class:
