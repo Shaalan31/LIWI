@@ -11,7 +11,7 @@ Datasets/
 *.txt
 *.tgz
 *.csv
-
+*.xlsx
 .idea/
 *.png
 *.tgz
