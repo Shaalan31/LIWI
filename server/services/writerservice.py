@@ -90,13 +90,13 @@ def predict_writer(testing_image, filename, writers_ids, dao, url):
     all_features_texture = pca.fit_transform(all_features_texture)
     texture_model.fit_classifier(all_features_texture, labels_texture)
 
-    #set english code book for sift
+    # set english code book for sift
     sift_model.set_code_book("en")
     pool = Pool(3)
     async_results = []
     async_results += [pool.apply_async(horest_model.test, (testing_image, mu_horest, sigma_horest))]
     async_results += [pool.apply_async(texture_model.test, (testing_image, mu_texture, sigma_texture, pca))]
-    async_results += [pool.apply_async(sift_model.predict, (SDS_train, SOH_train, testing_image, filename,"en"))]
+    async_results += [pool.apply_async(sift_model.predict, (SDS_train, SOH_train, testing_image, filename, "en"))]
 
     pool.close()
     pool.join()
@@ -130,7 +130,8 @@ def predict_writer(testing_image, filename, writers_ids, dao, url):
     vfunc = np.vectorize(func)
     writer_predicted = writers[np.where(vfunc(writers) == final_prediction)[0][0]]
     writer_vo = WriterVo(writer_predicted.id, writer_predicted.name, writer_predicted.username,
-                         url + writer_predicted.image)
+                         url + writer_predicted.image, writer_predicted.address, writer_predicted.phone,
+                         writer_predicted.birthday, writer_predicted.nid)
     writers_predicted.append(writer_vo)
 
     predictions = np.unique(predictions)
@@ -139,7 +140,8 @@ def predict_writer(testing_image, filename, writers_ids, dao, url):
             if prediction != final_prediction:
                 writer_predicted = writers[np.where(vfunc(writers) == prediction)[0][0]]
                 writer_vo = WriterVo(writer_predicted.id, writer_predicted.name, writer_predicted.username,
-                                     url + writer_predicted.image)
+                                     url + writer_predicted.image, writer_predicted.address, writer_predicted.phone,
+                                     writer_predicted.birthday, writer_predicted.nid)
                 writers_predicted.append(writer_vo)
 
     return HttpErrors.SUCCESS, HttpMessages.SUCCESS, writers_predicted
@@ -202,13 +204,13 @@ def predict_writer_arabic(testing_image, filename, writers_ids, dao, url):
     all_features_texture = pca.fit_transform(all_features_texture)
     texture_model.fit_classifier(all_features_texture, labels_texture)
 
-    #set arabic code book for sift
+    # set arabic code book for sift
     sift_model.set_code_book("ar")
 
     pool = Pool(2)
     async_results = []
     async_results += [pool.apply_async(texture_model.test, (testing_image, mu_texture, sigma_texture, pca))]
-    async_results += [pool.apply_async(sift_model.predict, (SDS_train, SOH_train, testing_image, filename,"ar"))]
+    async_results += [pool.apply_async(sift_model.predict, (SDS_train, SOH_train, testing_image, filename, "ar"))]
 
     pool.close()
     pool.join()
@@ -265,7 +267,7 @@ def update_features(training_image, filename, writer_id, dao):
    """
     writer = dao.get_writer(writer_id)
 
-    #set english code book
+    # set english code book
     sift_model.set_code_book("en")
 
     # get features
@@ -273,7 +275,7 @@ def update_features(training_image, filename, writer_id, dao):
     async_results = []
     async_results += [pool.apply_async(horest_model.get_features, (training_image,))]
     async_results += [pool.apply_async(texture_model.get_features, (training_image,))]
-    async_results += [pool.apply_async(sift_model.get_features, (filename,"en", training_image))]
+    async_results += [pool.apply_async(sift_model.get_features, (filename, "en", training_image))]
 
     pool.close()
     pool.join()
@@ -315,14 +317,14 @@ def update_features_arabic(training_image, filename, writer_id, dao):
                  -message
    """
     writer = dao.get_writer(writer_id)
-    #set arabic code book
+    # set arabic code book
     sift_model.set_code_book("ar")
 
     # get features
     pool = Pool(2)
     async_results = []
     async_results += [pool.apply_async(texture_model.get_features, (training_image,))]
-    async_results += [pool.apply_async(sift_model.get_features, (filename,"ar", training_image))]
+    async_results += [pool.apply_async(sift_model.get_features, (filename, "ar", training_image))]
 
     pool.close()
     pool.join()
@@ -403,7 +405,7 @@ def fill_collection(start_class, end_class, base_path, dao):
             writer_texture_features = np.append(writer_texture_features, texture_features[0].tolist())
             print('Sift Model')
             name = Path(filename).name
-            SDS, SOH = sift_model.get_features(name, image=image,lang="en")
+            SDS, SOH = sift_model.get_features(name, image=image, lang="en")
             SDS_train.append(SDS[0].tolist())
             SOH_train.append(SOH[0].tolist())
 
@@ -478,7 +480,7 @@ def fill_collection_arabic(start_class, end_class, base_path, dao):
 
             print('Sift Model')
             name = Path(filename).name
-            SDS, SOH = sift_model.get_features(name, image=image,lang="ar")
+            SDS, SOH = sift_model.get_features(name, image=image, lang="ar")
             SDS_train.append(SDS[0].tolist())
             SOH_train.append(SOH[0].tolist())
 
