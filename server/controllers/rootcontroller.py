@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from server.dao.connection import Database
 from server.dao.writers import Writers
 from server.httpexceptions.exceptions import ExceptionHandler
+from server.httpresponses.errors import *
 from server.utils.writerencoder import *
 from server.services.writerservice import *
 import uuid
@@ -37,9 +38,6 @@ def handle_invalid_usage(error):
 def get_writers():
     """
     API to get all writers
-    :parameter: Query parameter lang
-                  - en for english
-                  - ar for arabic
     :raise: Exception containing:
             message:
             - "OK" for success
@@ -51,12 +49,8 @@ def get_writers():
             - list of WritersVo: each writervo contains id, name, username
             - None if there is no writer
     """
-    language = request.args.get('lang', None)
-    dao = writers_dao
-    if language == "ar":
-        dao = Writers(db.get_collection_arabic())
 
-    status_code, message, data = dao.get_writers()
+    status_code, message, data = writers_dao.get_writers()
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value, data=data)
 
@@ -106,9 +100,6 @@ def get_prediction():
 def create_writer():
     """
     API for creating a new writer
-    :parameter: Query parameter lang
-                  - en for english
-                  - ar for arabic
     :parameter: request contains
                 - writer name: _name
                 - writer username: _username
@@ -125,10 +116,7 @@ def create_writer():
 
     # request parameters
     new_writer = request.get_json()
-    language = request.args.get('lang', None)
-    dao = writers_dao
-    if language == "ar":
-        dao = Writers(db.get_collection_arabic())
+    arabic_dao = Writers(db.get_collection_arabic())
 
     status_code, message = validate_writer_request(new_writer)
     if status_code.value == 200:
@@ -139,9 +127,12 @@ def create_writer():
         writer.phone = new_writer["_phone"]
         writer.nid = new_writer["_nid"]
         writer.image = new_writer["_image"]
-        writer.id = dao.get_writers_count() + 1
+        writer.birthday = new_writer["_birthday"]
+        writer.id = writers_dao.get_writers_count() + 1
 
-        status_code, message = dao.create_writer(writer)
+        status_code, message = writers_dao.create_writer(writer)
+        if status_code == HttpErrors.SUCCESS:
+            status_code, message = arabic_dao.create_writer(writer)
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value)
 
@@ -167,12 +158,7 @@ def get_profile():
     """
     writer_id = request.args.get('id', None)
 
-    language = request.args.get('lang', None)
-    dao = writers_dao
-    if language == "ar":
-        dao = Writers(db.get_collection_arabic())
-
-    status_code, message, profile_vo = dao.get_writer_profile(writer_id)
+    status_code, message, profile_vo = writers_dao.get_writer_profile(writer_id)
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value, data=profile_vo)
 
