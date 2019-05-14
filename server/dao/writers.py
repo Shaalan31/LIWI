@@ -48,7 +48,6 @@ class Writers:
         :param writer_id: int
         :return: writer model if it exists, if it does not return none
         """
-        
         writer = self.collection.find({"_id": writer_id})
         if writer.count() == 1:
             writer_obj = dict_to_writer(writer[0])
