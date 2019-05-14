@@ -134,7 +134,7 @@ def create_writer():
         if status_code == HttpErrors.SUCCESS:
             status_code, message = arabic_dao.create_writer(writer)
 
-    raise ExceptionHandler(message=message.value, status_code=status_code.value)
+    raise ExceptionHandler(message=message.value, status_code=status_code.value,data=writer.id)
 
 
 @app.route("/profile", methods=['GET'])
