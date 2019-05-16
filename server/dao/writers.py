@@ -48,7 +48,7 @@ class Writers:
         :param writer_id: int
         :return: writer model if it exists, if it does not return none
         """
-        writer = self.collection.find({"_id": writer_id}, {"_id": 1, "_name": 1, "_username": 1, "_features": 1})
+        writer = self.collection.find({"_id": writer_id})
         if writer.count() == 1:
             writer_obj = dict_to_writer(writer[0])
             return writer_obj
@@ -74,7 +74,7 @@ class Writers:
         :return: list of writers
         """
         writers = []
-        writers_dicts = self.collection.find()
+        writers_dicts = self.collection.find({"_features": { "$ne": None }})
         if writers_dicts.count() != 0:
             for writer_dict in writers_dicts:
                 writer = dict_to_writers(writer_dict)

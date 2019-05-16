@@ -8,6 +8,7 @@ from server.httpresponses.messages import *
 from faker import Faker
 import re
 import datetime
+import copy
 
 
 def writer_to_dict(writer):
@@ -18,7 +19,7 @@ def writer_to_dict(writer):
     """
     writer_features_dict = writer.features.__dict__
     features = {'_features': writer_features_dict}
-    writer_dict = writer.__dict__
+    writer_dict = copy.deepcopy( writer.__dict__)
     writer_dict.update(features)
 
     return writer_dict
@@ -35,6 +36,10 @@ def dict_to_writer(writer_dict):
     writer.name = writer_dict["_name"]
     writer.username = writer_dict["_username"]
     writer.image = writer_dict["_image"]
+    writer.address = writer_dict["_address"]
+    writer.phone = writer_dict["_phone"]
+    writer.birthday = writer_dict["_birthday"]
+    writer.nid = writer_dict["_nid"]
 
     features_dict = writer_dict["_features"]
     features = Features()
