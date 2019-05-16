@@ -34,7 +34,7 @@ def handle_invalid_usage(error):
     return response
 
 
-@app.route("/writers")
+@app.route("/writers",methods=['GET'])
 def get_writers():
     """
     API to get all writers
