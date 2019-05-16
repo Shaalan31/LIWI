@@ -9,6 +9,10 @@ from server.dao.connection import Database
 
 from multiprocessing import Pool
 
+from server.httpresponses.errors import *
+from server.httpresponses.messages import *
+
+
 
 class WriterService():
     def __init__(self):
@@ -19,7 +23,7 @@ class WriterService():
         db.connect()
         db.create_collection()
         self.writers_dao = Writers(db.get_collection())
-        self.writers_dao_arabic = Writers(db.get_collection())
+        self.writers_dao_arabic = Writers(db.get_collection_arabic())
 
     def predict_writer(self, testing_image, filename, writers_ids, url):
         """
@@ -280,6 +284,8 @@ class WriterService():
        """
         dao = self.writers_dao
         writer = dao.get_writer(writer_id)
+        if writer is None:
+            return HttpErrors.NOTFOUND, HttpMessages.NOTFOUND
 
         # set english code book
         self.sift_model.set_code_book("en")
@@ -330,6 +336,9 @@ class WriterService():
 
         dao = self.writers_dao_arabic
         writer = dao.get_writer(writer_id)
+        if writer is None:
+            return HttpErrors.NOTFOUND, HttpMessages.NOTFOUND
+
         # set arabic code book
         self.sift_model.set_code_book("ar")
 
