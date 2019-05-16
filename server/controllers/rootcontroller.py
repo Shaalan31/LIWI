@@ -1,6 +1,4 @@
 from flask import Flask, request, jsonify, send_from_directory
-from server.dao.connection import Database
-from server.dao.writers import Writers
 from server.httpexceptions.exceptions import ExceptionHandler
 from server.httpresponses.errors import *
 from server.utils.writerencoder import *
@@ -10,10 +8,7 @@ import cv2
 
 app = Flask(__name__)
 
-db = Database()
-db.connect()
-db.create_collection()
-writers_dao = Writers(db.get_collection())
+writer_service = WriterService()
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), '../../uploads/')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -34,10 +29,10 @@ def handle_invalid_usage(error):
     return response
 
 
-@app.route("/writers",methods=['GET'])
-def get_writers():
+@app.route("/writers", methods=['GET'])
+def get_writers_not_none():
     """
-    API to get all writers
+    API to get all writers for predition where features not none
     :raise: Exception containing:
             message:
             - "OK" for success
@@ -50,7 +45,28 @@ def get_writers():
             - None if there is no writer
     """
 
-    status_code, message, data = writers_dao.get_writers()
+    status_code, message, data = writer_service.get_writers_not_none()
+
+    raise ExceptionHandler(message=message.value, status_code=status_code.value, data=data)
+
+
+@app.route("/allWriters", methods=['GET'])
+def get_writers():
+    """
+    API to get all writers for training *Language independent
+    :raise: Exception containing:
+            message:
+            - "OK" for success
+            - "No writers found"  if there is no writer
+            status_code:
+            - 200 for success
+            - 404 if there is no writer
+            data:
+            - list of WritersVo: each writervo contains id, name, username
+            - None if there is no writer
+    """
+
+    status_code, message, data = writer_service.get_all_writers()
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value, data=data)
 
@@ -83,12 +99,11 @@ def get_prediction():
         image_base_url = request.host_url + 'image/writers/'
 
         if language == "ar":
-            status, message, writers_predicted = predict_writer_arabic(testing_image, filename, writers_ids,
-                                                                       Writers(db.get_collection_arabic()),
-                                                                       image_base_url)
+            status, message, writers_predicted = writer_service.predict_writer_arabic(testing_image, filename,
+                                                                                      writers_ids, image_base_url)
         else:
-            status, message, writers_predicted = predict_writer(testing_image, filename, writers_ids, writers_dao,
-                                                                image_base_url)
+            status, message, writers_predicted = writer_service.predict_writer(testing_image, filename, writers_ids,
+                                                                               image_base_url)
 
         raise ExceptionHandler(message=message.value, status_code=status.value,
                                data=writers_predicted)
@@ -116,25 +131,14 @@ def create_writer():
 
     # request parameters
     new_writer = request.get_json()
-    arabic_dao = Writers(db.get_collection_arabic())
 
     status_code, message = validate_writer_request(new_writer)
+
+    writer_id = None
     if status_code.value == 200:
-        writer = Writer()
-        writer.name = new_writer["_name"]
-        writer.username = new_writer["_username"]
-        writer.address = new_writer["_address"]
-        writer.phone = new_writer["_phone"]
-        writer.nid = new_writer["_nid"]
-        writer.image = new_writer["_image"]
-        writer.birthday = new_writer["_birthday"]
-        writer.id = writers_dao.get_writers_count() + 1
+        status_code, message, writer_id = writer_service.add_writer(new_writer)
 
-        status_code, message = writers_dao.create_writer(writer)
-        if status_code == HttpErrors.SUCCESS:
-            status_code, message = arabic_dao.create_writer(writer)
-
-    raise ExceptionHandler(message=message.value, status_code=status_code.value,data=writer.id)
+    raise ExceptionHandler(message=message.value, status_code=status_code.value, data=writer_id)
 
 
 @app.route("/profile", methods=['GET'])
@@ -158,7 +162,7 @@ def get_profile():
     """
     writer_id = request.args.get('id', None)
 
-    status_code, message, profile_vo = writers_dao.get_writer_profile(writer_id)
+    status_code, message, profile_vo = writer_service.get_writer_profile(writer_id,request.host_url)
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value, data=profile_vo)
 
@@ -235,10 +239,9 @@ def update_writer_features():
 
         language = request.args.get('lang', None)
         if language == "ar":
-            status_code, message = update_features_arabic(training_image, filename, writer_id,
-                                                          Writers(db.get_collection_arabic()))
+            status_code, message = writer_service.update_features_arabic(training_image, filename, writer_id)
         else:
-            status_code, message = update_features(training_image, filename, writer_id, writers_dao)
+            status_code, message = writer_service.update_features(training_image, filename, writer_id)
 
         raise ExceptionHandler(message=message.value, status_code=status_code.value)
 
@@ -264,11 +267,10 @@ def set_writers():
     language = request.args.get('lang', None)
     if language == "ar":
         base_path = 'D:/Uni/Graduation Project/All Test Cases/KHATT/Samples/Class'
-        status_code, message = fill_collection_arabic(start_class, end_class, base_path,
-                                                      Writers(db.get_collection_arabic()))
+        status_code, message = writer_service.fill_collection_arabic(start_class, end_class, base_path)
     else:
         base_path = 'D:/Uni/Graduation Project/All Test Cases/IAMJPG/Samples/Class'
-        status_code, message = fill_collection(start_class, end_class, base_path, writers_dao)
+        status_code, message = writer_service.fill_collection(start_class, end_class, base_path)
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value)
 
