@@ -236,13 +236,13 @@ class WriterService():
         sorted_texture_predictions = texture_predictions[texture_indecies_sorted[::-1]]
         sorted_texture_classes = texture_classes[texture_indecies_sorted[::-1]]
 
-        score = sorted_texture_predictions
+        score = 0.6 * sorted_texture_predictions
 
         sift_prediction = async_results[1].get()
         sift_prediction = writers_lookup_array[sift_prediction]
         predictions.append(sift_prediction)
 
-        score[np.argwhere(sift_prediction)] += (1 / 3)
+        score[np.argwhere(sorted_texture_classes == sift_prediction)] += 0.4
 
         final_prediction = int(sorted_texture_classes[np.argmax(score)])
 
@@ -253,6 +253,7 @@ class WriterService():
                              url + writer_predicted.image, writer_predicted.address, writer_predicted.phone,
                              writer_predicted.birthday, writer_predicted.nid)
         writers_predicted.append(writer_vo)
+        print("Writer predicted: " + str(writer_predicted.id))
 
         predictions = np.unique(predictions)
         if len(predictions) > 1:
@@ -264,7 +265,7 @@ class WriterService():
                                          writer_predicted.birthday, writer_predicted.nid)
                     writers_predicted.append(writer_vo)
 
-        return HttpErrors.SUCCESS, HttpMessages.OK, writers_predicted
+        return HttpErrors.SUCCESS, HttpMessages.SUCCESS, writers_predicted
 
     def update_features(self, training_image, filename, writer_id):
         """
