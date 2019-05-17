@@ -68,13 +68,28 @@ class Writers:
                 writers.append(writer)
         return writers
 
-    def get_writers(self):
+    def get_writers_not_none(self):
         """
         Get writers' ids, names and usernames for the application
         :return: list of writers
         """
         writers = []
         writers_dicts = self.collection.find({"_features": { "$ne": None }})
+        if writers_dicts.count() != 0:
+            for writer_dict in writers_dicts:
+                writer = dict_to_writers(writer_dict)
+                writers.append(writer)
+            return HttpErrors.SUCCESS, HttpMessages.SUCCESS, writers
+        else:
+            return HttpErrors.NOTFOUND, HttpMessages.NOWRITERS, None
+
+    def get_writers(self):
+        """
+        Get writers' ids, names and usernames for the application
+        :return: list of writers
+        """
+        writers = []
+        writers_dicts = self.collection.find()
         if writers_dicts.count() != 0:
             for writer_dict in writers_dicts:
                 writer = dict_to_writers(writer_dict)
