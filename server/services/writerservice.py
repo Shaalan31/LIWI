@@ -1,17 +1,13 @@
 from texturemodel.texture_model import *
 from horestmodel.horest_model import *
 from siftmodel.sift_model import *
-
 from server.views.writervo import *
 from server.utils.utilities import *
 from server.dao.writers import Writers
 from server.dao.connection import Database
-
 from multiprocessing import Pool
-
 from server.httpresponses.errors import *
 from server.httpresponses.messages import *
-
 
 
 class WriterService():
@@ -21,7 +17,7 @@ class WriterService():
         self.sift_model = SiftModel()
         db = Database()
         db.connect()
-        db.create_collection()
+        # db.create_collection()
         self.writers_dao = Writers(db.get_collection())
         self.writers_dao_arabic = Writers(db.get_collection_arabic())
 
