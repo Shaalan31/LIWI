@@ -542,7 +542,18 @@ class WriterService():
         return status_code, message, writer.id
 
     def get_writers_not_none(self):
+        """
+        Get Writers with features english not equal none
+        :return: list of writers
+        """
         return self.writers_dao.get_writers_not_none()
+
+    def get_writers_arabic_not_none(self):
+        """
+        Get Writers with features arabic not equal none
+        :return: list of writers
+        """
+        return self.writers_dao_arabic.get_writers_not_none()
 
     def get_all_writers(self):
         return self.writers_dao.get_writers()

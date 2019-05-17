@@ -44,8 +44,12 @@ def get_writers_not_none():
             - list of WritersVo: each writervo contains id, name, username
             - None if there is no writer
     """
+    language = request.args.get('lang', None)
 
-    status_code, message, data = writer_service.get_writers_not_none()
+    if language == 'en':
+        status_code, message, data = writer_service.get_writers_not_none()
+    else:
+        status_code, message, data = writer_service.get_writers_arabic_not_none()
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value, data=data)
 
