@@ -130,5 +130,6 @@ class BlockSegmentation:
                     heights = np.append(heights, bounding_rect.height)
 
             index += 1
-
+        if y<256:
+            blocks.append(block)
         return blocks
