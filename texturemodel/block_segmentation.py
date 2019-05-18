@@ -1,7 +1,7 @@
 from utils.common_functions import *
 from skimage.filters import gaussian
 from skimage.filters import threshold_otsu
-
+import math
 
 class BlockSegmentation:
     def __init__(self, image, lang="en", h_coeff=None):
@@ -10,11 +10,11 @@ class BlockSegmentation:
             self.h_coeff = 0.5
         else:
             self.h_coeff = h_coeff
-        # if lang == "en":
-        #     self.block_size = 256
-        # else:
-        #     self.block_size = 128
-        self.block_size = 256
+        if lang == "en":
+            self.block_size = 256
+        else:
+            self.block_size = 128
+        # self.block_size = 256
 
 
     def segment(self):
@@ -72,7 +72,7 @@ class BlockSegmentation:
 
             if x == self.block_size:
                 x = 0
-                y += int((np.average(heights)) * self.h_coeff)
+                y += int(math.ceil((np.average(heights)) * self.h_coeff))
                 heights = np.asarray([])
 
             if y == self.block_size:

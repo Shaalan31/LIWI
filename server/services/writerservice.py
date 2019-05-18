@@ -17,7 +17,7 @@ class WriterService():
         self.sift_model = SiftModel()
         db = Database()
         db.connect()
-        # db.create_collection()
+        db.create_collection()
         self.writers_dao = Writers(db.get_collection())
         self.writers_dao_arabic = Writers(db.get_collection_arabic())
 

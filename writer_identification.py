@@ -9,7 +9,7 @@ from server.dao.writers import Writers
 
 texture_model = TextureWriterIdentification('D:/Uni/Graduation Project/All Test Cases/KHATT/Samples/Class',
                                             # 'D:/Uni/Graduation Project/All Test Cases/KHATT/TestCases/testing')
-                                            'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/KHATT/TestCases/testing')
+                                            'D:/Uni/Graduation Project/All Test Cases/KHATT/TestCases/testing')
 # textureMethod.run()
 
 # Horst Writer identification
@@ -317,64 +317,64 @@ def predict_writer_arabic_edit(testing_image, filename, writers, correct_sift_ca
 #     count += 1
 
 # Samar
-db = Database()
-db.connect()
-db.create_collection()
-writers_dao = Writers(db.get_collection_arabic())
-startClass = 2
-endClass = 100
-count = startClass
-
-total_cases = 0
-total_correct = 0
-correct_sift_cases = 0
-correct_texture_cases = 0
-
-writers = writers_dao.get_features(list(range(startClass, endClass + 1)))
-
-while count <= endClass:
-
-    print('Class' + str(count) + ':')
-    for filename in glob.glob(
-            texture_model.pathTestCases + str(
-                count) + '.png'):
-        print(filename)
-        label = count
-        prediction, correct_sift_cases, correct_texture_cases = predict_writer_arabic_edit(cv2.imread(filename),filename, writers, correct_sift_cases, correct_texture_cases, label)
-
-        total_cases += 1
-        if prediction == label:
-            total_correct += 1
-        print("Accuracy = ", total_correct * 100 / total_cases, " %")
-
-        print("Accuracy Sift: ", correct_sift_cases * 100 / total_cases, "%")
-        print("Accuracy Texture: ", correct_texture_cases * 100 / total_cases, "%")
-
-    count += 1
-# End Samar
-
-# May
 # db = Database()
 # db.connect()
 # db.create_collection()
 # writers_dao = Writers(db.get_collection_arabic())
-# startClass = 1
-# endClass = 20
-# classCombinations = combinations(range(startClass, endClass + 1), r=10)
+# startClass = 2
+# endClass = 100
+# count = startClass
 #
 # total_cases = 0
 # total_correct = 0
+# correct_sift_cases = 0
+# correct_texture_cases = 0
 #
-# for classCombination in classCombinations:
-#     for class_number in classCombination:
-#         for filename in glob.glob(
-#                 texture_model.pathTestCases + str(
-#                     class_number) + '.png'):
-#             print(filename)
-#             label = class_number
-#             prediction = predict_writer_arabic(cv2.imread(filename),filename, list(classCombination),writers_dao)
-#             total_cases += 1
-#             if prediction == label:
-#                 total_correct += 1
-#             print("Accuracy = ", total_correct * 100 / total_cases, " %")
+# writers = writers_dao.get_features(list(range(startClass, endClass + 1)))
+#
+# while count <= endClass:
+#
+#     print('Class' + str(count) + ':')
+#     for filename in glob.glob(
+#             texture_model.pathTestCases + str(
+#                 count) + '.png'):
+#         print(filename)
+#         label = count
+#         prediction, correct_sift_cases, correct_texture_cases = predict_writer_arabic_edit(cv2.imread(filename),filename, writers, correct_sift_cases, correct_texture_cases, label)
+#
+#         total_cases += 1
+#         if prediction == label:
+#             total_correct += 1
+#         print("Accuracy = ", total_correct * 100 / total_cases, " %")
+#
+#         print("Accuracy Sift: ", correct_sift_cases * 100 / total_cases, "%")
+#         print("Accuracy Texture: ", correct_texture_cases * 100 / total_cases, "%")
+#
+#     count += 1
+# End Samar
+
+# May
+db = Database()
+db.connect()
+db.create_collection()
+writers_dao = Writers(db.get_collection_arabic())
+startClass = 1
+endClass = 20
+classCombinations = combinations(range(startClass, endClass + 1), r=10)
+
+total_cases = 0
+total_correct = 0
+
+for classCombination in classCombinations:
+    for class_number in classCombination:
+        for filename in glob.glob(
+                texture_model.pathTestCases + str(
+                    class_number) + '.png'):
+            print(filename)
+            label = class_number
+            prediction = predict_writer_arabic(cv2.imread(filename),filename, list(classCombination),writers_dao)
+            total_cases += 1
+            if prediction == label:
+                total_correct += 1
+            print("Accuracy = ", total_correct * 100 / total_cases, " %")
 # End May
