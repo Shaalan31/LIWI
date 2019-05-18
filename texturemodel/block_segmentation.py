@@ -10,10 +10,12 @@ class BlockSegmentation:
             self.h_coeff = 0.5
         else:
             self.h_coeff = h_coeff
-        if lang == "en":
-            self.block_size = 256
-        else:
-            self.block_size = 128
+        # if lang == "en":
+        #     self.block_size = 256
+        # else:
+        #     self.block_size = 128
+        self.block_size = 256
+
 
     def segment(self):
         # image = remove_shadow(image)
