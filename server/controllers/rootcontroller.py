@@ -267,13 +267,15 @@ def set_writers():
                    200 for success
     """
     start_class = 1
-    end_class = 100
+    end_class = 158
     language = request.args.get('lang', None)
     if language == "ar":
-        base_path = 'D:/Uni/Graduation Project/All Test Cases/KHATT/Samples/Class'
+        # base_path = 'D:/Uni/Graduation Project/All Test Cases/KHATT/Samples/Class'
+        base_path = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/KHATT/Samples/Class'
         status_code, message = writer_service.fill_collection_arabic(start_class, end_class, base_path)
     else:
-        base_path = 'D:/Uni/Graduation Project/All Test Cases/IAMJPG/Samples/Class'
+        # base_path = 'D:/Uni/Graduation Project/All Test Cases/IAMJPG/Samples/Class'
+        base_path = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCasesCompressed/Samples/Class'
         status_code, message = writer_service.fill_collection(start_class, end_class, base_path)
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value)

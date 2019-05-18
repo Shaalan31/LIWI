@@ -11,6 +11,7 @@ import datetime
 import copy
 
 
+
 def writer_to_dict(writer):
     """
     Convert writer object into dictionary
@@ -133,7 +134,22 @@ def fake_data():
              "Sara Hassan", "Rayhana Ayman", "Rana Ali", "Youssra Hussein", "Zeinab Khairy",
              "Samar Gamal", "May Ahmed", "Salma Ibrahim", "Hadeer Hossam", "Hanaa Ahmed", "Bisa Dewidar", "Nachwa Ahmed",
              "Nourhan Farhan", "Mariam Farhan", "Noha Ahmed", "Yasmine Sherif", "Ingy Alaa", "Rana Afifi", "Nour Attya",
-             "Amani Tarek", "Salma Ahmed", "Iman Fouad", "Nour Yasser", "Farah Mohamed", "Youmna Helmy"]
+             "Amani Tarek", "Salma Ahmed", "Iman Fouad", "Nour Yasser", "Farah Mohamed", "Youmna Helmy",
+
+             "Baniti  Maalouf", "Kaikara  Khouri", "Nona  Baba", "Meroo  Nader", "Nour  Rahal",
+             "Raneem  Halabi", "Mona  Bitar", "Iman  Kalb", "Maria  Asker", "Shafira  Basara",
+             "Bassant  Sayegh", "Mariah  Maalouf", "Talibah  Harb", "Zalika  Bata", "Kamilah  Baz",
+             "Galela  Said", "Shesho  Naser", "Tale  Kanaan", "Sohair  Gaber", "Manar  Kalb",
+             "Yasmeen  Dagher", "Amal  Almasi", "Iman  Sabbagh", "Amirah  Almasi", "Amirah  Guirguis",
+             "Walaa  Hanania", "Nadeen  Totah", "Arwa  Naifeh", "Olabisis  Dagher", "Quibailah  Ganim",
+
+             "Medo  Boutros", "Aly  Naifeh", "Hamed  Gerges", "Mustafa  Halabi", "Barika  Antoun",
+             "Darwishi  Essa", "Bebti  Antoun", "Hesso  Masih", "Kareem  Qureshi", "Chigaru  Bazzi",
+             "Ishaq  Essa", "Psamtic  Malouf", "Hamadi  Assaf", "Husani  Arian",
+             "Thabit  Cham", "Mustafa  Halabi", "Selim  Ghanem", "Nour  Gaber", "Teremun  Harb", "Adham  Mustafa",
+             "Achraf  Isa", "Mohamed Ahmed", "Amir  Tuma", "Momo  Al sadat", "Quasshie  Nader", "Waleed  Halabi",
+             "Karim  Sleiman", "Psamtic  Harb"
+             ]
 
     addresses = ["36 El Salam St. - El Saada City - Shoubra El Khima - Cairo - Egypt",
                  "Mahdi St., Azbakiya, Cairo",
@@ -212,31 +228,126 @@ def fake_data():
                  "110 Kasarat  ElBaladia St. - El Kosarin -El Zawia El Hamra Cairo - Egypt",
                  "115 Manial Street, Cairo, Cairo",
                  "13A Awlad Emara St. -Bigam Road - El Kanater - El Kliuobia - Egypt",
-                 "Industrial Area 1, Plot No 8/9, Cairo"]
+                 "Industrial Area 1, Plot No 8/9, Cairo",
+                 "86948 Thomas Centers Apt. 939 Tinaview, CT 85380",
+                 "9754 Kimberly River Apt. 962 Lake Alyssaview, NE 71059",
+                 "275 Kelly Trafficway Port Josephfurt, MT 26079",
+                 "USS Cunningham FPO AE 78580",
+                 "06499 Michelle Road Apt. 235 East Alexis, AL 77635",
+                 "645 Sosa Crescent Suite 949 New Amandamouth, ND 28889",
+                 "67444 Raymond Cliff New Donald, IN 05820",
+                 "9912 Martinez Rapid Suite 549 Stewarttown, AK 46258",
+                 "38217 Harvey Ford Port Kayla, IL 03107",
+                 "68537 Butler Trail Apt. 016 West Alexanderton, KS 82543"
+                 "48092 John Islands North Kristine, DE 37085",
+                 "20383 Kevin Road Apt. 633 Gregstad, IL 38966",
+                 "78816 Timothy Tunnel North Charles, KY 55302",
+                 "91406 Joseph Valley West Austinport, NC 78768",
+                 "7182 Jasmine Islands North Edward, SC 90975",
+                 "878 Rodriguez Village East Bianca, NY 14554",
+                 "49526 Gonzalez Junction Suite 563 Smithstad, WI 03226",
+                 "9590 Suzanne Fork Suite 385 Masonburgh, NM 86329",
+                 "3856 Mitchell Points New Shannon, NV 39368",
+                 "1936 Newman Drive Suite 454 Alvarezborough, WV 86823",
+                 "234 Jacqueline Tunnel East Chrischester, AZ 08477"
+                 "4883 Flores Parkways Scottview, MO 36747",
+                 "122 Ramsis Tower Bldg., El Galaa St.",
+                 "203 El Geish St.",
+                 "Egyptian Museum Cairo",
+                 "Soliman Alhalaby Street, Ramsis, Downtown",
+                 "3 Hod El Ghafara - Mit Nama - Kaliwb El Kalubia - Egypt",
+                 "58 Gamal El Din Dewedar St. - 8th Zone - Nasr City - Cairo   - Egypt",
+                 "Reija Street, Cairo, Cairo",
+                 "Mohammed Hafiz St., Mohande Cairo, Cairo",
+                 "3 Negma St., Heliopolis, Cairo",
+                 "Teraat El Mariutia St. - Kerdasa Road Giza - Egypt",
+                 "9a El Sakakeni St., Al Daher, Cairo",
+                 "6 Mahmoud Hafez St. - Safir Squrea Misr El Gededa - Cairo - Egypt",
+                 "6th Floor, Cairo, Cairo",
+                 "03 Kamel Moursy St, Heliopolis, Cairo",
+                 "56 Abdel El Khalek Tharwat, Downtown, cairo",
+                 "23 Ali Mosa St. - From El Trolly St. - From El Kabalat St. Cairo - Egypt",
+                 "12 Al-Hossary Street, Agouza (4 Falouga St. ), Cairo",
+                 "26 Agaybi Wasef St, Ain Shams, Cairo",
+                 "sakr korish buildings, New Maadi, cairo",
+                 "8 Hfiz Ramadan, Madinet Nasr, Cairo",
+                 "27 El Mostashfa El Yonani St. - Industrial El Abbasia Cairo  - Egypt",
+                 "St., Dokii, Cairo",
+                 "Gisr El-suez, Pobox 115 Panorama, Cairo",
+                 "16 18 Azoz Hassan St. - Industrial Zone Met Halfa - Kaliobia - Egypt",
+                 "46 Nasr Road-ramsis Extinsion -cairo-egypt",
+                 "El Helmia El Gededa, 6thfloor, Cairo",
+                 "3 El Gamea St. - From Kasarat El Baladia St. - El Zawia El Hamra Cairo - Egypt",
+                 "Nasr City, Cairo, Cairo",
+                 "El-Nozha El-Gedida, Heliopolis, Cairo",
+                 "Haret El Yahood, El Gmalia, Cairo",
+                 "Alameria, Alzaiton, Cairo",
+                 "57 Ahmed Orabi St., Mohandseen, Cairo",
+                 "56 Ahmed Orabi St., Mohandseen, Cairo",
+                 "17 Road 270, New Maadi",
+                 "Klm. 28 Misr Alex. Desert Road -Abo  Rawash - Egypt",
+                 "Tahrir",
+                 "33 Ahmad Heshmat, Elzamalik, Cairo",
+                 "6makhlouf St, Dokky Guiza. Apt. No7, Cairo",
+                 "5th Rabiya St., Nasr City, Cairo",
+                 "15 May St. No. 62 - Shobra El Khaima El Kaliubia - Egypt",
+                 "5, Ali Rouby Str No. 8, Cairo",
+                 "26 El Mostashfa El Yonani St. - Industrial El Abbasia Cairo  - Egypt",
+                 "Alex, Alexandria, Alex",
+                 "247 Horia Street, Sporting, Alex",
+                 "Wahran Street",
+                 "15 El Amin St, Andalowes El Haram, Giza",
+                 "Abou El Houl El Seyahy St., Mashaal",
+                 "3 Abnaa El Gharbeya St. Extension Of El Thalathiny El Gadid St., El Talbeya",
+                 "1 Hussein Othman St. Off El Safa & El Marwa St., El Tawabeq",
+                 "28 El Marwa St.",
+                 "5 Shark El Tersana Club St.",
+                 "6B Aswan Sq, Mohandeseen, Giza",
+                 "6 Basem El Kateb St. Off El Tahrir St.",
+                 "139 Faisal St., El Koum El Akhdar",
+                 "5 El Thawra Sq.",
+                 "4, Amman Square - Dokki, Giza",
+                 "55 Shehab St.",
+                 "3 El Mahatta St.",
+                 "5 El Mahatta St.",
+                 "4 El Mahatta St."]
 
-    for i in range(78, 100):
-        addresses.append(fake.address())
+
+    # for i in range(78, 100):
+    #     addresses.append(fake.address())
 
     birthdays = []
-    for i in range(0, 100):
+    for i in range(0, 159):
         birthdays.append(fake.date(pattern="%Y-%m-%d", end_datetime=datetime.date(2000, 12, 12)))
 
     phones = ["01116055544", "01018028105", "01270625965", "01277217139", "01253194815",
               "01231867718", "01015120204", "01025120204", "01002191561", "01012226165",
               "01014890440", "01055351750", "01050723791", "01002176931", "01219310301",
               "01236664582", "01052918385", "01293917862", "01111661540", "01111661541",
-              "01111661542", "01111661543", "01111661544", "01111661545", "01111661546"]
+              "01111661542", "01111661543", "01111661544", "01111661545", "01111661546",
+              "01111616770", "01227689530", "01001725446", "01127289617", "01238814480",
+              "01016256751"]
 
     for i in range(0, 25):
         phones.append(phones[i][0:5] + '1'+ phones[i][6:])
         phones.append(phones[i][0:5] + '2'+ phones[i][6:])
         phones.append(phones[i][0:5] + '3'+ phones[i][6:])
-
+        phones.append(phones[i][0:5] + '4' + phones[i][6:])
+        phones.append(phones[i][0:5] + '5' + phones[i][6:])
+        phones.append(phones[i][0:5] + '6' + phones[i][6:])
 
     nid = ["29612342381123"]
     combination = list(combinations(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], 5))
-    for i in range(0, 99):
+    for i in range(0, 158):
         nid.append(nid[0][0:9] + ''.join(combination[i]))
+
+    # images = []
+    # for filename in os.listdir("C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/uploads/writers/new"):
+    #     name = str(uuid.uuid1()) + ".jpg"
+    #     src = "C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/uploads/writers/new/" + filename
+    #     dst = "C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/uploads/writers/new/" + name
+    #     os.rename(src, dst)
+    #     images.append(name)
 
     images = ['5651aaf4-7427-11e9-af38-34e6d76770a4.jpg', '56533164-7427-11e9-9ce5-34e6d76770a4.jpg', '565490b6-7427-11e9-9d37-34e6d76770a4.jpg',
               '56563e24-7427-11e9-81b4-34e6d76770a4.jpg', '5657c486-7427-11e9-a95e-34e6d76770a4.jpg', '5658d5d8-7427-11e9-a029-34e6d76770a4.jpg',
@@ -271,6 +382,25 @@ def fake_data():
               '1b197a2e-7427-11e9-93b2-34e6d76770a4.jpg', '1b1b4eac-7427-11e9-9f6b-34e6d76770a4.jpg', '1b1cfc1e-7427-11e9-bd9d-34e6d76770a4.jpg',
               '1b1e0d62-7427-11e9-ab2d-34e6d76770a4.jpg', '1b1f1ea8-7427-11e9-aa21-34e6d76770a4.jpg', '1b20f324-7427-11e9-852e-34e6d76770a4.jpg',
               '1b2315b6-7427-11e9-afd4-34e6d76770a4.jpg', '1b249c1c-7427-11e9-8ee1-34e6d76770a4.jpg', '1b25fb74-7427-11e9-9cb0-34e6d76770a4.jpg',
-              '1b27a8e4-7427-11e9-a573-34e6d76770a4.jpg']
+              '1b27a8e4-7427-11e9-a573-34e6d76770a4.jpg', '30cb2f3e-7911-11e9-b659-34e6d76770a4.jpg', '30ccb59e-7911-11e9-bc0f-34e6d76770a4.jpg',
+              '30cd9fdc-7911-11e9-9732-34e6d76770a4.jpg', '30ced834-7911-11e9-aacf-34e6d76770a4.jpg', '30cfe974-7911-11e9-aa86-34e6d76770a4.jpg',
+              '30d196e8-7911-11e9-a686-34e6d76770a4.jpg', '30d2a830-7911-11e9-a2d5-34e6d76770a4.jpg', '30d3b992-7911-11e9-ae2f-34e6d76770a4.jpg',
+              '30d4cac6-7911-11e9-8c66-34e6d76770a4.jpg', '30d5b4fe-7911-11e9-9d15-34e6d76770a4.jpg', '30d7145a-7911-11e9-b44b-34e6d76770a4.jpg',
+              '30d9d318-7911-11e9-afef-34e6d76770a4.jpg', '30dae45e-7911-11e9-a6be-34e6d76770a4.jpg', '30dbce9c-7911-11e9-9590-34e6d76770a4.jpg',
+              '30dcb8d8-7911-11e9-8964-34e6d76770a4.jpg', '30ddca26-7911-11e9-a41a-34e6d76770a4.jpg', '30e03ac2-7911-11e9-9400-34e6d76770a4.jpg',
+              '30e12500-7911-11e9-ab7d-34e6d76770a4.jpg', '30e20f3e-7911-11e9-877f-34e6d76770a4.jpg', '30e34794-7911-11e9-bd28-34e6d76770a4.jpg',
+              '30e431d8-7911-11e9-b5f0-34e6d76770a4.jpg', '30e51c10-7911-11e9-8a3b-34e6d76770a4.jpg', '30e6064c-7911-11e9-886d-34e6d76770a4.jpg',
+              '30e71792-7911-11e9-b6b8-34e6d76770a4.jpg', '30e828da-7911-11e9-837b-34e6d76770a4.jpg', '30e93a26-7911-11e9-98d7-34e6d76770a4.jpg',
+              '30ea245e-7911-11e9-950e-34e6d76770a4.jpg', '30eb35a6-7911-11e9-8095-34e6d76770a4.jpg', '30ec1fee-7911-11e9-8416-34e6d76770a4.jpg',
+              '30ed7f46-7911-11e9-9008-34e6d76770a4.jpg', 'b809ffec-7911-11e9-b639-34e6d76770a4.jpg', 'b80aea3a-7911-11e9-a770-34e6d76770a4.jpg',
+              'b80bfb76-7911-11e9-ab4b-34e6d76770a4.jpg', 'b80c97ae-7911-11e9-92a9-34e6d76770a4.jpg', 'b80d5acc-7911-11e9-8367-34e6d76770a4.jpg',
+              'b80e6c26-7911-11e9-90f9-34e6d76770a4.jpg', 'b80f2f62-7911-11e9-a33d-34e6d76770a4.jpg', 'b810409a-7911-11e9-9868-34e6d76770a4.jpg',
+              'b811ee02-7911-11e9-8202-34e6d76770a4.jpg', 'b814108c-7911-11e9-994c-34e6d76770a4.jpg', 'b816cf52-7911-11e9-b393-34e6d76770a4.jpg',
+              'b81966f8-7911-11e9-ad94-34e6d76770a4.jpg', 'b81a7846-7911-11e9-b458-34e6d76770a4.jpg', 'b81c73ca-7911-11e9-8027-34e6d76770a4.jpg',
+              'b81e213a-7911-11e9-a628-34e6d76770a4.jpg', 'b8201cc2-7911-11e9-8627-34e6d76770a4.jpg', 'b8210706-7911-11e9-bb71-34e6d76770a4.jpg',
+              'b8230286-7911-11e9-b0a9-34e6d76770a4.jpg', 'b825e846-7911-11e9-9c9e-34e6d76770a4.jpg', 'b827bcc0-7911-11e9-a92f-34e6d76770a4.jpg',
+              'b8296a30-7911-11e9-85f8-34e6d76770a4.jpg', 'b82a7b7e-7911-11e9-af5c-34e6d76770a4.jpg', 'b82bb3e2-7911-11e9-8062-34e6d76770a4.jpg',
+              'b82cec28-7911-11e9-87d2-34e6d76770a4.jpg', 'b82e4b86-7911-11e9-97fc-34e6d76770a4.jpg', 'b82f83cc-7911-11e9-9082-34e6d76770a4.jpg',
+              'b8309518-7911-11e9-b9f5-34e6d76770a4.jpg', 'b831f470-7911-11e9-9b86-34e6d76770a4.jpg']
 
     return names, birthdays, phones, addresses, nid, images

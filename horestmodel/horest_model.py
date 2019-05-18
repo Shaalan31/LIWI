@@ -22,7 +22,7 @@ class HorestWriterIdentification:
         self.total_test_cases = 100
         self.pathTrainingSet = path_training_set
         self.pathTestCases = path_test_cases
-        self.classifier = MLPClassifier(solver='lbfgs', max_iter=30000, alpha=0.046041,
+        self.classifier = MLPClassifier(solver='lbfgs', max_iter=1000, alpha=0.046041,
                                         hidden_layer_sizes=(22, 18, 15, 12, 7,),
                                         random_state=randomState)
 

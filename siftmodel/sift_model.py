@@ -112,7 +112,7 @@ class SiftModel:
             count += 1
         self.accuracy = np.array([[right_test_cases], [total_test_cases]])
 
-    def predict(self, SDS_train, SOH_train, testing_image, name,lang="en"):
+    def predict(self, SDS_train, SOH_train, testing_image, name, lang="en"):
         matching = FeatureMatching()
         # Feature Extraction
         SDS, SOH = self.get_features(name, image=testing_image,lang=lang)
