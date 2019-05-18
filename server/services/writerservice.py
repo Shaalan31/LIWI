@@ -105,8 +105,7 @@ class WriterService():
         async_results = []
         async_results += [pool.apply_async(self.horest_model.test, (testing_image, mu_horest, sigma_horest))]
         async_results += [pool.apply_async(self.texture_model.test, (testing_image, mu_texture, sigma_texture, pca))]
-        async_results += [
-            pool.apply_async(self.sift_model.predict, (SDS_train, SOH_train, testing_image, filename, "en"))]
+        async_results += [ pool.apply_async(self.sift_model.predict, (SDS_train, SOH_train, testing_image, filename))]
 
         pool.close()
         pool.join()
@@ -196,9 +195,7 @@ class WriterService():
                                        np.full(shape=(1, num_current_examples_texture), fill_value=writer.id))
             num_training_examples_texture += num_current_examples_texture
             all_features_texture = np.append(all_features_texture,
-                                             np.reshape(texture_features.copy(),
-                                                        (1,
-                                                         num_current_examples_texture * self.texture_model.get_num_features())))
+                                             np.reshape(texture_features.copy(),(1, num_current_examples_texture * self.texture_model.get_num_features())))
 
             # appending sift features
             for i in range(len(writer.features.sift_SDS)):
@@ -220,7 +217,7 @@ class WriterService():
 
         pool = Pool(2)
         async_results = []
-        async_results += [pool.apply_async(self.texture_model.test, (testing_image, mu_texture, sigma_texture, pca))]
+        async_results += [pool.apply_async(self.texture_model.test, (testing_image, mu_texture, sigma_texture, pca,"ar"))]
         async_results += [
             pool.apply_async(self.sift_model.predict, (SDS_train, SOH_train, testing_image, filename, "ar"))]
 
@@ -342,7 +339,7 @@ class WriterService():
         # get features
         pool = Pool(2)
         async_results = []
-        async_results += [pool.apply_async(self.texture_model.get_features, (training_image,))]
+        async_results += [pool.apply_async(self.texture_model.get_features, (training_image,"ar"))]
         async_results += [pool.apply_async(self.sift_model.get_features, (filename, "ar", training_image))]
 
         pool.close()
@@ -423,7 +420,7 @@ class WriterService():
                 writer_texture_features = np.append(writer_texture_features, texture_features[0].tolist())
                 print('Sift Model')
                 name = Path(filename).name
-                SDS, SOH = self.sift_model.get_features(name, image=image, lang="en")
+                SDS, SOH = self.sift_model.get_features(name, image=image)
                 SDS_train.append(SDS[0].tolist())
                 SOH_train.append(SOH[0].tolist())
 
@@ -493,7 +490,7 @@ class WriterService():
                 image = cv2.imread(filename)
 
                 print('Texture Features')
-                _, texture_features = self.texture_model.get_features(image)
+                _, texture_features = self.texture_model.get_features(image,lang="ar")
                 writer_texture_features = np.append(writer_texture_features, texture_features[0].tolist())
 
                 print('Sift Model')

@@ -197,7 +197,7 @@ def predict_writer_arabic(testing_image, filename, writers_ids, dao):
 
     print("Starting Texture Testing")
     texture_classes = texture_model.get_classifier_classes()
-    texture_predictions = texture_model.test(testing_image, mu_texture, sigma_texture, pca)[0]
+    texture_predictions = texture_model.test(testing_image, mu_texture, sigma_texture, pca,lang="ar")[0]
     texture_indecies_sorted = np.argsort(texture_classes, axis=0)
     sorted_texture_predictions = texture_predictions[texture_indecies_sorted[::-1]]
     sorted_texture_classes = texture_classes[texture_indecies_sorted[::-1]]
@@ -261,7 +261,7 @@ def predict_writer_arabic_edit(testing_image, filename, writers, correct_sift_ca
 
     print("Starting Texture Testing")
     texture_classes = texture_model.get_classifier_classes()
-    texture_predictions = texture_model.test(testing_image, mu_texture, sigma_texture, pca)[0]
+    texture_predictions = texture_model.test(testing_image, mu_texture, sigma_texture, pca,lang="ar")[0]
     texture_indecies_sorted = np.argsort(texture_classes, axis=0)
     sorted_texture_predictions = texture_predictions[texture_indecies_sorted[::-1]]
     sorted_texture_classes = texture_classes[texture_indecies_sorted[::-1]]

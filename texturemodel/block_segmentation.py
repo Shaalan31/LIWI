@@ -2,13 +2,18 @@ from utils.common_functions import *
 from skimage.filters import gaussian
 from skimage.filters import threshold_otsu
 
+
 class BlockSegmentation:
-    def __init__(self,image,h_coeff=None):
-        self.image=image
+    def __init__(self, image, lang="en", h_coeff=None):
+        self.image = image
         if h_coeff is None:
-            self.h_coeff=0.5
+            self.h_coeff = 0.5
         else:
-            self.h_coeff=h_coeff
+            self.h_coeff = h_coeff
+        if lang == "en":
+            self.block_size = 256
+        else:
+            self.block_size = 128
 
     def segment(self):
         # image = remove_shadow(image)
@@ -31,15 +36,14 @@ class BlockSegmentation:
 
         return blocks
 
-
     # Segment the paper into blocks, and removing white space between words
-    def fill_blocks(self,bounding_rects):
-        image_shape=self.image.shape
+    def fill_blocks(self, bounding_rects):
+        image_shape = self.image.shape
         small_components_ratio = 375 / 8780618
 
         # initialize variables needed
         # block to save one block, when it is full we clear it
-        block = np.full((256, 256), 1, dtype='int')
+        block = np.full((self.block_size, self.block_size), 1, dtype='int')
 
         # heights to save the height of the bounding rect to calculate average of heights for new line
         heights = np.asarray([])
@@ -64,26 +68,29 @@ class BlockSegmentation:
 
             # show_images([np.multiply(bounding_rect.rect, 255)])
 
-            if x == 256:
+            if x == self.block_size:
                 x = 0
-                y += int((np.average(heights)) *self.h_coeff)
+                y += int((np.average(heights)) * self.h_coeff)
                 heights = np.asarray([])
 
-            if y == 256:
+            if y == self.block_size:
                 # New Block
                 x = 0
                 y = 0
                 blocks.append(block)
-                block = np.full((256, 256), 1, dtype='int')
+                block = np.full((self.block_size, self.block_size), 1, dtype='int')
                 heights = np.asarray([])
 
-            if x + bounding_rect.width > 256:
-                if y + bounding_rect.height > 256:
-                    block[y:255, x:255] = np.multiply(
-                        block[y:255, x:255], bounding_rect.rect[0:255 - y, 0:255 - x])
+            if x + bounding_rect.width > self.block_size:
+                if y + bounding_rect.height > self.block_size:
+                    block[y:self.block_size - 1, x:self.block_size - 1] = np.multiply(
+                        block[y:self.block_size - 1, x:self.block_size - 1],
+                        bounding_rect.rect[0:self.block_size - 1 - y, 0:self.block_size - 1 - x])
                     # show_images([np.multiply(block, 255)])
-                    new_bounding_rect = BoundingRect(bounding_rect.height - (255 - y), bounding_rect.width - (255 - x),
-                                                     bounding_rect.rect[255 - y:, 255 - x:])
+                    new_bounding_rect = BoundingRect(bounding_rect.height - (self.block_size - 1 - y),
+                                                     bounding_rect.width - (self.block_size - 1 - x),
+                                                     bounding_rect.rect[self.block_size - 1 - y:,
+                                                     self.block_size - 1 - x:])
                     bounding_rects = np.insert(bounding_rects, index + 1, new_bounding_rect)
                     size += 1
 
@@ -92,16 +99,18 @@ class BlockSegmentation:
                     y = 0
                     # show_images([np.multiply(block, 255)])
                     blocks.append(block)
-                    block = np.full((256, 256), 1, dtype='int')
+                    block = np.full((self.block_size, self.block_size), 1, dtype='int')
                     heights = np.asarray([])
 
                 else:
-                    block[y:y + bounding_rect.height, x:255] = np.multiply(
-                        block[y:y + bounding_rect.height, x:255], bounding_rect.rect[:, 0:255 - x])
+                    block[y:y + bounding_rect.height, x:self.block_size - 1] = np.multiply(
+                        block[y:y + bounding_rect.height, x:self.block_size - 1],
+                        bounding_rect.rect[:, 0:self.block_size - 1 - x])
                     # show_images([np.multiply(block, 255)])
                     heights = np.append(heights, bounding_rect.height)
-                    new_bounding_rect = BoundingRect(bounding_rect.height, bounding_rect.width - (255 - x),
-                                                     bounding_rect.rect[:, 255 - x:])
+                    new_bounding_rect = BoundingRect(bounding_rect.height,
+                                                     bounding_rect.width - (self.block_size - 1 - x),
+                                                     bounding_rect.rect[:, self.block_size - 1 - x:])
                     bounding_rects = np.insert(bounding_rects, index + 1, new_bounding_rect)
                     size += 1
 
@@ -110,16 +119,18 @@ class BlockSegmentation:
                     heights = np.asarray([])
 
             else:
-                if y + bounding_rect.height > 256:
-                    block[y:255, x:x + bounding_rect.width] = np.multiply(
-                        block[y:255, x:x + bounding_rect.width], bounding_rect.rect[0:255 - y, :])
+                if y + bounding_rect.height > self.block_size:
+                    block[y:self.block_size - 1, x:x + bounding_rect.width] = np.multiply(
+                        block[y:self.block_size - 1, x:x + bounding_rect.width],
+                        bounding_rect.rect[0:self.block_size - 1 - y, :])
                     # show_images([np.multiply(block, 255)])
 
                     x += bounding_rect.width
-                    heights = np.append(heights, 256 - y)
+                    heights = np.append(heights, self.block_size - y)
 
-                    new_bounding_rect = BoundingRect(bounding_rect.height - (255 - y), bounding_rect.width,
-                                                     bounding_rect.rect[255 - y:, :])
+                    new_bounding_rect = BoundingRect(bounding_rect.height - (self.block_size - 1 - y),
+                                                     bounding_rect.width,
+                                                     bounding_rect.rect[self.block_size - 1 - y:, :])
                     bounding_rects = np.insert(bounding_rects, index + 1, new_bounding_rect)
                     size += 1
                 else:
@@ -130,6 +141,6 @@ class BlockSegmentation:
                     heights = np.append(heights, bounding_rect.height)
 
             index += 1
-        if y<256:
+        if y < self.block_size:
             blocks.append(block)
         return blocks
