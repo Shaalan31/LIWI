@@ -40,14 +40,14 @@ class TextureWriterIdentification:
 
         return np.asarray(feature)
 
-    def test(self, image, mu, sigma, pca):
+    def test(self, image, mu, sigma, pca,lang="en"):
         all_features_test = np.asarray([])
 
         if image.shape[0] > 3500:
             image = cv2.resize(src=image, dsize=(3500, round((3500 / image.shape[1]) * image.shape[0])))
 
         # image = adjust_rotation(image=image)
-        writer_blocks = BlockSegmentation(image).segment()
+        writer_blocks = BlockSegmentation(image,lang).segment()
 
         num_testing_examples = 0
         for block in writer_blocks:
@@ -110,14 +110,14 @@ class TextureWriterIdentification:
         normalized_X = np.divide(normalized_X, deviation)
         return normalized_X, mean, deviation
 
-    def get_features(self,image):
+    def get_features(self,image,lang="en"):
         image_height = image.shape[0]
         if image_height > 3500:
             image = cv2.resize(src=image, dsize=(3500, round((3500 / image.shape[1]) * image_height)))
 
         # image = adjust_rotation(image=image)
         # show_images([image])
-        writer_blocks = BlockSegmentation(image).segment()
+        writer_blocks = BlockSegmentation(image,lang).segment()
         num_blocks = len(writer_blocks)
 
         all_features_class = np.asarray([])

@@ -37,7 +37,6 @@ sift_model = SiftModel(first_class=91, last_class=121)
 # sift_model.get_features("C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/KHATT/TestCases/testing290.png","testing290.png")
 # sift_model.get_features("C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/KHATT/TestCases/testing798.png","testing798.png")
 # sift_model.get_features("C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/KHATT/TestCases/testing187.png","testing187.png")
-
 # End Samar
 
 # Shaalan
@@ -203,7 +202,7 @@ def predict_writer_arabic(testing_image, filename, writers_ids, dao):
 
     print("Starting Texture Testing")
     texture_classes = texture_model.get_classifier_classes()
-    texture_predictions = texture_model.test(testing_image, mu_texture, sigma_texture, pca)[0]
+    texture_predictions = texture_model.test(testing_image, mu_texture, sigma_texture, pca,lang="ar")[0]
     texture_indecies_sorted = np.argsort(texture_classes, axis=0)
     sorted_texture_predictions = texture_predictions[texture_indecies_sorted[::-1]]
     sorted_texture_classes = texture_classes[texture_indecies_sorted[::-1]]
@@ -271,7 +270,7 @@ def predict_writer_arabic_edit(testing_image, filename, correct_sift_cases, corr
 
     print("Starting Texture Testing")
     texture_classes = texture_model.get_classifier_classes()
-    texture_predictions = texture_model.test(testing_image, mu_texture, sigma_texture, pca)[0]
+    texture_predictions = texture_model.test(testing_image, mu_texture, sigma_texture, pca,lang="ar")[0]
     texture_indecies_sorted = np.argsort(texture_classes, axis=0)
     sorted_texture_predictions = texture_predictions[texture_indecies_sorted[::-1]]
     sorted_texture_classes = texture_classes[texture_indecies_sorted[::-1]]
@@ -368,6 +367,7 @@ while count <= last_class:
 #
 #     count += 1
 # End Samar
+
 
 # May
 # db = Database()
