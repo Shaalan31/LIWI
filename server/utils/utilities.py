@@ -214,11 +214,11 @@ def fake_data():
                  "13A Awlad Emara St. -Bigam Road - El Kanater - El Kliuobia - Egypt",
                  "Industrial Area 1, Plot No 8/9, Cairo"]
 
-    for i in range(78, 100):
+    for i in range(78, 946):
         addresses.append(fake.address())
 
     birthdays = []
-    for i in range(0, 100):
+    for i in range(0, 946):
         birthdays.append(fake.date(pattern="%Y-%m-%d", end_datetime=datetime.date(2000, 12, 12)))
 
     phones = ["01116055544", "01018028105", "01270625965", "01277217139", "01253194815",
@@ -227,7 +227,7 @@ def fake_data():
               "01236664582", "01052918385", "01293917862", "01111661540", "01111661541",
               "01111661542", "01111661543", "01111661544", "01111661545", "01111661546"]
 
-    for i in range(0, 25):
+    for i in range(0, 250):
         phones.append(phones[i][0:5] + '1'+ phones[i][6:])
         phones.append(phones[i][0:5] + '2'+ phones[i][6:])
         phones.append(phones[i][0:5] + '3'+ phones[i][6:])
