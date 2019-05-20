@@ -8,6 +8,90 @@ import shutil
 from itertools import combinations
 import random
 from PIL import Image
+import copy
+
+
+#start at 687,3240
+#id starts at 672
+def firemaker_preprocessing():
+    base = 'C:/Users/omars/Documents/Github/LIWI/Omar/firemaker/firemaker/300dpi/'
+    baseDB = 'C:/Users/omars/Documents/Github/LIWI/Omar/test/'
+    id = 672
+    id1 = '01.tif'
+    id2 = '02.tif'
+    id3 = '03.tif'
+    id4 = '04.tif'
+    file1 = 'p1-copy-normal'
+    file2 = 'p2-copy-upper'
+    file3 = 'p3-copy-forged'
+    file4 = 'p4-self-natural'
+    for filename in glob.glob(base +'*/*01.tif'):
+        filename2 = copy.copy(filename)
+        filename3 = copy.copy(filename)
+        filename4 = copy.copy(filename)
+
+        filename2 = filename2.replace(id1,id2)
+        filename2 = filename2.replace(file1, file2)
+
+        filename3 = filename3.replace(id1,id3)
+        filename3 = filename3.replace(file1, file3)
+
+        filename4 = filename4.replace(id1,id4)
+        filename4 = filename4.replace(file1, file4)
+
+        try:
+            os.makedirs(baseDB+str(id)+'/')
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+        filename_arr = [filename,filename2,filename3,filename4]
+        for item in filename_arr:
+            temp = cv2.imread(item)
+            temp = temp[687:3240, :]
+            # temp = temp.convert('RGB')
+            name = Path(item).name
+            name = name.replace('.tif', '.jpg')
+            cv2.imwrite(baseDB+str(id)+'/' + name,temp)
+
+            # temp = Image.open(baseDB+str(id)+'/' + name)
+            #
+            # temp.save(baseDB+str(id)+'/' + name)
+
+        print(filename)
+        id += 1
+
+
+
+firemaker_preprocessing()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # IAM
