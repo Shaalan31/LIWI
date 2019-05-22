@@ -99,7 +99,7 @@ class BlockSegmentation:
                     # New Block
                     x = 0
                     y = 0
-                    # show_images([np.multiply(block, 255)])
+                    # cv2.imwrite('blocksample'+str(index)+'.png', np.multiply(block, 255))
                     blocks.append(block)
                     block = np.full((self.block_size, self.block_size), 1, dtype='int')
                     heights = np.asarray([])

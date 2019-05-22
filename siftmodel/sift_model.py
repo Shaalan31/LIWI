@@ -11,7 +11,7 @@ import os
 class SiftModel:
     def __init__(self, first_class=1, last_class=1):
         self.base_train = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/Samples/'
-        self.base_test = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCasesCompressed/TestCases/'
+        self.base_test = 'D:/Uni/Graduation Project/All Test Cases/IAMJPG/TestCases/'
         self.first_class = first_class
         self.last_class = last_class
         self.code_book = None

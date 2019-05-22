@@ -64,7 +64,7 @@ class TextureWriterIdentification:
         #     predictions.append(clf.predict(np.asarray(example).reshape(1, -1)))
         # values, counts = np.unique(np.asarray(predictions), return_counts=True)
         # return values[np.argmax(counts)]
-        return self.classifier.predict_proba(pca.transform(np.average(all_features_test, axis=0).reshape(1, -1)))
+        return np.average(self.classifier.predict_proba(pca.transform(all_features_test)),axis=0).reshape(1, -1)
 
     def training(self, image, class_num):
         image_height = image.shape[0]
