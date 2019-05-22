@@ -22,7 +22,7 @@ class HorestWriterIdentification:
         self.total_test_cases = 100
         self.pathTrainingSet = path_training_set
         self.pathTestCases = path_test_cases
-        self.classifier = MLPClassifier(solver='lbfgs', max_iter=30000, alpha=0.046041,
+        self.classifier = MLPClassifier(solver='lbfgs', max_iter=1000, alpha=0.046041,
                                         hidden_layer_sizes=(22, 18, 15, 12, 7,),
                                         random_state=randomState)
 
@@ -71,7 +71,7 @@ class HorestWriterIdentification:
         all_features_test = (self.adjust_nan_values(
             np.reshape(all_features_test, (num_testing_examples, self.num_features))) - mu) / sigma
 
-        return self.classifier.predict_proba(np.average(all_features_test, axis=0).reshape(1, -1))
+        return np.average(self.classifier.predict_proba(all_features_test), axis=0).reshape(1, -1)
 
     def training(self, image, class_num):
         image_height = image.shape[0]

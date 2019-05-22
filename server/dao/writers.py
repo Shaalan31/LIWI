@@ -74,7 +74,8 @@ class Writers:
         :return: list of writers
         """
         writers = []
-        writers_dicts = self.collection.find({"_features": { "$ne": None }})
+        writers_dicts = self.collection.find({"_features._sift_SDS": { "$exists": True, "$ne": []},
+                                              "_features._sift_SOH": { "$exists": True, "$ne": []}})
         if writers_dicts.count() != 0:
             for writer_dict in writers_dicts:
                 writer = dict_to_writers(writer_dict)
