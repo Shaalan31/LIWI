@@ -1,49 +1,16 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-# Copyright (c) Philipp Wagner. All rights reserved.
-# Licensed under the BSD license. See LICENSE file in the project root for full license information.
-
 import numpy as np
 from skimage.feature import local_binary_pattern
 from scipy.signal import convolve2d
 
 
-class LocalDescriptor(object):
-    def __init__(self, neighbors):
+class LocalDescriptor:
+
+    def __init__(self, radius=1, neighbors=8):
+        self._radius = radius
         self._neighbors = neighbors
 
-    def __call__(self, X):
-        raise NotImplementedError("Every LBPOperator must implement the __call__ method.")
-
-    @property
-    def neighbors(self):
-        return self._neighbors
-
-    def __repr__(self):
-        return "LBPOperator (neighbors=%s)" % (self._neighbors)
-
-
-class LPQ(LocalDescriptor):
-    """ This implementation of Local Phase Quantization (LPQ) is a 1:1 adaption of the
-        original implementation by Ojansivu V & Heikkilä J, which is available at:
-
-            * http://www.cse.oulu.fi/CMV/Downloads/LPQMatlab
-
-        So all credit goes to them.
-
-      Reference:
-        Ojansivu V & Heikkilä J (2008) Blur insensitive texturemodel classification
-        using local phase quantization. Proc. Image and Signal Processing
-        (ICISP 2008), Cherbourg-Octeville, France, 5099:236-243.
-        Copyright 2008 by Heikkilä & Ojansivu
-    """
-
-    def __init__(self, radius=3):
-        LocalDescriptor.__init__(self, neighbors=8)
-        self._radius = radius
-
-    def euc_dist(self, X):
+    @staticmethod
+    def euc_dist(X):
         Y = X = X.astype(np.float)
         XX = np.sum(X * X, axis=1)[:, np.newaxis]
         YY = XX.T
@@ -55,7 +22,7 @@ class LPQ(LocalDescriptor):
         distances.flat[::distances.shape[0] + 1] = 0.0
         return np.sqrt(distances)
 
-    def __call__(self, X):
+    def get_lpq_features(self, X):
         f = 1.0
         x = np.arange(-self._radius, self._radius + 1)
         n = len(x)
@@ -117,12 +84,13 @@ class LPQ(LocalDescriptor):
 
         return np.reshape(B, np.shape(Fa))
 
-    def getlbp_Features(self, greyScaleImage):
+    def get_lbp_features(self, greyScaleImage):
         return local_binary_pattern(greyScaleImage, P=self._neighbors, R=self._radius, method='uniform')
 
     @property
     def radius(self):
         return self._radius
 
-    def __repr__(self):
-        return "LPQ (neighbors=%s, radius=%s)" % (self._neighbors, self._radius)
+    @property
+    def neighbors(self):
+        return self._neighbors
