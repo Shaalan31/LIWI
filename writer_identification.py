@@ -299,7 +299,7 @@ db = Database()
 db.connect()
 db.create_collection()
 writers_dao = Writers(db.get_collection())
-first_class = 2
+first_class = 1
 last_class = 159
 count = first_class
 total_test_cases = 0
@@ -333,7 +333,7 @@ while count <= last_class:
 # db.connect()
 # db.create_collection()
 # writers_dao = Writers(db.get_collection_arabic())
-# startClass = 2
+# startClass = 1
 # endClass = 159
 # count = startClass
 #
