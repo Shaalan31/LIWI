@@ -11,6 +11,7 @@ import datetime
 import copy
 
 
+
 def writer_to_dict(writer):
     """
     Convert writer object into dictionary

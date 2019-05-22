@@ -112,7 +112,7 @@ class SiftModel:
             count += 1
         self.accuracy = np.array([[right_test_cases], [total_test_cases]])
 
-    def predict(self, SDS_train, SOH_train, testing_image, name,lang="en"):
+    def predict(self, SDS_train, SOH_train, testing_image, name, lang="en"):
         matching = FeatureMatching()
         # Feature Extraction
         SDS, SOH = self.get_features(name, image=testing_image,lang=lang)
@@ -124,7 +124,11 @@ class SiftModel:
             D1, D2 = matching.calculate_distances(u=SDS, v=SDS_train[i], x=SOH, y=SOH_train[i])
             manhattan.append(D1)
             chi_square.append(D2)
-        prediction = matching.match2(manhattan, chi_square, w=0.75)
+
+        if lang == "en":
+            prediction = matching.match2(manhattan, chi_square, w=0.75)
+        else:
+            prediction = matching.match2(manhattan, chi_square, w=0.25)
 
         return prediction
 
