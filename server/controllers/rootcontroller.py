@@ -262,7 +262,7 @@ def set_writers():
                - response status code:
                    200 for success
     """
-    start_class = 1
+    start_class = 788
     end_class = 945
     language = request.args.get('lang', None)
     if language == "ar":
