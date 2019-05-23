@@ -20,7 +20,7 @@ class SiftModel:
         self.features = FeaturesExtraction()
         self.accuracy = None
 
-    def get_features(self, name, lang="en", image=None, path=""):
+    def get_features(self, name, lang="en", image=None, path="",t=1,phi=36):
 
         if image is None:
             image = cv2.imread(path)
@@ -39,8 +39,8 @@ class SiftModel:
         sd, so = WordSegmentation(lang).word_segmentation(image, name)
 
         # calculate SDS and SOH
-        SDS = self.features.sds(sd, self.code_book, t=1)
-        SOH = self.features.soh(so, phi=36)
+        SDS = self.features.sds(sd, self.code_book, t=t)
+        SOH = self.features.soh(so, phi=phi)
 
         return SDS, SOH
 

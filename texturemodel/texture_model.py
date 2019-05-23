@@ -110,14 +110,14 @@ class TextureWriterIdentification:
         normalized_X = np.divide(normalized_X, deviation)
         return normalized_X, mean, deviation
 
-    def get_features(self,image,lang="en"):
+    def get_features(self,image,lang="en",h_coeff=None):
         image_height = image.shape[0]
         if image_height > 3500:
             image = cv2.resize(src=image, dsize=(3500, round((3500 / image.shape[1]) * image_height)))
 
         # image = adjust_rotation(image=image)
         # show_images([image])
-        writer_blocks = BlockSegmentation(image,lang).segment()
+        writer_blocks = BlockSegmentation(image,lang,h_coeff=h_coeff).segment()
         num_blocks = len(writer_blocks)
 
         all_features_class = np.asarray([])
