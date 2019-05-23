@@ -68,6 +68,20 @@ class Writers:
                 writers.append(writer)
         return writers
 
+    def get_all_features(self):
+        """
+        Get all features with the writers' name, usernames, ids, image, phone, birthday, address and nid
+        :param writers_ids:
+        :return: list of writer model
+        """
+        writers = []
+        writers_dicts = self.collection.find()
+        if writers_dicts.count() != 0:
+            for writer_dict in writers_dicts:
+                writer = dict_to_writer(writer_dict)
+                writers.append(writer)
+        return writers
+
     def get_writers_not_none(self):
         """
         Get writers' ids, names and usernames for the application
