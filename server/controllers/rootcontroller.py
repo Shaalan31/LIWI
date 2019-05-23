@@ -207,14 +207,17 @@ def get_image(path, filename):
                 - testing: for testing
                 - training: for training
     :param filename: path variable for image name
-    :return:
+    :return: url for image in case found, url fo image not found in case not found
     """
     try:
         path = request.view_args['path'] + '/' + request.view_args['filename']
 
         return send_from_directory(UPLOAD_FOLDER, path)
     except:
-        raise ExceptionHandler(message=HttpMessages.IMAGENOTFOUND.value, status_code=HttpErrors.NOTFOUND.value)
+        path = request.view_args['path'] + '/not_found.png'
+
+        return send_from_directory(UPLOAD_FOLDER, path)
+        # raise ExceptionHandler(message=HttpMessages.IMAGENOTFOUND.value, status_code=HttpErrors.NOTFOUND.value)
 
 
 @app.route("/writer", methods=['PUT'])

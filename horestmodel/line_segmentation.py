@@ -1,6 +1,7 @@
 from utils.common_functions import *
 from skimage.filters import gaussian
 from skimage.filters import threshold_otsu
+from utils.filters import *
 
 
 class LineSegmentation:
@@ -8,6 +9,8 @@ class LineSegmentation:
         self.image = image
 
     def segment(self):
+        filters = Filters()
+
         image = remove_shadow(self.image)
 
         imageGray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -18,6 +21,7 @@ class LineSegmentation:
         # Thresholding
         imageGray *= 255
         threshold = np.round(threshold_otsu(imageGray) * 1.1)
+        # threshold = np.round(filters.otsu_segmentation(imageGray) * 1.1)
         imageGray[(imageGray > threshold)] = 255
         imageGray[(imageGray <= threshold)] = 0
 

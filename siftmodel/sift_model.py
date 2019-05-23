@@ -33,7 +33,7 @@ class SiftModel:
         else:
             image= cv2.copyMakeBorder(image,10,10,10,10,cv2.BORDER_CONSTANT,value=[255,255,255])
 
-        # cv2.imwrite('image_extract_text.png', image)
+        # cv2.imwrite('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/image_extract_text.png', image)
 
         # segment words and get its sift descriptors and orientations
         sd, so = WordSegmentation(lang).word_segmentation(image, name)
