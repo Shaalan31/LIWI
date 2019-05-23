@@ -2,7 +2,6 @@ from scipy.signal import convolve2d
 from skimage.feature import local_binary_pattern
 from texturemodel.lbpKhairy import *
 
-
 class LocalDescriptor:
 
     def __init__(self, radius=1, neighbors=8):
@@ -24,15 +23,20 @@ class LocalDescriptor:
 
     def get_lpq_features(self, X):
         f = 1.0
-        x = np.arange(-self._radius, self._radius + 1)
+        x = np.asarray(list(range(-self._radius, self._radius + 1)))
         n = len(x)
-        rho = 0.95
+
+        rho = 0.9
         [xp, yp] = np.meshgrid(np.arange(1, (n + 1)), np.arange(1, (n + 1)))
         pp = np.concatenate((xp, yp)).reshape(2, -1)
         dd = self.euc_dist(pp.T)  # squareform(pdist(...)) would do the job, too...
+        # dd = distance.euclidean(pp,pp.T)  # squareform(pdist(...)) would do the job, too...
         C = np.power(rho, dd)
 
+        #array of ones
         w0 = (x * 0.0 + 1.0)
+
+        #getting phases
         w1 = np.exp(-2 * np.pi * 1j * x * f / n)
         w2 = np.conj(w1)
 
