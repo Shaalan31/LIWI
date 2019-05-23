@@ -55,9 +55,10 @@ def extract_text(img):
     horizontal /= 255
     # show_images([horizontal])
     sum = np.sum(horizontal, axis=1)
-    sum[sum < int(cols / 2)] = 0
-    sum[sum > int(cols / 2)] = 1
-    if np.max(sum) == np.min(sum):
+    sum[sum < int(cols / 6)] = 0
+    sum[sum > int(cols / 6)] = 1
+    count_lines = len(np.argwhere(np.diff(np.argwhere(sum==1),axis=0)>2)) + 1
+    if np.max(sum) == np.min(sum) or count_lines!=3:
         return 0, img.shape[0]
     half = int(sum.shape[0] / 2)
     top_boundary = half - np.argmax(sum[half:0:-1])
