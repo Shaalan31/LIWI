@@ -1,6 +1,6 @@
-import numpy as np
-from skimage.feature import local_binary_pattern
 from scipy.signal import convolve2d
+from skimage.feature import local_binary_pattern
+from texturemodel.lbpKhairy import *
 
 
 class LocalDescriptor:
@@ -85,6 +85,8 @@ class LocalDescriptor:
         return np.reshape(B, np.shape(Fa))
 
     def get_lbp_features(self, greyScaleImage):
+        # binaryImage = np.around(np.divide(greyScaleImage, 255)).astype('uint8')
+        # return getLBP(binaryImage, 3)
         return local_binary_pattern(greyScaleImage, P=self._neighbors, R=self._radius, method='uniform')
 
     @property
