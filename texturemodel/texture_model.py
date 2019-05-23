@@ -26,7 +26,7 @@ class TextureWriterIdentification:
         self.total_test_cases = 100
         self.pathTrainingSet = path_training_set
         self.pathTestCases = path_test_cases
-        self.classifier = SVC(C=1000.0, cache_size=200, gamma='0.001', kernel='rbf',
+        self.classifier = SVC(C=1000.0, cache_size=200, gamma=0.001, kernel='rbf',
                            probability=True, random_state=1545481387, )
 
     def feature_extraction(self, example):
@@ -200,7 +200,7 @@ class TextureWriterIdentification:
             X, y, test_size=0.5, random_state=0)
 
         # Set the parameters by cross-validation
-        tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-1,1e-2,1e-3, 1e-4,'scale'],
+        tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-1,1e-2,1e-3, 1e-4],
                              'C': [1, 10, 100, 1000,10000]}
                             ]
 
