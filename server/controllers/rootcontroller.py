@@ -263,7 +263,7 @@ def set_writers():
                    200 for success
     """
     start_class = 1
-    end_class = 945
+    end_class = 2519
     language = request.args.get('lang', None)
     if language == "ar":
         base_path = 'D:/Uni/Graduation Project/All Test Cases/KHATT/Samples/Class'
