@@ -31,12 +31,12 @@ class TextureWriterIdentification:
     def feature_extraction(self, example):
         example = example.astype('uint8')
         example_copy = example.copy()
-        lpq = LPQ(radius=1)
+        local_descriptor = LocalDescriptor()
         feature = []
 
-        feature.extend(np.histogram(lpq.getlbp_Features(example_copy), bins=256)[0])
+        feature.extend(np.histogram(local_descriptor.get_lbp_features(example_copy), bins=256)[0])
 
-        feature.extend(np.histogram(np.array(lpq.__call__(example_copy)), bins=256)[0])
+        feature.extend(np.histogram(np.array(local_descriptor.get_lpq_features(example_copy)), bins=256)[0])
 
         return np.asarray(feature)
 
@@ -64,7 +64,7 @@ class TextureWriterIdentification:
         #     predictions.append(clf.predict(np.asarray(example).reshape(1, -1)))
         # values, counts = np.unique(np.asarray(predictions), return_counts=True)
         # return values[np.argmax(counts)]
-        return self.classifier.predict_proba(pca.transform(np.average(all_features_test, axis=0).reshape(1, -1)))
+        return np.average(self.classifier.predict_proba(pca.transform(all_features_test)),axis=0).reshape(1, -1)
 
     def training(self, image, class_num):
         image_height = image.shape[0]

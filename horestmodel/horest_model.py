@@ -71,7 +71,7 @@ class HorestWriterIdentification:
         all_features_test = (self.adjust_nan_values(
             np.reshape(all_features_test, (num_testing_examples, self.num_features))) - mu) / sigma
 
-        return self.classifier.predict_proba(np.average(all_features_test, axis=0).reshape(1, -1))
+        return np.average(self.classifier.predict_proba(all_features_test), axis=0).reshape(1, -1)
 
     def training(self, image, class_num):
         image_height = image.shape[0]
