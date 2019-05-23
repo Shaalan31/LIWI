@@ -266,8 +266,9 @@ def set_writers():
                - response status code:
                    200 for success
     """
+    #Shaalan 1293
     start_class = 1
-    end_class = 2519
+    end_class = 2530
     language = request.args.get('lang', None)
     if language == "ar":
         # base_path = 'D:/Uni/Graduation Project/All Test Cases/KHATT/Samples/Class'
@@ -275,7 +276,8 @@ def set_writers():
         status_code, message = writer_service.fill_collection_arabic(start_class, end_class, base_path)
     else:
         # base_path = 'D:/Uni/Graduation Project/All Test Cases/Dataset/Training/Class'
-        base_path = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/Dataset/Training/Class'
+        #Shaalan path 'C:/Users/omars/Documents/Github/LIWI/Omar/Dataset/Training/Class'S
+        base_path = 'C:/Users/omars/Documents/Github/LIWI/Omar/Dataset/Training/Class'
         status_code, message = writer_service.fill_collection(start_class, end_class, base_path)
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value)
