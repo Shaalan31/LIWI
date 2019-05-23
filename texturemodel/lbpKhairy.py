@@ -25,14 +25,10 @@ def getLBP(image, length):
                     pattern += str(comparison)
 
             pattern, lastChar = removeCharByIndexAndReturnChar(pattern, 3)
-            pattern += (lastChar)
+            pattern += lastChar
             lbpValues = np.append(lbpValues, int(str(pattern), 2))
 
     return lbpValues
-
-
-image = np.asarray([[1, 0, 1], [1, 1, 0], [0, 1, 0]])
-lbpVal = getLBP(image, 3)
 
 
 def removeCharByIndexAndReturnChar(string, index):
