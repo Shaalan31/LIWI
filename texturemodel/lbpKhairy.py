@@ -35,8 +35,3 @@ def removeCharByIndexAndReturnChar(string, index):
     lastChar = string[index]
     string = string[:index] + string[index+1:]
     return string, lastChar
-
-
-image = np.asarray([[195, 153, 200], [200, 128, 33], [18, 81, 201]])
-val = getLBP(image, 3)
-print(val)
