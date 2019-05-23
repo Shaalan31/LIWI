@@ -21,13 +21,12 @@ class WriterService():
         self.writers_dao = Writers(db.get_collection())
         self.writers_dao_arabic = Writers(db.get_collection_arabic())
 
-    def predict_writer(self, testing_image, filename, writers_ids, url):
+    def predict_writer(self, testing_image, filename, url):
         """
             Service to get predicted English writers
             :parameter: request contains
                       - testing image: testing_image
                       - image name: filename
-                      - writers ids: writers_ids
                       - dao: dao
             :return:
                     -status
@@ -35,10 +34,11 @@ class WriterService():
                     -writers_predicted
           """
 
-        if len(writers_ids) > 30:
-            return HttpErrors.BADREQUEST, HttpMessages.MAXIMUM_EXCEEDED, None
+        # if len(writers_ids) > 30:
+        #     return HttpErrors.BADREQUEST, HttpMessages.MAXIMUM_EXCEEDED, None
 
-        writers = self.writers_dao.get_features(writers_ids)
+        # writers = self.writers_dao.get_features(writers_ids)
+        writers = self.writers_dao.get_all_features()
 
         # process features to fit classifier
         # declaring variables for horest
@@ -157,7 +157,7 @@ class WriterService():
 
         return HttpErrors.SUCCESS, HttpMessages.SUCCESS, writers_predicted
 
-    def predict_writer_arabic(self, testing_image, filename, writers_ids, url):
+    def predict_writer_arabic(self, testing_image, filename, url):
         """
              Service to get predicted Arabic writers
              :parameter: request contains
@@ -171,10 +171,11 @@ class WriterService():
                      -writers_predicted
        """
 
-        if len(writers_ids) > 3:
-            return HttpErrors.BADREQUEST, HttpMessages.MAXIMUM_EXCEEDED, None
+        # if len(writers_ids) > 3:
+        #     return HttpErrors.BADREQUEST, HttpMessages.MAXIMUM_EXCEEDED, None
 
-        writers = self.writers_dao_arabic.get_features(writers_ids)
+        # writers = self.writers_dao_arabic.get_features(writers_ids)
+        writers = self.writers_dao_arabic.get_all_features()
 
         # process features to fit classifier
         # declaring variables for texture
