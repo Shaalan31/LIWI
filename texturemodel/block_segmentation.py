@@ -1,6 +1,7 @@
 from utils.common_functions import *
 from skimage.filters import gaussian
 from skimage.filters import threshold_otsu
+from utils.filters import *
 import math
 
 class BlockSegmentation:
@@ -18,6 +19,8 @@ class BlockSegmentation:
 
 
     def segment(self):
+        filters = Filters()
+
         # image = remove_shadow(image)
 
         imageGray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
@@ -28,6 +31,7 @@ class BlockSegmentation:
         # Thresholding
         imageGray *= 255
         threshold = np.round(threshold_otsu(imageGray))
+        # threshold = np.round(filters.otsu_segmentation(imageGray))
         imageGray[(imageGray > threshold)] = 255
         imageGray[(imageGray <= threshold)] = 0
 

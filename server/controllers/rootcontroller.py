@@ -98,16 +98,14 @@ def get_prediction():
         testing_image = cv2.imread(UPLOAD_FOLDER + 'testing/' + filename)
 
         # get features of the writers
-        writers_ids = request.get_json()['writers_ids']
+        # writers_ids = request.get_json()['writers_ids']
         language = request.args.get('lang', None)
         image_base_url = request.host_url + 'image/writers/'
 
         if language == "ar":
-            status, message, writers_predicted = writer_service.predict_writer_arabic(testing_image, filename,
-                                                                                      writers_ids, image_base_url)
+            status, message, writers_predicted = writer_service.predict_writer_arabic(testing_image, filename, image_base_url)
         else:
-            status, message, writers_predicted = writer_service.predict_writer(testing_image, filename, writers_ids,
-                                                                               image_base_url)
+            status, message, writers_predicted = writer_service.predict_writer(testing_image, filename, image_base_url)
 
         raise ExceptionHandler(message=message.value, status_code=status.value,
                                data=writers_predicted)
@@ -207,14 +205,17 @@ def get_image(path, filename):
                 - testing: for testing
                 - training: for training
     :param filename: path variable for image name
-    :return:
+    :return: url for image in case found, url fo image not found in case not found
     """
     try:
         path = request.view_args['path'] + '/' + request.view_args['filename']
 
         return send_from_directory(UPLOAD_FOLDER, path)
     except:
-        raise ExceptionHandler(message=HttpMessages.IMAGENOTFOUND.value, status_code=HttpErrors.NOTFOUND.value)
+        path = request.view_args['path'] + '/not_found.png'
+
+        return send_from_directory(UPLOAD_FOLDER, path)
+        # raise ExceptionHandler(message=HttpMessages.IMAGENOTFOUND.value, status_code=HttpErrors.NOTFOUND.value)
 
 
 @app.route("/writer", methods=['PUT'])
@@ -269,6 +270,7 @@ def set_writers():
     #Shaalan 1293
     start_class = 1
     end_class = 2530
+
     language = request.args.get('lang', None)
     if language == "ar":
         # base_path = 'D:/Uni/Graduation Project/All Test Cases/KHATT/Samples/Class'

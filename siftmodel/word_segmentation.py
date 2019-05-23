@@ -2,6 +2,7 @@ import cv2
 from siftmodel.sift import *
 from siftmodel.preprocessing import *
 from utils.common_functions import *
+from utils.filters import *
 
 class WordSegmentation:
     def __init__(self,lang="en"):
@@ -13,12 +14,15 @@ class WordSegmentation:
         pass
 
     def segment(self,image_gray):
+        filters = Filters()
+
         # Noise removal with gaussian
         image_gray = gaussian(image_gray, 1)
 
         # Thresholding
         image_gray *= 255
         threshold = np.round(threshold_otsu(image_gray) * 1.1)
+        # threshold = np.round(filters.otsu_segmentation(image_gray) * 1.1)
         image_gray[(image_gray > threshold)] = 255
         image_gray[(image_gray <= threshold)] = 0
         # show_images([image_gray])
@@ -94,13 +98,13 @@ class WordSegmentation:
                     #xend = int(line[word_index, 0] + line[word_index, 2])
                     word = image_gray[ymin:ymax, int(line[start, 0]):xend]
 
-                    # cv2.imwrite('words/' + str(int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
+                    cv2.imwrite('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/words/' + str(int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
 
                 else:
                     # get segmented word from the image
                     word = image_gray[int(line[word_index,1]):int(line[word_index,1]+line[word_index,3]),int(line[word_index,0]):int(line[word_index,0]+line[word_index,2])]
 
-                    # cv2.imwrite('words/' + str(int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
+                    cv2.imwrite('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/words/' + str(int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
 
                 word_index += 1
 
@@ -117,6 +121,8 @@ class WordSegmentation:
 
     def word_segmentation(self, image, name):
 
+        filters = Filters()
+
         image_orig = image.copy()
 
         image_copy = image_orig.copy()
@@ -126,6 +132,7 @@ class WordSegmentation:
         # convert into binary image using Otsu
         image_binary = image_gray * 255
         threshold = threshold_otsu(image_binary)
+        # threshold = filters.otsu_segmentation(image_binary)
         image_binary[(image_binary > threshold)] = 255
         image_binary[(image_binary <= threshold)] = 0
         # cv2.imwrite('image_otsu.png', image_binary)
@@ -148,6 +155,7 @@ class WordSegmentation:
         # convert gaussian image into binary image using Otsu
         image_gaussian_binary = image_gaussian.copy().astype('uint8')
         threshold = threshold_otsu(image_gaussian_binary)
+        # threshold = filters.otsu_segmentation(image_gaussian_binary)
         image_gaussian_binary[(image_gaussian_binary > threshold)] = 255
         image_gaussian_binary[(image_gaussian_binary <= threshold)] = 0
         # cv2.imwrite('image_gaussian_otsu.png', image_gaussian_binary)

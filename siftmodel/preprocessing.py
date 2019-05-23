@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from skimage.filters import threshold_otsu
 from skimage.filters import gaussian
+from utils.filters import *
 
 
 class Preprocessing:
@@ -23,6 +24,8 @@ class Preprocessing:
     # extract text from IAM database
     @staticmethod
     def extract_text(img):
+        filters = Filters()
+
         img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
         # Noise removal with gaussian
@@ -30,6 +33,7 @@ class Preprocessing:
 
         img = img * 255
         threshold = threshold_otsu(img)
+        # threshold = filters.otsu_segmentation(img)
         img[(img > threshold)] = 255
         img[(img <= threshold)] = 0
 
@@ -44,7 +48,8 @@ class Preprocessing:
         sum = np.sum(horizontal, axis=1)
         sum[sum < int(cols / 6)] = 0
         sum[sum > int(cols / 6)] = 1
-        if np.max(sum) == np.min(sum):
+        count_lines = len(np.argwhere(np.diff(np.argwhere(sum == 1), axis=0) > 2)) + 1
+        if np.max(sum) == np.min(sum) or count_lines != 3:
             return 0, img.shape[0]
         half = int(sum.shape[0] / 2)
         top_boundary = half - np.argmax(sum[half:0:-1])
