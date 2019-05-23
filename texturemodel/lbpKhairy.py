@@ -20,11 +20,11 @@ def getLBP(image, length):
                     if (fx - edgex) == 0 and (fy - edgey) == 0:
                         continue
                     comparison = 1
-                    if image[i][j] > image[i + fx - edgex][j + fy - edgey]:
+                    if image[i][j] >= image[i + fx - edgex][j + fy - edgey]:
                         comparison = 0
                     pattern += str(comparison)
 
-            pattern, lastChar = removeCharByIndexAndReturnChar(pattern, 3)
+            pattern, lastChar = removeCharByIndexAndReturnChar(pattern, 5)
             pattern += lastChar
             lbpValues = np.append(lbpValues, int(str(pattern), 2))
 
@@ -33,5 +33,10 @@ def getLBP(image, length):
 
 def removeCharByIndexAndReturnChar(string, index):
     lastChar = string[index]
-    string = string[:index] + string[index:]
+    string = string[:index] + string[index+1:]
     return string, lastChar
+
+
+image = np.asarray([[195, 153, 200], [200, 128, 33], [18, 81, 201]])
+val = getLBP(image, 3)
+print(val)
