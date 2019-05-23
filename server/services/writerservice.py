@@ -447,9 +447,9 @@ class WriterService():
             writer.features = features
             writer.id = class_number
             writer.name = writer_name
-            writer.birthday = birthdays[class_number - 1]
-            writer.address = addresses[class_number - 1]
-            writer.phone = phones[int(class_number - 1)&300]
+            writer.birthday = birthdays[int(class_number - 1)%len(birthdays)]
+            writer.address = addresses[int(class_number - 1)%len(addresses)]
+            writer.phone = phones[int(class_number - 1)%len(phones)]
             writer.nid = class_number #nid[class_number - 1]
             writer.image = images[int((class_number - 1)%100)]
             name_splitted = writer.name.split()

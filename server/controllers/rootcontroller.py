@@ -262,8 +262,8 @@ def set_writers():
                - response status code:
                    200 for success
     """
-    start_class = 788
-    end_class = 945
+    start_class = 1073
+    end_class = 2531
     language = request.args.get('lang', None)
     if language == "ar":
         base_path = 'D:/Uni/Graduation Project/All Test Cases/KHATT/Samples/Class'
