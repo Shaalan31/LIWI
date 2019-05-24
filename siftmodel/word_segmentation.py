@@ -98,17 +98,17 @@ class WordSegmentation:
                     #xend = int(line[word_index, 0] + line[word_index, 2])
                     word = image_gray[ymin:ymax, int(line[start, 0]):xend]
 
-                    cv2.imwrite('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/words/' + str(int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
+                    # cv2.imwrite('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/words/' + str(int(number)) + '_' + str(name.replace('.jpg', '')) + '.jpg', word)
 
                 else:
                     # get segmented word from the image
                     word = image_gray[int(line[word_index,1]):int(line[word_index,1]+line[word_index,3]),int(line[word_index,0]):int(line[word_index,0]+line[word_index,2])]
 
-                    cv2.imwrite('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/words/' + str(int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
+                    # cv2.imwrite('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/words/' + str(int(number)) + '_' + str(name.replace('.jpg', '')) + '.jpg', word)
 
                 word_index += 1
 
-                if (len(word) == 0):
+                if len(word) == 0:
                     continue
 
                 # get sift descriptors and orientation
