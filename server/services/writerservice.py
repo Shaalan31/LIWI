@@ -394,7 +394,7 @@ class WriterService():
 
         # loop on the writers
         for class_number in range(start_class, num_classes + 1):
-            writer_name = names[class_number - 1]
+            writer_name = names[int((class_number - 1))]
 
             writer_horest_features = []
             writer_texture_features = []
@@ -441,11 +441,15 @@ class WriterService():
             writer.features = features
             writer.id = class_number
             writer.name = writer_name
+
             writer.birthday = birthdays[class_number - 1]
             writer.address = addresses[class_number - 1]
             writer.phone = phones[class_number - 1]
             writer.nid = nid[class_number - 1]
-            writer.image = images[class_number - 1]
+            if class_number > 554:
+                writer.image = images[int((class_number - 1) % 100)]
+            else:
+                writer.image = images[int((class_number - 1))]
             name_splitted = writer.name.split()
             writer.username = name_splitted[0][0].lower() + name_splitted[1].lower() + str(writer.id)
             status_code, message = dao.create_writer(writer)
@@ -516,7 +520,10 @@ class WriterService():
             writer.address = addresses[class_number - 1]
             writer.phone = phones[class_number - 1]
             writer.nid = nid[class_number - 1]
-            writer.image = images[class_number - 1]
+            if class_number > 554:
+                writer.image = images[int((class_number - 1) % 100)]
+            else:
+                writer.image = images[int((class_number - 1))]
             name_splitted = writer.name.split()
             writer.username = name_splitted[0][0].lower() + name_splitted[1].lower() + str(writer.id)
             status_code, message = dao.create_writer(writer)
