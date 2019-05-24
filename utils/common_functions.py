@@ -55,8 +55,8 @@ def extract_text(img):
     horizontal /= 255
     # show_images([horizontal])
     sum = np.sum(horizontal, axis=1)
-    sum[sum < int(cols / 10)] = 0
-    sum[sum > int(cols / 10)] = 1
+    sum[sum < int(cols / 6)] = 0
+    sum[sum > int(cols / 6)] = 1
     if np.max(sum) == np.min(sum):
         return 0, img.shape[0]
     half = int(sum.shape[0] / 2)
@@ -73,7 +73,7 @@ def getBoundingRects(image):
     small_components_ratio = 375 / 8780618
 
     all_bounding_rects = np.asarray([])
-    _, contours, hierarchy = cv2.findContours(np.subtract(255, image.copy()), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    _, contours, hierarchy = cv2.findContours(np.subtract(255, image.copy()), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     contours = np.asarray(contours)
 
     for contour in contours:
