@@ -49,7 +49,7 @@ class Preprocessing:
         sum[sum < int(cols / 6)] = 0
         sum[sum > int(cols / 6)] = 1
         count_lines = len(np.argwhere(np.diff(np.argwhere(sum == 1), axis=0) > 2)) + 1
-        if np.max(sum) == np.min(sum) or count_lines != 3:
+        if np.max(sum) == np.min(sum) or count_lines < 3:
             return 0, img.shape[0]
         half = int(sum.shape[0] / 2)
         top_boundary = half - np.argmax(sum[half:0:-1])
