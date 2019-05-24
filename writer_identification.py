@@ -304,7 +304,7 @@ db.connect()
 db.create_collection()
 writers_dao = Writers(db.get_collection())
 first_class = 1
-last_class = 150
+last_class = 1000
 count = first_class
 total_test_cases = 0
 right_test_cases = 0
@@ -312,6 +312,7 @@ right_test_cases = 0
 writers = writers_dao.get_features(list(range(first_class, last_class + 1)))
 mu_horest, sigma_horest, mu_texture, sigma_texture, pca, SDS_train, SOH_train, writers_lookup_array = preprocess(writers)
 
+print(writers)
 while count <= last_class:
     print('Class' + str(count) + ':')
 
