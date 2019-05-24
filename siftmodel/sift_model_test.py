@@ -68,26 +68,31 @@ class SiftModel:
 
         print('Get SDS')
         for count in  self.test_class:
+            oba = True
             for filename in glob.glob(self.base_samples_t + 'Class' + str(count)):
-                print('Class' + str(count) + ':')
+                oba = False
+                # print(count)
+                # print('Class' + str(count) + ':')
 
                 for image in glob.glob(filename + '/*.jpg'):
                     name = Path(image).name
-                    print(name)
+                    # print(name)
                     SDS = np.genfromtxt(image, delimiter=",")
                     SDS = SDS.reshape((1,SDS.shape[0]))
                     SDS_train.append(SDS)
 
             for filename in glob.glob(self.base_samples_phi + 'Class' + str(count)):
-                print('Class' + str(count) + ':')
+                # print('Class' + str(count) + ':')
 
                 for image in glob.glob(filename + '/*.jpg'):
                     name = Path(image).name
-                    print(name)
+                    # print(name)
                     SOH = np.genfromtxt(image, delimiter=",")
                     SOH = SOH.reshape((1,SOH.shape[0]))
                     SOH_train.append(SOH)
-
+            if oba:
+                print(count)
+        # print(SDS_train.shape)
         return SDS_train, SOH_train
 
     # Test the model
@@ -119,7 +124,7 @@ class SiftModel:
                     manhattan.append(D1)
                     chi_square.append(D2)
                 prediction = matching.match(manhattan, chi_square, w=self.w)
-                class_numb = self.test_class[ math.floor(prediction / 2)]
+                class_numb = self.test_class[ math.floor(prediction / 1)]
                 print(name + ' , class number: ' + str(class_numb))
 
                 # Calculate accuracy
