@@ -25,12 +25,12 @@ def show_images(images, titles=None):
 
 
 #
-# def showHist(img):
-#     # An "interface" to matplotlib.axes.Axes.hist() method
-#     plt.figure()
-#     imgHist = histogram(img, nbins=256)
-#
-#     bar(imgHist[1].astype(np.uint8), imgHist[0], width=0.8, align='center')
+def showHist(imgHist):
+    # An "interface" to matplotlib.axes.Axes.hist() method
+    plt.figure()
+    # imgHist = histogram(img, nbins=256)
+
+    plt.bar(imgHist[1].astype(np.uint8), imgHist[0], width=0.8, align='center')
 
 
 def remove_shadow(img):
