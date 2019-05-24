@@ -158,6 +158,6 @@ def Testcase_gen(start,num):
 
 
 
-for beg in range(3,1000,20):
-    Testcase_gen(beg,20)
-    Samples_gen(beg,20)
+for beg in range(63,1000,20):
+    Testcase_gen(beg,20+beg)
+    Samples_gen(beg,20+beg)

@@ -10,8 +10,9 @@ import os
 import pickle
 
 class SiftModel:
-    def __init__(self, test_classes, code_book,t=1,phi=36,w=0.1):
+    def __init__(self, test_classes, code_book,t=1,phi=36,w=0.1,lang='en'):
         self.w = w
+        self.lang = lang
         # self.base_train_SDS = 'C:/Users/omars/Documents/Github/LIWI/Omar/Fast/Samples/SDS/'
         # self.base_train_SOH = 'C:/Users/omars/Documents/Github/LIWI/Omar/Fast/Samples/SOH/'
         # self.base_test_SDS = 'C:/Users/omars/Documents/Github/LIWI/Omar/Fast/TestCases/SDS/'
@@ -124,7 +125,10 @@ class SiftModel:
                     manhattan.append(D1)
                     chi_square.append(D2)
                 prediction = matching.match(manhattan, chi_square, w=self.w)
-                class_numb = self.test_class[ math.floor(prediction / 1)]
+                if self.lang=='en':
+                    class_numb = self.test_class[ math.floor(prediction / 1)]
+                else:
+                    class_numb = self.test_class[math.floor(prediction / 3)]
                 print(name + ' , class number: ' + str(class_numb))
 
                 # Calculate accuracy
