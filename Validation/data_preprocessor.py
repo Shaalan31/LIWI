@@ -6,7 +6,8 @@ from server.utils.utilities import *
 
 
 
-def Samples_gen():
+def Samples_gen(start,num):
+    print('SAMPPLESS - ',start)
     t = [1, 50, 150, 225, 300]
     phi = [36, 72, 108, 234, 360]
     h = [0.1, 0.3, 0.5, 0.7, 0.9]
@@ -15,8 +16,8 @@ def Samples_gen():
     sift_model = SiftModel()
     sift_model.set_code_book('en')
 
-    start_class = 5
-    num_classes = 645
+    start_class = int(start)
+    num_classes = int(num)
 
     base_path = 'C:/Users/omars/Documents/Github/LIWI/Omar/Dataset/Training/Class'
     base_samples_h = 'C:/Users/omars/Documents/Github/LIWI/Omar/Validation/Samples/H/'
@@ -102,4 +103,88 @@ def Samples_gen():
 
 
 
-Samples_gen()
+
+
+
+
+def Testcase_gen(start,num):
+    print('TESTCASES - ',start)
+    t = [1, 50, 150, 225, 300]
+    phi = [36, 72, 108, 234, 360]
+    h = [0.1, 0.3, 0.5, 0.7, 0.9]
+
+    texture_model = TextureWriterIdentification()
+    sift_model = SiftModel()
+    sift_model.set_code_book('en')
+
+    start_class = int(start)
+    num_classes = int(num)
+
+    base_path = 'C:/Users/omars/Documents/Github/LIWI/Omar/Dataset/Validation/testing'
+
+    base_test_h = 'C:/Users/omars/Documents/Github/LIWI/Omar/Validation/TestCases/H/'
+    base_test_t = 'C:/Users/omars/Documents/Github/LIWI/Omar/Validation/TestCases/SDS/'
+    base_test_phi = 'C:/Users/omars/Documents/Github/LIWI/Omar/Validation/TestCases/SOH/'
+
+
+    for class_number in range(start_class, num_classes + 1):
+
+
+        writer_texture_features = []
+        SDS_train = []
+        SOH_train = []
+        texture_model.num_blocks_per_class = 0
+        print('Class' + str(class_number) + ':')
+
+        # loop on training data for each writer
+        for filename in glob.glob(
+                base_path + str(class_number) + '_0.jpg'):
+            print(filename)
+
+            image = cv2.imread(filename)
+
+            name = Path(filename).name
+            name = name.replace('jpg','csv')
+            print(name)
+            print('Texture Features')
+            # writer_texture_features.append(texture_model.get_features(cv2.imread(filename))[0].tolist())
+
+            for h_coeff in h:
+                print(h_coeff)
+                _, texture_features = texture_model.get_features(image)
+                writer_texture_features = np.append(writer_texture_features, texture_features[0].tolist())
+                writer_texture_features = texture_model.adjust_nan_values(
+                    np.reshape(writer_texture_features,
+                               (texture_model.num_blocks_per_class, texture_model.get_num_features()))).tolist()
+
+                np.savetxt(base_test_h+str(h_coeff)+'/'+name, texture_features[0], delimiter=",")
+
+                #create file
+            print('Sift Model')
+
+            for idx in range(0,5):
+                print(idx)
+                SDS, SOH = sift_model.get_features(name, image=image,t=t[idx],phi=phi[idx])
+
+                str_t = str(t[idx])
+                str_phi = str(phi[idx])
+
+                while len(str_t) < 3:
+                    str_t = '0' + str_t
+
+                while len(str_phi) < 3:
+                    str_phi = '0' + str_phi
+
+                np.savetxt(base_test_t+str_t+'/'+name, SDS, delimiter=",")
+                np.savetxt(base_test_phi+str_phi+'/'+name, SOH, delimiter=",")
+
+
+
+
+
+Samples_gen(155,200)
+for beg in range(300,350,20):
+    Testcase_gen(beg,20+beg)
+    Samples_gen(beg,20+beg)
+
+
