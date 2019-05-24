@@ -56,7 +56,7 @@ def Samples_gen(start,num):
                 writer_texture_features = np.append(writer_texture_features, texture_features[0].tolist())
                 writer_texture_features = texture_model.adjust_nan_values(
                     np.reshape(writer_texture_features,
-                               (texture_model.num_blocks_per_class, texture_model.get_num_features()))).tolist()
+                               (texture_model.num_blocks_per_class, texture_model.get_num_features())))
 
                 try:
                     #print(base_samples_h+str(h_coeff)+"/Class"+str(class_number))
@@ -65,7 +65,7 @@ def Samples_gen(start,num):
                     if e.errno != errno.EEXIST:
                         raise
 
-                np.savetxt(base_samples_h+str(h_coeff)+"/Class"+str(class_number)+'/'+name, texture_features[0], delimiter=",")
+                np.savetxt(base_samples_h+str(h_coeff)+"/Class"+str(class_number)+'/'+name, writer_texture_features, delimiter=",")
 
                 #create file
             print('Sift Model')
