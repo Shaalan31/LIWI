@@ -88,7 +88,7 @@ def Testcase_gen(start,num):
     sift_model.set_code_book('ar')
 
 
-    base_path = 'C:/Users/omars/Documents/Github/LIWI/Omar/KHATT/TestCases'
+    base_path = 'C:/Users/omars/Documents/Github/LIWI/Omar/KHATT/TestCases/'
 
     base_samples_t = 'C:/Users/omars/Documents/Github/LIWI/Omar/ValidationArabic/Samples/SDS/'
     base_samples_phi = 'C:/Users/omars/Documents/Github/LIWI/Omar/ValidationArabic/Samples/SOH/'
@@ -112,14 +112,15 @@ def Testcase_gen(start,num):
         print('Class' + str(class_number) + ':')
 
         # loop on training data for each writer
+
         for filename in glob.glob(
-                base_path + str(class_number) + '.tif'):
+                base_path + 'testing'+str(class_number) + '.png'):
             print(filename)
 
             image = cv2.imread(filename)
 
             name = Path(filename).name
-            name = name.replace('tif','csv')
+            name = name.replace('png','csv')
             print(name)
             print('Sift Model')
 
@@ -156,5 +157,7 @@ def Testcase_gen(start,num):
 
 
 
-Samples_gen(1,2)
-Testcase_gen(1,2)
+
+for beg in range(3,1000,20):
+    Testcase_gen(beg,20)
+    Samples_gen(beg,20)
