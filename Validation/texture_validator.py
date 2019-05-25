@@ -16,7 +16,7 @@ texture_model = TextureWriterIdentification('D:/Uni/Graduation Project/All Test 
 
 
 def preprocess_texture(h,start,end):
-    print("Preprocessing")
+    # print("Preprocessing")
     base_samples_h = 'C:/Users/omars/Documents/Github/LIWI/Omar/Validation/Samples/H/'
 
     h_coeff = str(h)
@@ -59,13 +59,13 @@ def preprocess_texture(h,start,end):
 
 def predict_texture(testing_image, mu_texture, sigma_texture, pca):
     texture_features = np.genfromtxt(testing_image,delimiter=',')
-    print("Starting Texture Testing")
+    # print("Starting Texture Testing")
     texture_classes = texture_model.get_classifier_classes()
     texture_predictions = texture_model.fast_test(texture_features, mu_texture, sigma_texture,pca)[0]
     texture_indecies_sorted = np.argsort(texture_classes, axis=0)
     sorted_texture_predictions = texture_predictions[texture_indecies_sorted[::-1]]
     sorted_texture_classes = texture_classes[texture_indecies_sorted[::-1]]
-    print("Texture Prediction:" + str(sorted_texture_classes[np.argmax(sorted_texture_predictions)]))
+    # print("Texture Prediction:" + str(sorted_texture_classes[np.argmax(sorted_texture_predictions)]))
 
     # score = 0.25 * sorted_horest_predictions + 0.25 * sorted_texture_predictions
 
@@ -77,7 +77,7 @@ def predict_texture(testing_image, mu_texture, sigma_texture, pca):
     # score[np.argwhere(sorted_texture_classes == sift_prediction)] += (1 / 2)
     # final_prediction = int(sorted_horest_classes[np.argmax(score)])
     final_prediction = sorted_texture_classes[np.argmax(sorted_texture_predictions)]
-    print("Common Prediction: " + str(final_prediction))
+    # print("Common Prediction: " + str(final_prediction))
 
     return final_prediction
 
@@ -99,15 +99,15 @@ for h_coeff in h:
     right_test_cases = 0
     total_test_cases = 0
     accuracy = 0
-    print(h_coeff)
+    # print(h_coeff)
     mu_texture, sigma_texture, pca = preprocess_texture(h_coeff,start,end)
 
     for item in classCombinations:
         for count in item:
-            print('Class' + str(count) + ':')
+            # print('Class' + str(count) + ':')
             for filename in glob.glob('C:/Users/omars/Documents/Github/LIWI/Omar/Validation/TestCases/H/'+str(h_coeff)+ '/testing' + str(count) + '_*.csv'):
                 name = Path(filename).name
-                print(name)
+                # print(name)
                 # image = cv2.imread(filename)
                 prediction = predict_texture(filename, mu_texture, sigma_texture, pca)
 
@@ -117,6 +117,6 @@ for h_coeff in h:
 
                 accuracy = (right_test_cases / total_test_cases) * 100
 
-                print("Accuracy: " + str(accuracy) + "%")
+                # print("Accuracy: " + str(accuracy) + "%")
         print('Acc finaal @ h=', h_coeff, ' - ', accuracy)
 

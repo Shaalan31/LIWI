@@ -43,5 +43,5 @@ for x in classCombinations:
             else:
                 accuracy_10 = np.append(accuracy_10, accuracy, axis=0)
             print('accuracy_10 shape ',accuracy_10.shape)
-            np.savetxt("t"+str(t_test)+'p'+str(phi_test)+'.csv',accuracy_10,delimiter=",")
+            np.savetxt("ar_t"+str(t_test)+'p'+str(phi_test)+'.csv',accuracy_10,delimiter=",")
 
