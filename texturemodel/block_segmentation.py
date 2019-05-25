@@ -2,6 +2,7 @@ from utils.common_functions import *
 from skimage.filters import gaussian
 from skimage.filters import threshold_otsu
 from utils.filters import *
+
 import math
 
 class BlockSegmentation:
