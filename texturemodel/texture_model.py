@@ -26,8 +26,8 @@ class TextureWriterIdentification:
         self.total_test_cases = 100
         self.pathTrainingSet = path_training_set
         self.pathTestCases = path_test_cases
-        self.classifier = SVC(C=1000.0, cache_size=200, gamma=0.001, kernel='rbf',
-                           probability=True, random_state=1545481387, )
+        self.classifier = SVC(C=100.0, cache_size=200,degree=3, gamma=0.001, kernel='rbf',
+                           probability=True, random_state=1545481387)
 
     def feature_extraction(self, example):
         example = example.astype('uint8')
