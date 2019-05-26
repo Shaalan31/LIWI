@@ -22,7 +22,7 @@ class LineSegmentation:
         # Thresholding
         imageGray *= 255
         threshold = np.round(threshold_otsu(imageGray) * 1.1)
-        # threshold = np.round(filters.threshold_otsu(imageGray) * 1.1)
+        # threshold = np.round(filters.threhold_otsu(imageGray) * 1.1)
         imageGray[(imageGray > threshold)] = 255
         imageGray[(imageGray <= threshold)] = 0
 

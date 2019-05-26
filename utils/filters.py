@@ -1,8 +1,10 @@
 from warnings import warn
 from skimage.exposure import histogram
 from scipy.ndimage.filters import convolve
+from scipy.signal import convolve2d
 import numpy as np
 import scipy
+import math
 
 
 class Filters:
@@ -16,7 +18,7 @@ class Filters:
     def __init__(self):
         pass
 
-    def threshold_otsu(self, image):
+    def threhold_otsu(self, image):
         """
         Function to implement Otsu Thresholding Algorithm
         :param image
@@ -44,7 +46,7 @@ class Filters:
         threshold = gray_levels[:-1][np.argmax(var)]
         return threshold
 
-    def gaussian(self, image, sigma):
+    def gausian(self, image, sigma):
         """
         Function to implement gaussian filter
         :param image
@@ -62,3 +64,78 @@ class Filters:
 
         return gaussian_image / 255
 
+    def sobelv(self, image):
+        """
+        Function to implement sobel_v filter
+        :param image
+        :return: image after applying filter
+        """
+        sobel_v = np.array([[-1,0,1], [-2,0,2], [-1,0,1]]) / 4.0
+
+        sobel_img = convolve2d(image, sobel_v)
+
+        return sobel_img
+
+    def sobelh(self, image):
+        """
+        Function to implement sobel_h filter
+        :param image
+        :return: image after applying filter
+        """
+        sobel_h = np.array([[-1,-2,-1], [0,0,0], [1,2,1]]) / 4.0
+
+        sobel_img = convolve2d(image, sobel_h)
+
+        return sobel_img
+
+    def erod(self, image, windowWidth, windowHeight):
+        """
+        Function to implement erosion
+        :param image
+        :param windowWidth
+        :param windowHeight
+        :return: image after applying filter
+        """
+        outputPixelValue = np.ones((image.shape[0], image.shape[1]))
+
+        for x in range(0, image.shape[0] - 1):
+            for y in range(0, image.shape[1] - 1):
+                maskArray = np.ones((windowWidth, windowHeight))
+                for fx in range(0, windowWidth):
+                    for fy in range(0, windowHeight):
+                        maskArray[fx][fy] = image[x + fx - 1][y + fy - 1]
+                outputPixelValue[x][y] = np.min(maskArray)
+        return outputPixelValue
+
+    def dilat(self, image, windowWidth, windowHeight):
+        """
+        Function to implement dilation
+        :param image
+        :param windowWidth
+        :param windowHeight
+        :return: image after applying filter
+        """
+        outputPixelValue = np.ones((image.shape[0], image.shape[1]))
+
+        for x in range(0, image.shape[0] - 1):
+            for y in range(0, image.shape[1] - 1):
+                maskArray = np.ones((windowWidth, windowHeight))
+                for fx in range(0, windowWidth):
+                    for fy in range(0, windowHeight):
+                        maskArray[fx][fy] = image[x + fx - 1][y + fy - 1]
+                outputPixelValue[x][y] = np.max(maskArray)
+        return outputPixelValue
+
+    def medianblur(self, image, windowWidth, windowHeight):
+        edgex = math.floor(windowWidth / 2)
+        edgey = math.floor(windowHeight / 2)
+        outputPixelValue = np.ones((image.shape[0], image.shape[1]))
+
+        for x in range(edgex, image.shape[0] - edgex):
+            for y in range(edgey, image.shape[1] - edgey):
+                colorArray = np.zeros((windowWidth, windowHeight))
+                for fx in range(0, windowWidth):
+                    for fy in range(0, windowHeight):
+                        colorArray[fx][fy] = image[x + fx - edgex][y + fy - edgey]
+                outputPixelValue[x][y] = np.median(colorArray)
+        return outputPixelValue
