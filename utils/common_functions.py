@@ -25,12 +25,12 @@ def show_images(images, titles=None):
 
 
 #
-# def showHist(img):
-#     # An "interface" to matplotlib.axes.Axes.hist() method
-#     plt.figure()
-#     imgHist = histogram(img, nbins=256)
-#
-#     bar(imgHist[1].astype(np.uint8), imgHist[0], width=0.8, align='center')
+def showHist(imgHist):
+    # An "interface" to matplotlib.axes.Axes.hist() method
+    plt.figure()
+    # imgHist = histogram(img, nbins=256)
+
+    plt.bar(imgHist[1].astype(np.uint8), imgHist[0], width=0.8, align='center')
 
 
 def remove_shadow(img):
@@ -59,6 +59,7 @@ def extract_text(img):
     sum[sum > int(cols / 6)] = 1
     count_lines = len(np.argwhere(np.diff(np.argwhere(sum == 1), axis=0) > 2)) + 1
     if np.max(sum) == np.min(sum) or count_lines < 3:
+
         return 0, img.shape[0]
     half = int(sum.shape[0] / 2)
     top_boundary = half - np.argmax(sum[half:0:-1])

@@ -81,7 +81,7 @@ class HorestFeatures:
         img = self.image / 255
         for x, y, w, h, a, r in bounding_rect_sorted:
             total_transitions += np.sum(np.abs(np.diff(img[int(y):int(y + h), int(x):int(x + w)])))
-        total_transitions /= (2 * bounding_rect_sorted.shape[0])
+        total_transitions /= ((2 * bounding_rect_sorted.shape[0])+1e-7)
         sdW = np.sqrt(np.var(bounding_rect_sorted[:, 2]))
         MedianW = np.median(bounding_rect_sorted[:, 2])
         AverageW = np.average(bounding_rect_sorted[:, 2])
