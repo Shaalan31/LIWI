@@ -26,12 +26,13 @@ class BlockSegmentation:
         imageGray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
 
         # Noise removal with gaussian
+        # imageGray = filters.gaussian(imageGray, 1)
         imageGray = gaussian(imageGray, 1)
 
         # Thresholding
         imageGray *= 255
         threshold = np.round(threshold_otsu(imageGray))
-        # threshold = np.round(filters.otsu_segmentation(imageGray))
+        # threshold = np.round(filters.threshold_otsu(imageGray))
         imageGray[(imageGray > threshold)] = 255
         imageGray[(imageGray <= threshold)] = 0
 

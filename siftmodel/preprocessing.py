@@ -29,11 +29,12 @@ class Preprocessing:
         img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
         # Noise removal with gaussian
+        # img = filters.gaussian(img, 1)
         img = gaussian(img, 1)
 
         img = img * 255
         threshold = threshold_otsu(img)
-        # threshold = filters.otsu_segmentation(img)
+        # threshold = filters.threshold_otsu(img)
         img[(img > threshold)] = 255
         img[(img <= threshold)] = 0
 
