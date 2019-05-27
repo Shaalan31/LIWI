@@ -11,7 +11,7 @@ randomState = 1545481387
 
 
 class HorestWriterIdentification:
-    def __init__(self, path_training_set="", path_test_cases=""):
+    def __init__(self, socket, path_training_set="", path_test_cases=""):
         self.num_features = 18
         self.all_features = np.asarray([])
         self.all_features_class = np.asarray([])
@@ -25,13 +25,14 @@ class HorestWriterIdentification:
         self.classifier = MLPClassifier(solver='lbfgs', max_iter=1000, alpha=0.046041,
                                         hidden_layer_sizes=(22, 18, 15, 12, 7,),
                                         random_state=randomState)
+        self.socketIO = socket
 
     def feature_extraction(self, example, image_shape):
         example = example.astype('uint8')
         example_copy = example.copy()
 
         # Calculate Contours
-        _,contours, hierarchy = cv2.findContours(example_copy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        _, contours, hierarchy = cv2.findContours(example_copy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         hierarchy = hierarchy[0]
         contours = np.asarray(contours)
 
@@ -53,6 +54,7 @@ class HorestWriterIdentification:
         return np.asarray(feature)
 
     def test(self, image, mu, sigma):
+        print("ay haga")
         all_features_test = np.asarray([])
 
         if image.shape[0] > 3500:
@@ -60,7 +62,7 @@ class HorestWriterIdentification:
 
         # image = adjust_rotation(image=image)
         # show_images([image])
-        writer_lines = LineSegmentation(image).segment()
+        writer_lines = LineSegmentation(image, self.socketIO).segment()
 
         num_testing_examples = 0
         for line in writer_lines:
@@ -172,7 +174,7 @@ class HorestWriterIdentification:
         results_file.writelines(results_array)
         results_file.close()
 
-    def get_features(self,image):
+    def get_features(self, image):
         image_height = image.shape[0]
         if image_height > 3500:
             image = cv2.resize(src=image, dsize=(3500, round((3500 / image.shape[1]) * image_height)))
@@ -187,7 +189,7 @@ class HorestWriterIdentification:
         for line in writer_lines:
             all_features_class = np.append(all_features_class, self.feature_extraction(line, image.shape))
 
-        return num_lines,np.reshape(all_features_class, (1, num_lines * self.num_features))
+        return num_lines, np.reshape(all_features_class, (1, num_lines * self.num_features))
 
     def fit_classifier(self, all_features, labels):
         self.classifier.fit(all_features, labels)
@@ -197,4 +199,3 @@ class HorestWriterIdentification:
 
     def get_num_features(self):
         return self.num_features
-
