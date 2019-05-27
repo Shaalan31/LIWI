@@ -100,10 +100,10 @@ def preprocess(writers):
                                                      num_current_examples_texture * texture_model.get_num_features())))
 
         # appending sift features
-        for i in range(len(writer.features.sift_SDS)):
-            SDS_train.append(np.array([writer.features.sift_SDS[i]]))
-            SOH_train.append(np.array([writer.features.sift_SOH[i]]))
-            writers_lookup_array.append(writer.id)
+        # for i in range(len(writer.features.sift_SDS)):
+        #     SDS_train.append(np.array([writer.features.sift_SDS[i]]))
+        #     SOH_train.append(np.array([writer.features.sift_SOH[i]]))
+        #     writers_lookup_array.append(writer.id)
 
     # fit horest classifier
     all_features_horest = np.reshape(all_features_horest,
@@ -146,10 +146,10 @@ def predict_writer(testing_image, filename, mu_horest, sigma_horest, mu_texture,
 
     score = 0.25 * sorted_horest_predictions + 0.25 * sorted_texture_predictions
 
-    print("Starting Sift Testing")
-    sift_prediction = sift_model.predict(SDS_train, SOH_train, testing_image, filename,lang="en")
-    sift_prediction = writers_lookup_array[sift_prediction]
-    print("Sift Prediction:" + str(sift_prediction))
+    # print("Starting Sift Testing")
+    # sift_prediction = sift_model.predict(SDS_train, SOH_train, testing_image, filename,lang="en")
+    # sift_prediction = writers_lookup_array[sift_prediction]
+    # print("Sift Prediction:" + str(sift_prediction))
 
     score[np.argwhere(sorted_texture_classes == sift_prediction)] += (1 / 2)
     final_prediction = int(sorted_horest_classes[np.argmax(score)])
@@ -157,7 +157,7 @@ def predict_writer(testing_image, filename, mu_horest, sigma_horest, mu_texture,
     # final_prediction = sift_prediction
     print("Common Prediction: " + str(final_prediction))
 
-    return final_prediction
+    return int(float(final_prediction))
 
 
 def predict_writer_arabic(testing_image, filename, writers_ids, dao):
@@ -223,7 +223,7 @@ def predict_writer_arabic(testing_image, filename, writers_ids, dao):
     final_prediction = int(sorted_texture_classes[np.argmax(score)])
     print("Common Prediction: " + str(final_prediction))
 
-    return final_prediction
+    return str(final_prediction)
 
 
 def preprocess_arabic(writers):

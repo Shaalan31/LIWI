@@ -5,12 +5,11 @@ from server.utils.utilities import *
 
 
 
-
 def Samples_gen(start,num):
     print('SAMPPLESS - ',start)
 
     h = [0.1, 0.3, 0.5, 0.7, 0.9]
-
+    # h=[0.5,0.7]
     texture_model = TextureWriterIdentification()
 
     start_class = int(start)
@@ -68,8 +67,9 @@ def Samples_gen(start,num):
 
 def Testcase_gen(start,num):
     print('TESTCASES - ',start)
-
     h = [0.1, 0.3, 0.5, 0.7, 0.9]
+
+    # h = [ 0.5, 0.7]
 
     texture_model = TextureWriterIdentification()
 
@@ -125,7 +125,13 @@ def Testcase_gen(start,num):
 
 
 
-Samples_gen(62,19+62)
-for beg in range(82,330,20):
-    Testcase_gen(beg,19+beg)
-    Samples_gen(beg,19+beg)
+# Samples_gen(1,19)
+
+for beg in range(1,5,20):
+    Testcase_gen(beg,2+beg)
+    Samples_gen(beg,2+beg)
+
+#
+# for beg in range(124, 350, 20):
+#     adpp.Testcase_gen(beg, 20 + beg)
+#     adpp.Samples_gen(beg, 20 + beg)
