@@ -11,6 +11,8 @@ import pickle
 
 class SiftModel:
     def __init__(self, test_classes, code_book,t=1,phi=36,w=0.1,lang='en'):
+        self.total_test_cases = 0
+        self.right_test_cases=0
         self.w = w
         self.lang = lang
         # self.base_train_SDS = 'C:/Users/omars/Documents/Github/LIWI/Omar/Fast/Samples/SDS/'
@@ -65,9 +67,9 @@ class SiftModel:
 
         SDS_train = []
         SOH_train = []
-        print('Training The Model:')
+        # print('Training The Model:')
 
-        print('Get SDS')
+        # print('Get SDS')
         for count in  self.test_class:
             oba = True
             for filename in glob.glob(self.base_samples_t + 'Class' + str(count)):
@@ -99,16 +101,15 @@ class SiftModel:
     # Test the model
     def test(self, SDS_train, SOH_train):
 
-        total_test_cases = 0
-        right_test_cases = 0
-        print('Testing The Model:')
+
+        # print('Testing The Model:')
 
         matching = FeatureMatching()
         for count in self.test_class:
-            print('Class' + str(count) + ':')
+            # print('Class' + str(count) + ':')
 
             for filename in glob.glob(self.base_test_t + 'testing' + str(count) + '_*.csv'):
-                print(filename)
+                # print(filename)
                 name = Path(filename).name
 
                 SDS = np.genfromtxt(filename, delimiter=",")
@@ -129,19 +130,19 @@ class SiftModel:
                     class_numb = self.test_class[ math.floor(prediction / 1)]
                 else:
                     class_numb = self.test_class[math.floor(prediction / 3)]
-                print(name + ' , class number: ' + str(class_numb))
+                # print(name + ' , class number: ' + str(class_numb))
 
                 # Calculate accuracy
                 if (class_numb == count):
-                    right_test_cases += 1
-                total_test_cases += 1
+                    self.right_test_cases += 1
+                self.total_test_cases += 1
 
-                accuracy = (right_test_cases / total_test_cases) * 100
+                accuracy = (self.right_test_cases / self.total_test_cases) * 100
                 self.thesis = np.append(self.thesis,accuracy)
-                print('Accuracy:  ' + str(accuracy) + '%')
+                # print('Accuracy:  ' + str(accuracy) + '%')
 
             # break
-        self.accuracy = np.array([[right_test_cases], [total_test_cases]])
+        self.accuracy = np.array([[self.right_test_cases], [self.total_test_cases]])
 
     def run(self):
         SDS, SOH = self.train()

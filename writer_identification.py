@@ -62,9 +62,9 @@ def preprocess(writers):
 
     # process features to fit classifier
     # declaring variables for horest
-    # labels_horest = []
-    # all_features_horest = []
-    # num_training_examples_horest = 0
+    labels_horest = []
+    all_features_horest = []
+    num_training_examples_horest = 0
 
     # declaring variables for texture
     # labels_texture = []
@@ -80,14 +80,14 @@ def preprocess(writers):
 
     for writer in writers:
         # processing horest_features
-        # horest_features = writer.features.horest_features
-        # num_current_examples_horest = len(horest_features)
-        # labels_horest = np.append(labels_horest,
-        #                           np.full(shape=(1, num_current_examples_horest), fill_value=writer.id))
-        # num_training_examples_horest += num_current_examples_horest
-        # all_features_horest = np.append(all_features_horest,
-        #                                 np.reshape(horest_features.copy(),
-        #                                            (1, num_current_examples_horest * horest_model.get_num_features())))
+        horest_features = writer.features.horest_features
+        num_current_examples_horest = len(horest_features)
+        labels_horest = np.append(labels_horest,
+                                  np.full(shape=(1, num_current_examples_horest), fill_value=writer.id))
+        num_training_examples_horest += num_current_examples_horest
+        all_features_horest = np.append(all_features_horest,
+                                        np.reshape(horest_features.copy(),
+                                                   (1, num_current_examples_horest * horest_model.get_num_features())))
         # processing texture_features
         # texture_features = writer.features.texture_feature
         # num_current_examples_texture = len(texture_features)
@@ -100,16 +100,16 @@ def preprocess(writers):
         #                                              num_current_examples_texture * texture_model.get_num_features())))
 
         # appending sift features
-        for i in range(len(writer.features.sift_SDS)):
-            SDS_train.append(np.array([writer.features.sift_SDS[i]]))
-            SOH_train.append(np.array([writer.features.sift_SOH[i]]))
-            writers_lookup_array.append(writer.id)
+        # for i in range(len(writer.features.sift_SDS)):
+        #     SDS_train.append(np.array([writer.features.sift_SDS[i]]))
+        #     SOH_train.append(np.array([writer.features.sift_SOH[i]]))
+        #     writers_lookup_array.append(writer.id)
 
     # fit horest classifier
-    # all_features_horest = np.reshape(all_features_horest,
-    #                                  (num_training_examples_horest, horest_model.get_num_features()))
-    # all_features_horest, mu_horest, sigma_horest = horest_model.feature_normalize(all_features_horest)
-    # horest_model.fit_classifier(all_features_horest, labels_horest)
+    all_features_horest = np.reshape(all_features_horest,
+                                     (num_training_examples_horest, horest_model.get_num_features()))
+    all_features_horest, mu_horest, sigma_horest = horest_model.feature_normalize(all_features_horest)
+    horest_model.fit_classifier(all_features_horest, labels_horest)
 
     # fit texture classifier
     # all_features_texture = np.reshape(all_features_texture,
@@ -119,7 +119,7 @@ def preprocess(writers):
     #                         svd_solver='full')
     # all_features_texture = pca.fit_transform(all_features_texture)
     # texture_model.fit_classifier(all_features_texture, labels_texture)
-    mu_horest, sigma_horest=(0,0)
+    # mu_horest, sigma_horest=(0,0)
     mu_texture, sigma_texture=(0,0)
     pca=0
     return mu_horest, sigma_horest, mu_texture, sigma_texture, pca, SDS_train, SOH_train, writers_lookup_array
@@ -128,13 +128,13 @@ def preprocess(writers):
 def predict_writer(testing_image, filename, mu_horest, sigma_horest, mu_texture, sigma_texture, pca, SDS_train, SOH_train, writers_lookup_array):
 
     # used to match the probablity with classes
-    # print("Starting Horest Testing")
-    # horest_classes = horest_model.get_classifier_classes()
-    # horest_predictions = horest_model.test(testing_image, mu_horest, sigma_horest)[0]
-    # horest_indecies_sorted = np.argsort(horest_classes, axis=0)
-    # sorted_horest_classes = horest_classes[horest_indecies_sorted[::-1]]
-    # sorted_horest_predictions = horest_predictions[horest_indecies_sorted[::-1]]
-    # print("Horest Prediction: " + str(sorted_horest_classes[np.argmax(sorted_horest_predictions)]))
+    print("Starting Horest Testing")
+    horest_classes = horest_model.get_classifier_classes()
+    horest_predictions = horest_model.test(testing_image, mu_horest, sigma_horest)[0]
+    horest_indecies_sorted = np.argsort(horest_classes, axis=0)
+    sorted_horest_classes = horest_classes[horest_indecies_sorted[::-1]]
+    sorted_horest_predictions = horest_predictions[horest_indecies_sorted[::-1]]
+    print("Horest Prediction: " + str(sorted_horest_classes[np.argmax(sorted_horest_predictions)]))
 
     # print("Starting Texture Testing")
     # texture_classes = texture_model.get_classifier_classes()
@@ -146,18 +146,19 @@ def predict_writer(testing_image, filename, mu_horest, sigma_horest, mu_texture,
 
     # score = 0.25 * sorted_horest_predictions + 0.25 * sorted_texture_predictions
 
-    print("Starting Sift Testing")
-    sift_prediction = sift_model.predict(SDS_train, SOH_train, testing_image, filename,lang="en")
-    sift_prediction = writers_lookup_array[sift_prediction]
-    print("Sift Prediction:" + str(sift_prediction))
+    # print("Starting Sift Testing")
+    # sift_prediction = sift_model.predict(SDS_train, SOH_train, testing_image, filename,lang="en")
+    # sift_prediction = writers_lookup_array[sift_prediction]
+    # print("Sift Prediction:" + str(sift_prediction))
 
     # score[np.argwhere(sorted_texture_classes == sift_prediction)] += (1 / 2)
     # final_prediction = int(sorted_horest_classes[np.argmax(score)])
     # final_prediction = sorted_texture_classes[np.argmax(sorted_texture_predictions)]
-    final_prediction = sift_prediction
+    # final_prediction = sift_prediction
+    final_prediction = str(sorted_horest_classes[np.argmax(sorted_horest_predictions)])
     print("Common Prediction: " + str(final_prediction))
 
-    return final_prediction
+    return int(float(final_prediction))
 
 
 def predict_writer_arabic(testing_image, filename, writers_ids, dao):
@@ -223,7 +224,7 @@ def predict_writer_arabic(testing_image, filename, writers_ids, dao):
     final_prediction = int(sorted_texture_classes[np.argmax(score)])
     print("Common Prediction: " + str(final_prediction))
 
-    return final_prediction
+    return str(final_prediction)
 
 
 def preprocess_arabic(writers):
@@ -304,7 +305,7 @@ db.connect()
 db.create_collection()
 writers_dao = Writers(db.get_collection())
 first_class = 1
-last_class = 1000
+last_class = 650
 count = first_class
 total_test_cases = 0
 right_test_cases = 0
