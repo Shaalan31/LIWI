@@ -11,7 +11,7 @@ randomState = 1545481387
 
 
 class HorestWriterIdentification:
-    def __init__(self, socket, path_training_set="", path_test_cases=""):
+    def __init__(self, socket=None, path_training_set="", path_test_cases=""):
         self.num_features = 18
         self.all_features = np.asarray([])
         self.all_features_class = np.asarray([])
@@ -19,7 +19,8 @@ class HorestWriterIdentification:
         self.temp = []
         self.num_training_examples = 0
         self.num_lines_per_class = 0
-        self.total_test_cases = 100
+        self.total_test_cases = 0
+        self.right_test_cases = 0
         self.pathTrainingSet = path_training_set
         self.pathTestCases = path_test_cases
         self.classifier = MLPClassifier(solver='lbfgs', max_iter=1000, alpha=0.046041,
