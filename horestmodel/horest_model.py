@@ -1,10 +1,11 @@
 import glob
 import warnings
 from itertools import combinations
-from horestmodel.line_segmentation import *
-from horestmodel.horest_features import *
-from sklearn.neural_network import MLPClassifier
+
 from sklearn.neighbors import KNeighborsClassifier
+
+from horestmodel.horest_features import *
+from horestmodel.line_segmentation import *
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
@@ -30,7 +31,7 @@ class HorestWriterIdentification:
         self.classifier = KNeighborsClassifier(n_neighbors=3, n_jobs=-1)
         self.socketIO = socket
 
-    def feature_extraction(self, example, image_shape,is_training=True):
+    def feature_extraction(self, example, image_shape, is_training=True):
         example = example.astype('uint8')
         example_copy = example.copy()
 
@@ -42,7 +43,7 @@ class HorestWriterIdentification:
         if is_training:
             horest_features = HorestFeatures(example, contours, hierarchy)
         else:
-            horest_features = HorestFeatures(example, contours, hierarchy)
+            horest_features = HorestFeatures(example, contours, hierarchy, socket=self.socketIO)
 
         feature = []
 
@@ -73,7 +74,7 @@ class HorestWriterIdentification:
 
         num_testing_examples = 0
         for line in writer_lines:
-            example = self.feature_extraction(line, image.shape,False)
+            example = self.feature_extraction(line, image.shape, False)
             all_features_test = np.append(all_features_test, example)
             num_testing_examples += 1
 

@@ -14,7 +14,7 @@ from scipy import stats
 
 
 class HorestFeatures:
-    def __init__(self, image, contours, hierarchy, socket):
+    def __init__(self, image, contours, hierarchy, socket=None):
         self.image = image
         self.contours = contours
         self.hierarchy = hierarchy

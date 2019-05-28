@@ -24,7 +24,7 @@ class SiftModel:
         self.accuracy = None
         self.socketIO = socket
 
-    def get_features(self, name, lang="en", image=None, path="", t=1, phi=36):
+    def get_features(self, name, lang="en", image=None, path="", t=1, phi=36, is_training=True):
 
         if image is None:
             image = cv2.imread(path)
@@ -39,12 +39,15 @@ class SiftModel:
         else:
             image = cv2.copyMakeBorder(image, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=[255, 255, 255])
 
-        cv2.imwrite(
-            'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/image_extract_text.png',
-            image)
+        # cv2.imwrite(
+        #     'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/image_extract_text.png',
+        #     image)
 
         # segment words and get its sift descriptors and orientations
-        sd, so = WordSegmentation(lang, self.socketIO).word_segmentation(image, name)
+        if is_training:
+            sd, so = WordSegmentation(lang).word_segmentation(image, name)
+        else:
+            sd, so = WordSegmentation(lang, self.socketIO).word_segmentation(image, name)
 
         # calculate SDS and SOH
         SDS = self.features.sds(sd, self.code_book, t=t)
@@ -123,7 +126,7 @@ class SiftModel:
     def predict(self, SDS_train, SOH_train, testing_image, name, lang="en"):
         matching = FeatureMatching()
         # Feature Extraction
-        SDS, SOH = self.get_features(name, image=testing_image, lang=lang)
+        SDS, SOH = self.get_features(name, image=testing_image, lang=lang, is_training=False)
 
         # Feature Matching and Fusion
         manhattan = []

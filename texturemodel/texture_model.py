@@ -7,6 +7,11 @@ from sklearn import svm
 
 from texturemodel.block_segmentation import *
 from texturemodel.texture_features import *
+import errno
+import math
+import os
+import threading
+import time
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
@@ -31,16 +36,18 @@ class TextureWriterIdentification:
         self.classifier_arabic = svm.SVC(C=100.0, cache_size=200, degree=3, gamma=0.001, kernel='rbf',
                                          max_iter=-1, probability=True, random_state=1545481387)
 
-    def feature_extraction(self, example,is_training=True):
+    def feature_extraction(self, example, is_training=True):
         example = example.astype('uint8')
         example_copy = example.copy()
         local_descriptor = LocalDescriptor()
         feature = []
 
-        feature.extend(np.histogram(local_descriptor.get_lbp_features(example_copy), bins=256)[0])
+        hist = np.histogram(local_descriptor.get_lbp_features(example_copy), bins=256)
+        feature.extend(hist[0])
 
         feature.extend(np.histogram(np.array(local_descriptor.get_lpq_features(example_copy)), bins=256)[0])
-
+        if not is_training:
+            self.sendHistogram(hist)
         return np.asarray(feature)
 
     def fast_test(self, all_features_test, mu, sigma, pca, lang='en'):
@@ -68,7 +75,7 @@ class TextureWriterIdentification:
 
         num_testing_examples = 0
         for block in writer_blocks:
-            example = self.feature_extraction(block,False)
+            example = self.feature_extraction(block, False)
             all_features_test = np.append(all_features_test, example)
             num_testing_examples += 1
 
@@ -218,3 +225,28 @@ class TextureWriterIdentification:
 
     def get_num_features(self):
         return self.num_features
+
+    def sendHistogram(self, hist):
+        pltRange = np.arange(start=0, stop=256, step=1)
+        plt.title('LBP Histogram')
+        plt.bar(pltRange, hist[0], width=2, align='center')
+
+        self.makeTempDirectory()
+        file_name = self.saveHistogram(plt, 'LBP Histogram')
+        self.socketIO.start_background_task(self.sendData(file_name, 'LBP Histogram'))
+
+    def saveHistogram(self, _plt, file_name):
+        millis = int(round(time.time() * 1000))
+        _plt.savefig('D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png')
+        return 'D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png'
+
+    def sendData(self, url, label):
+        print("SendData LBP Histogram")
+        self.socketIO.emit('LIWI', {'url': url, 'label': label})
+
+    def makeTempDirectory(self):
+        try:
+            os.makedirs('D:/Uni/Graduation Project/LIWI/temp')
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
