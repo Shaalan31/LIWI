@@ -30,7 +30,7 @@ class HorestWriterIdentification:
         self.classifier = KNeighborsClassifier(n_neighbors=3, n_jobs=-1)
         self.socketIO = socket
 
-    def feature_extraction(self, example, image_shape):
+    def feature_extraction(self, example, image_shape,is_training=True):
         example = example.astype('uint8')
         example_copy = example.copy()
 
@@ -39,7 +39,11 @@ class HorestWriterIdentification:
         hierarchy = hierarchy[0]
         contours = np.asarray(contours)
 
-        horest_features = HorestFeatures(example, contours, hierarchy, socket=self.socketIO)
+        if is_training:
+            horest_features = HorestFeatures(example, contours, hierarchy)
+        else:
+            horest_features = HorestFeatures(example, contours, hierarchy)
+
         feature = []
 
         # feature 1, Angles Histogram
@@ -69,7 +73,7 @@ class HorestWriterIdentification:
 
         num_testing_examples = 0
         for line in writer_lines:
-            example = self.feature_extraction(line, image.shape)
+            example = self.feature_extraction(line, image.shape,False)
             all_features_test = np.append(all_features_test, example)
             num_testing_examples += 1
 

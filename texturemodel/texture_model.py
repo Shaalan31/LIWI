@@ -31,7 +31,7 @@ class TextureWriterIdentification:
         self.classifier_arabic = svm.SVC(C=100.0, cache_size=200, degree=3, gamma=0.001, kernel='rbf',
                                          max_iter=-1, probability=True, random_state=1545481387)
 
-    def feature_extraction(self, example):
+    def feature_extraction(self, example,is_training=True):
         example = example.astype('uint8')
         example_copy = example.copy()
         local_descriptor = LocalDescriptor()
@@ -68,7 +68,7 @@ class TextureWriterIdentification:
 
         num_testing_examples = 0
         for block in writer_blocks:
-            example = self.feature_extraction(block)
+            example = self.feature_extraction(block,False)
             all_features_test = np.append(all_features_test, example)
             num_testing_examples += 1
 

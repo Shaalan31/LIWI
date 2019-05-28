@@ -10,8 +10,8 @@ from texturemodel.texture_model import *
 
 class WriterService:
     def __init__(self, socket):
-        self.horest_model = HorestWriterIdentification(socket=socket)
-        self.texture_model = TextureWriterIdentification(socket=socket)
+        self.horest_model = HorestWriterIdentification(socket)
+        self.texture_model = TextureWriterIdentification(socket)
         self.sift_model = SiftModel()
         self.socketIO = socket
         db = Database()
@@ -575,15 +575,15 @@ class WriterService:
         writers = self.writers_dao_arabic.get_all_features()
         _, _, _, all_features_texture, num_training_examples_texture, labels_texture, _, _, _ = self.get_writers_features(
             writers, "ar")
-
-        # fit texture classifier
-        all_features_texture = np.reshape(all_features_texture,
-                                          (num_training_examples_texture, self.texture_model.get_num_features()))
-        all_features_texture, mu_texture, sigma_texture = self.texture_model.feature_normalize(all_features_texture)
-        self._pca_arabic = decomposition.PCA(
-            n_components=min(all_features_texture.shape[0], all_features_texture.shape[1]),
-            svd_solver='full')
-        all_features_texture = self._pca_arabic.fit_transform(all_features_texture)
-        self.texture_model.fit_classifier_arabic(all_features_texture, labels_texture)
+        if num_training_examples_texture != 0:
+            # fit texture classifier
+            all_features_texture = np.reshape(all_features_texture,
+                                              (num_training_examples_texture, self.texture_model.get_num_features()))
+            all_features_texture, mu_texture, sigma_texture = self.texture_model.feature_normalize(all_features_texture)
+            self._pca_arabic = decomposition.PCA(
+                n_components=min(all_features_texture.shape[0], all_features_texture.shape[1]),
+                svd_solver='full')
+            all_features_texture = self._pca_arabic.fit_transform(all_features_texture)
+            self.texture_model.fit_classifier_arabic(all_features_texture, labels_texture)
 
         return HttpErrors.SUCCESS, HttpMessages.SUCCESS
