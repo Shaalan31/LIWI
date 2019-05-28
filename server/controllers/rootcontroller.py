@@ -92,8 +92,9 @@ def fit_classifiers():
             - 200 for success
 
     """
-    status_code, message = writer_service.fit_classifiers()
+    language = request.args.get('lang', None)
 
+    status_code, message = writer_service.fit_classifiers(language)
     raise ExceptionHandler(message=message.value, status_code=status_code.value)
 
 

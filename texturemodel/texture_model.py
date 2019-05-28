@@ -1,4 +1,7 @@
+import errno
 import glob
+import os
+import time
 import warnings
 from itertools import combinations
 
@@ -7,11 +10,6 @@ from sklearn import svm
 
 from texturemodel.block_segmentation import *
 from texturemodel.texture_features import *
-import errno
-import math
-import os
-import threading
-import time
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
@@ -227,13 +225,14 @@ class TextureWriterIdentification:
         return self.num_features
 
     def sendHistogram(self, hist):
-        pltRange = np.arange(start=0, stop=256, step=1)
-        plt.title('LBP Histogram')
-        plt.bar(pltRange, hist[0], width=2, align='center')
+        if self.socketIO is not None:
+            pltRange = np.arange(start=0, stop=256, step=1)
+            plt.title('LBP Histogram')
+            plt.bar(pltRange, hist[0], width=2, align='center')
 
-        self.makeTempDirectory()
-        file_name = self.saveHistogram(plt, 'LBP Histogram')
-        self.socketIO.start_background_task(self.sendData(file_name, 'LBP Histogram'))
+            self.makeTempDirectory()
+            file_name = self.saveHistogram(plt, 'LBP Histogram')
+            self.socketIO.start_background_task(self.sendData(file_name, 'LBP Histogram'))
 
     def saveHistogram(self, _plt, file_name):
         millis = int(round(time.time() * 1000))

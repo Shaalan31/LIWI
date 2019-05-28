@@ -350,10 +350,11 @@ class HorestFeatures:
             self.socketIO.start_background_task(self.sendData(file_name, 'Edge Detection'))
 
     def sendHistogram(self, hist):
-        pltRange = np.arange(start=10, stop=160, step=30)
-        plt.title('Weighted Angles Histogram')
-        plt.bar(pltRange, np.around(np.multiply(hist, 100)).astype('uint8'), width=2, align='center')
+        if self.socketIO is not None:
+            pltRange = np.arange(start=10, stop=160, step=30)
+            plt.title('Weighted Angles Histogram')
+            plt.bar(pltRange, np.around(np.multiply(hist, 100)).astype('uint8'), width=2, align='center')
 
-        self.makeTempDirectory()
-        file_name = self.saveHistogram(plt, 'Angles Histogram')
-        self.socketIO.start_background_task(self.sendData(file_name, 'Angles Histogram'))
+            self.makeTempDirectory()
+            file_name = self.saveHistogram(plt, 'Angles Histogram')
+            self.socketIO.start_background_task(self.sendData(file_name, 'Angles Histogram'))
