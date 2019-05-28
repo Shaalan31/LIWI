@@ -10,8 +10,8 @@ from texturemodel.texture_model import *
 
 class WriterService:
     def __init__(self, socket):
-        self.horest_model = HorestWriterIdentification(socket)
-        self.texture_model = TextureWriterIdentification(socket)
+        self.horest_model = HorestWriterIdentification(socket=socket)
+        self.texture_model = TextureWriterIdentification(socket=socket)
         self.sift_model = SiftModel()
         self.socketIO = socket
         db = Database()
