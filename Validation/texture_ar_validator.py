@@ -17,7 +17,7 @@ texture_model = TextureWriterIdentification('D:/Uni/Graduation Project/All Test 
 
 def preprocess_texture(h,list_classes):
     # print("Preprocessing")
-    base_samples_h = 'C:/Users/omars/Documents/Github/LIWI/Omar/Validation/Samples/H/'
+    base_samples_h = 'C:/Users/omars/Documents/Github/LIWI/Omar/ValidationArabic/Samples/H/'
 
     h_coeff = str(h)
     # declaring variables for texture
@@ -91,7 +91,7 @@ spin = 3
 h = [0.1,0.3, 0.5, 0.7, 0.9]
 # h=[0.7]
 acc = None
-for radius in range(43,105,10):
+for radius in range(10,121,10):
     for h_coeff in h:
         class_labels = list(range(start, end))
         classCombinations = combinations(class_labels, r=radius)#end - start)
@@ -108,7 +108,7 @@ for radius in range(43,105,10):
                 mu_texture, sigma_texture, pca = preprocess_texture(h_coeff, item)
                 for count in item:
                     # print('Class' + str(count) + ':')
-                    for filename in glob.glob('C:/Users/omars/Documents/Github/LIWI/Omar/Validation/TestCases/H/'+str(h_coeff)+ '/testing' + str(count) + '_*.csv'):
+                    for filename in glob.glob('C:/Users/omars/Documents/Github/LIWI/Omar/ValidationArabic/TestCases/H/'+str(h_coeff)+ '/testing' + str(count) + '.csv'):
                         name = Path(filename).name
                         # print(name)
                         # image = cv2.imread(filename)
@@ -123,13 +123,13 @@ for radius in range(43,105,10):
                         # print("Accuracy: " + str(accuracy) + "%")
             except:
                 pass
-            if testcases > 1000:
+            if testcases > 100:
                 if acc is None:
                     acc = np.array([radius, h_coeff, accuracy]).reshape((1, 3))
                 else:
                     acc = np.append(acc,np.array([radius, h_coeff, accuracy]).reshape((1,3)),axis=0)
                 print('Acc finaal @ h=', h_coeff, ' - ', accuracy, 'rad - ', radius)
                 print('shape ',acc.shape)
-                np.savetxt('texture_validation.csv',acc,delimiter=',')
+                np.savetxt('texture_validation_ar.csv',acc,delimiter=',')
                 break
 
