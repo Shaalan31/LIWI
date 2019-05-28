@@ -4,6 +4,7 @@ from itertools import combinations
 from horestmodel.line_segmentation import *
 from horestmodel.horest_features import *
 from sklearn.neural_network import MLPClassifier
+from sklearn.neighbors import KNeighborsClassifier
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
@@ -23,9 +24,10 @@ class HorestWriterIdentification:
         self.right_test_cases = 0
         self.pathTrainingSet = path_training_set
         self.pathTestCases = path_test_cases
-        self.classifier = MLPClassifier(solver='lbfgs', max_iter=1000, alpha=0.046041,
-                                        hidden_layer_sizes=(22, 18, 15, 12, 7,),
-                                        random_state=randomState)
+        # self.classifier = MLPClassifier(solver='lbfgs', max_iter=1000, alpha=0.046041,
+        #                                 hidden_layer_sizes=(22, 18, 15, 12, 7,),
+        #                                 random_state=randomState)
+        self.classifier = KNeighborsClassifier(n_neighbors=3, n_jobs=-1)
         self.socketIO = socket
 
     def feature_extraction(self, example, image_shape):
@@ -37,7 +39,7 @@ class HorestWriterIdentification:
         hierarchy = hierarchy[0]
         contours = np.asarray(contours)
 
-        horest_features = HorestFeatures(example, contours, hierarchy)
+        horest_features = HorestFeatures(example, contours, hierarchy, socket=self.socketIO)
         feature = []
 
         # feature 1, Angles Histogram
