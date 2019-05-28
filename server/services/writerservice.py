@@ -7,7 +7,6 @@ from server.views.writervo import *
 from siftmodel.sift_model import *
 from texturemodel.texture_model import *
 
-
 class WriterService:
     def __init__(self, socket):
         self.horest_model = HorestWriterIdentification(socket)
@@ -228,15 +227,15 @@ class WriterService:
         # async_results += [pool.apply_async(self.texture_model.get_features, (training_image,))]
         # async_results += [pool.apply_async(self.sift_model.get_features, (filename, "en", training_image))]
 
-        async_results += self.horest_model.get_features(training_image)
-        async_results += self.texture_model.get_features(training_image)
-        async_results += self.sift_model.get_features(filename, "en", training_image)
+        async_results += [self.horest_model.get_features(training_image)]
+        async_results += [self.texture_model.get_features(training_image)]
+        async_results += [self.sift_model.get_features(filename, "en", training_image)]
 
         # pool.close()
         # pool.join()
-        num_lines, horest_features = async_results[0].get()
-        num_blocks, texture_features = async_results[1].get()
-        SDS, SOH = async_results[2].get()
+        num_lines, horest_features = async_results[0]
+        num_blocks, texture_features = async_results[1]
+        SDS, SOH = async_results[2]
 
         # adjust nan
         horest_features = self.horest_model.adjust_nan_values(
@@ -283,13 +282,13 @@ class WriterService:
         # async_results += [pool.apply_async(self.texture_model.get_features, (training_image, "ar"))]
         # async_results += [pool.apply_async(self.sift_model.get_features, (filename, "ar", training_image))]
 
-        async_results += self.texture_model.get_features(training_image, "ar")
-        async_results += self.sift_model.get_features(filename, "ar", training_image)
+        async_results += [self.texture_model.get_features(training_image, "ar")]
+        async_results += [self.sift_model.get_features(filename, "ar", training_image)]
         # pool.close()
-        #  pool.join()
+        # pool.join()
 
-        num_blocks, texture_features = async_results[0].get()
-        SDS, SOH = async_results[1].get()
+        num_blocks, texture_features = async_results[0]
+        SDS, SOH = async_results[1]
 
         # adjust nan
         texture_features = self.texture_model.adjust_nan_values(
