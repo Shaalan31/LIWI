@@ -3,18 +3,18 @@ from siftmodel.sift_model import *
 from texturemodel.texture_model import *
 from siftmodel.feature_matching import *
 
-base_horest_training = "D:/Uni/Graduation Project/All Test Cases/Dataset/Validation/Samples/Horest/Class"
-base_horest_testing = "D:/Uni/Graduation Project/All Test Cases/Dataset/Validation/TestCases/Horest/testing"
-base_texture_training = "D:/Uni/Graduation Project/csv/Validation/Samples/H/0.5/Class"
-base_texture_testing = "D:/Uni/Graduation Project/csv/Validation/backup/tstcases/0.5/"
-base_SDS_training = 'D:/Uni/Graduation Project/csv/Validation/Samples/SDS/001/Class'
-base_SDS_testing = 'D:/Uni/Graduation Project/csv/Validation/TestCases/SDS/001/'
-base_SOH_training = 'D:/Uni/Graduation Project/csv/Validation/Samples/SOH/036/Class'
-base_SOH_testing = 'D:/Uni/Graduation Project/csv/Validation/TestCases/SOH/036/'
+base_horest_training = "C:/Users/Khairy/Desktop/GP/Samples/Horest/Class"
+base_horest_testing = "C:/Users/Khairy/Desktop/GP/TestCases/Horest/testing"
+base_texture_training = "C:/Users/Khairy/Desktop/GP/csv/Validation/Samples/H/0.5/Class"
+base_texture_testing = "C:/Users/Khairy/Desktop/GP/csv/Validation/backup/tstcases/0.5/"
+base_SDS_training = 'C:/Users/Khairy/Desktop/GP/csv/Validation/Samples/SDS/001/Class'
+base_SDS_testing = 'C:/Users/Khairy/Desktop/GP/csv/Validation/TestCases/SDS/001/'
+base_SOH_training = 'C:/Users/Khairy/Desktop/GP/csv/Validation/Samples/SOH/036/Class'
+base_SOH_testing = 'C:/Users/Khairy/Desktop/GP/csv/Validation/TestCases/SOH/036/'
 matching = FeatureMatching()
 accuracy = None
 
-for radius in range(20, 170, 10):
+for radius in range(40, 170, 10):
     class_labels = list(range(1, 277))
     classCombinations = combinations(class_labels, r=radius)
     testcases = 0

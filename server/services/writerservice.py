@@ -7,7 +7,6 @@ from server.views.writervo import *
 from siftmodel.sift_model import *
 from texturemodel.texture_model import *
 
-
 class WriterService:
     def __init__(self, socket):
         self.horest_model = HorestWriterIdentification(socket=socket)
@@ -228,15 +227,15 @@ class WriterService:
         # async_results += [pool.apply_async(self.texture_model.get_features, (training_image,))]
         # async_results += [pool.apply_async(self.sift_model.get_features, (filename, "en", training_image))]
 
-        async_results += self.horest_model.get_features(training_image)
-        async_results += self.texture_model.get_features(training_image)
-        async_results += self.sift_model.get_features(filename, "en", training_image)
+        async_results += [self.horest_model.get_features(training_image)]
+        async_results += [self.texture_model.get_features(training_image)]
+        async_results += [self.sift_model.get_features(filename, "en", training_image)]
 
         # pool.close()
         # pool.join()
-        num_lines, horest_features = async_results[0].get()
-        num_blocks, texture_features = async_results[1].get()
-        SDS, SOH = async_results[2].get()
+        num_lines, horest_features = async_results[0]
+        num_blocks, texture_features = async_results[1]
+        SDS, SOH = async_results[2]
 
         # adjust nan
         horest_features = self.horest_model.adjust_nan_values(
@@ -283,13 +282,13 @@ class WriterService:
         # async_results += [pool.apply_async(self.texture_model.get_features, (training_image, "ar"))]
         # async_results += [pool.apply_async(self.sift_model.get_features, (filename, "ar", training_image))]
 
-        async_results += self.texture_model.get_features(training_image, "ar")
-        async_results += self.sift_model.get_features(filename, "ar", training_image)
+        async_results += [self.texture_model.get_features(training_image, "ar")]
+        async_results += [self.sift_model.get_features(filename, "ar", training_image)]
         # pool.close()
-        #  pool.join()
+        # pool.join()
 
-        num_blocks, texture_features = async_results[0].get()
-        SDS, SOH = async_results[1].get()
+        num_blocks, texture_features = async_results[0]
+        SDS, SOH = async_results[1]
 
         # adjust nan
         texture_features = self.texture_model.adjust_nan_values(
@@ -575,15 +574,15 @@ class WriterService:
         writers = self.writers_dao_arabic.get_all_features()
         _, _, _, all_features_texture, num_training_examples_texture, labels_texture, _, _, _ = self.get_writers_features(
             writers, "ar")
-
-        # fit texture classifier
-        all_features_texture = np.reshape(all_features_texture,
-                                          (num_training_examples_texture, self.texture_model.get_num_features()))
-        all_features_texture, mu_texture, sigma_texture = self.texture_model.feature_normalize(all_features_texture)
-        self._pca_arabic = decomposition.PCA(
-            n_components=min(all_features_texture.shape[0], all_features_texture.shape[1]),
-            svd_solver='full')
-        all_features_texture = self._pca_arabic.fit_transform(all_features_texture)
-        self.texture_model.fit_classifier_arabic(all_features_texture, labels_texture)
+        if num_training_examples_texture != 0:
+            # fit texture classifier
+            all_features_texture = np.reshape(all_features_texture,
+                                              (num_training_examples_texture, self.texture_model.get_num_features()))
+            all_features_texture, mu_texture, sigma_texture = self.texture_model.feature_normalize(all_features_texture)
+            self._pca_arabic = decomposition.PCA(
+                n_components=min(all_features_texture.shape[0], all_features_texture.shape[1]),
+                svd_solver='full')
+            all_features_texture = self._pca_arabic.fit_transform(all_features_texture)
+            self.texture_model.fit_classifier_arabic(all_features_texture, labels_texture)
 
         return HttpErrors.SUCCESS, HttpMessages.SUCCESS
