@@ -50,7 +50,7 @@ def preprocess_texture(h,list_classes):
                             svd_solver='full')
     # all_features_texture.dropna(inplace=True)
     all_features_texture = pca.fit_transform(all_features_texture)
-    texture_model.fit_classifier(all_features_texture, labels_texture)
+    texture_model.fit_classifier_arabic(all_features_texture, labels_texture)
 
     return mu_texture, sigma_texture, pca
 
@@ -58,8 +58,8 @@ def preprocess_texture(h,list_classes):
 def predict_texture(testing_image, mu_texture, sigma_texture, pca):
     texture_features = np.genfromtxt(testing_image,delimiter=',')
     # print("Starting Texture Testing")
-    texture_classes = texture_model.get_classifier_classes()
-    texture_predictions = texture_model.fast_test(texture_features, mu_texture, sigma_texture,pca)[0]
+    texture_classes = texture_model.get_classifier_classes_arabic()
+    texture_predictions = texture_model.fast_test(texture_features, mu_texture, sigma_texture,pca,lang='ar')[0]
     texture_indecies_sorted = np.argsort(texture_classes, axis=0)
     sorted_texture_predictions = texture_predictions[texture_indecies_sorted[::-1]]
     sorted_texture_classes = texture_classes[texture_indecies_sorted[::-1]]
@@ -84,7 +84,7 @@ def predict_texture(testing_image, mu_texture, sigma_texture, pca):
 #English
 
 start = 1
-end = 100
+end = 120
 spin = 3
 
 
@@ -123,7 +123,7 @@ for radius in range(10,121,10):
                         # print("Accuracy: " + str(accuracy) + "%")
             except:
                 pass
-            if testcases > 100:
+            if testcases >= 1000:
                 if acc is None:
                     acc = np.array([radius, h_coeff, accuracy]).reshape((1, 3))
                 else:

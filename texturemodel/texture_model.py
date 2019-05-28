@@ -47,7 +47,15 @@ class TextureWriterIdentification:
         num_testing_examples = all_features_test.shape[0]
         all_features_test = (self.adjust_nan_values(
             np.reshape(all_features_test, (num_testing_examples, self.num_features))) - mu) / sigma
-        return np.average(self.classifier.predict_proba(pca.transform(all_features_test)), axis=0).reshape(1, -1)
+        # return np.average(self.classifier.predict_proba(pca.transform(all_features_test)), axis=0).reshape(1, -1)
+
+        if lang == "ar":
+            avg_proba = np.average(self.classifier_arabic.predict_proba(pca.transform(all_features_test)),
+                                   axis=0).reshape(1, -1)
+        else:
+            avg_proba = np.average(self.classifier.predict_proba(pca.transform(all_features_test)), axis=0).reshape(1,
+                                                                                                                    -1)
+        return avg_proba
 
     def test(self, image, mu, sigma, pca, lang="en"):
         all_features_test = np.asarray([])

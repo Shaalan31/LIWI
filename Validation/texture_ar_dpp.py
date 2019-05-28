@@ -43,7 +43,7 @@ def Samples_gen(start,num):
 
             for h_coeff in h:
                 print(h_coeff)
-                _, texture_features = texture_model.get_features(image)
+                _, texture_features = texture_model.get_features(image,lang='ar')
                 writer_texture_features = np.append(writer_texture_features, texture_features[0].tolist())
                 writer_texture_features = texture_model.adjust_nan_values(
                     np.reshape(writer_texture_features,
@@ -104,7 +104,7 @@ def Testcase_gen(start,num):
 
             for h_coeff in h:
                 print(h_coeff)
-                _, texture_features = texture_model.get_features(image)
+                _, texture_features = texture_model.get_features(image,lang='ar')
                 writer_texture_features = np.append(writer_texture_features, texture_features[0].tolist())
                 writer_texture_features = texture_model.adjust_nan_values(
                     np.reshape(writer_texture_features,
@@ -127,7 +127,7 @@ def Testcase_gen(start,num):
 
 # Samples_gen(1,19)
 
-for beg in range(121,300,20):
+for beg in range(41,300,20):
     Testcase_gen(beg,20+beg)
     Samples_gen(beg,20+beg)
 
