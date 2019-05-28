@@ -5,9 +5,9 @@ from texturemodel.texture_model import *
 
 
 #hyperparameters
-t_test=1
+t_test=50
 phi_test=36
-w_test=0.75
+w_test=0.5
 h_coeff=0.7
 code_book = pickle.load( open( "centers_KHATT.pkl", "rb" ) )
 
@@ -101,7 +101,7 @@ end = 120
 prob_sift = [0.1,0.5,0.9]
 acc = None
 
-for radius in range(10,121,10):
+for radius in range(50,121,10):
     class_labels = list(range(start, end))
     classCombinations = combinations(class_labels, r=radius)#end - start)
     right_test_cases = 0
@@ -110,40 +110,40 @@ for radius in range(10,121,10):
 
     # print(h_coeff)
 
-    testcases = 0
-    for item in classCombinations:
-        for prob_sift_test in prob_sift:
+    for prob_sift_test in prob_sift:
+        testcases = 0
+        for item in classCombinations:
             print(testcases)
-            try:
-                mu_texture, sigma_texture, pca = preprocess_texture(h_coeff, item)
-                sift_model = SiftModel(test_classes=item, code_book=code_book, t=t_test, phi=phi_test, w=w_test)
-                sift_model.run()
-                sift_prediction = sift_model.prediction
-                i = 0
-                for count in item:
-                    # print('Class' + str(count) + ':')
-                    for filename in glob.glob('C:/Users/omars/Documents/Github/LIWI/Omar/ValidationArabic/TestCases/H/'+str(h_coeff)+ '/testing' + str(count) + '.csv'):
-                        name = Path(filename).name
-                        # print(name)
-                        # image = cv2.imread(filename)
-                        prediction = predict_texture(filename, mu_texture, sigma_texture, pca,sift_prediction[i],prob_sift_test)
-                        i+=1
+            # try:
+            mu_texture, sigma_texture, pca = preprocess_texture(h_coeff, item)
+            sift_model = SiftModel(test_classes=item, code_book=code_book, t=t_test, phi=phi_test, w=w_test,lang='ar')
+            sift_model.run()
+            sift_prediction = sift_model.prediction
+            i = 0
+            for count in item:
+                # print('Class' + str(count) + ':')
+                for filename in glob.glob('C:/Users/omars/Documents/Github/LIWI/Omar/ValidationArabic/TestCases/H/'+str(h_coeff)+ '/testing' + str(count) + '.csv'):
+                    name = Path(filename).name
+                    # print(name)
+                    # image = cv2.imread(filename)
+                    prediction = predict_texture(filename, mu_texture, sigma_texture, pca,sift_prediction[i],prob_sift_test)
+                    i+=1
 
-                        if (prediction == count):
-                            right_test_cases += 1
-                        total_test_cases += 1
-                        testcases += 1
-                        accuracy = (right_test_cases / total_test_cases) * 100
+                    if (prediction == count):
+                        right_test_cases += 1
+                    total_test_cases += 1
+                    testcases += 1
+                    accuracy = (right_test_cases / total_test_cases) * 100
 
-                        print("Accuracy: " + str(accuracy) + "%")
-            except:
-                pass
+                    print("Accuracy: " + str(accuracy) + "%")
+            # except:
+            #     pass
             if testcases >= 20:
                 if acc is None:
                     acc = np.array([radius, prob_sift_test, accuracy]).reshape((1, 3))
                 else:
                     acc = np.append(acc,np.array([radius, prob_sift_test, accuracy]).reshape((1,3)),axis=0)
-                print('Acc finaal @ h=', h_coeff, ' - ', accuracy, 'rad - ', radius)
+                print('Acc finaal @ p=', prob_sift_test, ' - ', accuracy, 'rad - ', radius)
                 print('shape ',acc.shape)
                 np.savetxt('ar_results.csv',acc,delimiter=',')
                 break
