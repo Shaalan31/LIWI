@@ -31,7 +31,7 @@ class Sift:
             key_points[i, 0] = kp[i].angle
             key_points[i, 1] = octave
             key_points[i, 2] = layer
-        return key_points, des
+        return key_points, des, kp
 
     def get_des(self, img_gray):
         # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)

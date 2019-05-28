@@ -61,5 +61,5 @@ for radius in range(10, 170, 10):
                                      axis=0)
             print('Acc finaal @', ' - ', right_test_cases / testcases, 'rad - ', radius)
             print('shape ', accuracy.shape)
-            np.savetxt('horest_nn_results.csv', accuracy, delimiter=',')
+            np.savetxt('horest_5nn_results.csv', accuracy, delimiter=',')
             break

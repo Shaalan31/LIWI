@@ -1,19 +1,24 @@
-import cv2
-from siftmodel.sift import *
+import errno
+import os
+import time
+
 from siftmodel.preprocessing import *
+from siftmodel.sift import *
 from utils.common_functions import *
 from utils.filters import *
 
+
 class WordSegmentation:
-    def __init__(self,lang="en"):
-        if lang=="en":
+    def __init__(self, lang="en", socket=None):
+        self.socketIO = socket
+        if lang == "en":
             self._black_percentage_threshold = 1
         else:
             self._black_percentage_threshold = 3.5
 
         pass
 
-    def segment(self,image_gray):
+    def segment(self, image_gray):
         filters = Filters()
 
         # Noise removal with gaussian
@@ -60,14 +65,14 @@ class WordSegmentation:
         indexes_lines = self.segment(image_gray)
 
         sd = {}
-        so = np.zeros((1,3))
+        so = np.zeros((1, 3))
         number = 0
         for index_line in indexes_lines:
             # get line by line
-            line = bounding_rects_sorted[(np.bitwise_or (bounding_rects_sorted[:, 5] >= index_line[0, 0] ,
-                                          bounding_rects_sorted[:, 1] >= index_line[0, 0] ))&
-                                         (np.bitwise_or(bounding_rects_sorted[:, 5] <= index_line[0, 1] ,
-                                          bounding_rects_sorted[:, 1] <= index_line[0, 1]))]
+            line = bounding_rects_sorted[(np.bitwise_or(bounding_rects_sorted[:, 5] >= index_line[0, 0],
+                                                        bounding_rects_sorted[:, 1] >= index_line[0, 0])) &
+                                         (np.bitwise_or(bounding_rects_sorted[:, 5] <= index_line[0, 1],
+                                                        bounding_rects_sorted[:, 1] <= index_line[0, 1]))]
 
             # sort bounding rectangles on x
             line = line[line[:, 0].argsort()]
@@ -79,44 +84,55 @@ class WordSegmentation:
             diff_indexes = np.argwhere(diff_dist_word < 20)
 
             sift = Sift()
-            word_index=0
+            word_index = 0
             while word_index < len(line):
                 number += 1
                 if word_index in diff_indexes:
                     start = word_index
                     while True:
                         word_index += 1
-                        if(word_index not in diff_indexes):
+                        if (word_index not in diff_indexes):
                             break
 
-                    ymax = int(np.max(line[start:word_index+1, 1]+line[start:word_index+1, 3]))
-                    ymin = int(np.min(line[start:word_index+1, 1]))
+                    ymax = int(np.max(line[start:word_index + 1, 1] + line[start:word_index + 1, 3]))
+                    ymin = int(np.min(line[start:word_index + 1, 1]))
 
                     # get segmented word from the image
 
-                    xend = max(int(line[word_index, 0]+line[word_index, 2]), int(line[start, 0]+line[start, 2]) )
-                    #xend = int(line[word_index, 0] + line[word_index, 2])
+                    xend = max(int(line[word_index, 0] + line[word_index, 2]), int(line[start, 0] + line[start, 2]))
+                    # xend = int(line[word_index, 0] + line[word_index, 2])
                     word = image_gray[ymin:ymax, int(line[start, 0]):xend]
 
-                    cv2.imwrite('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/words/' + str(int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
+                    # cv2.imwrite(
+                    #     'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/words/' + str(
+                    #         int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
 
                 else:
                     # get segmented word from the image
-                    word = image_gray[int(line[word_index,1]):int(line[word_index,1]+line[word_index,3]),int(line[word_index,0]):int(line[word_index,0]+line[word_index,2])]
+                    word = image_gray[int(line[word_index, 1]):int(line[word_index, 1] + line[word_index, 3]),
+                           int(line[word_index, 0]):int(line[word_index, 0] + line[word_index, 2])]
 
-                    cv2.imwrite('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/words/' + str(int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
+                    # cv2.imwrite(
+                    #     'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/words/' + str(
+                    #         int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
 
                 word_index += 1
 
-                if (len(word) == 0):
+                if len(word) == 0:
                     continue
 
                 # get sift descriptors and orientation
-                key_points, des = sift.get_keypoints(word)
-                sd.update({ number: des })
+                key_points, des, kp = sift.get_keypoints(word)
+
+                wordWithKeyPoints = np.asarray([])
+                wordWithKeyPoints = cv2.drawKeypoints(word, kp, wordWithKeyPoints,
+                                                      flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+                self.sendSample(wordWithKeyPoints, 'WordWithKP')
+
+                sd.update({number: des})
                 so = np.append(so, key_points, axis=0)
 
-        so = np.delete(so,0,0)
+        so = np.delete(so, 0, 0)
         return sd, so
 
     def word_segmentation(self, image, name):
@@ -159,24 +175,50 @@ class WordSegmentation:
         image_gaussian_binary[(image_gaussian_binary > threshold)] = 255
         image_gaussian_binary[(image_gaussian_binary <= threshold)] = 0
         # cv2.imwrite('image_gaussian_otsu.png', image_gaussian_binary)
-
+        self.sendSample(image_gaussian_binary, 'Image Gaussian Otsu')
 
         # get contours from binarized gaussian image
-        im, contours, hierarchy = cv2.findContours(np.copy(image_gaussian_binary), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        im, contours, hierarchy = cv2.findContours(np.copy(image_gaussian_binary), cv2.RETR_EXTERNAL,
+                                                   cv2.CHAIN_APPROX_SIMPLE)
         bounding_rects = np.zeros((len(contours), 6))
 
         # check area of contours
         iAmDbImageSize = 900 / 8780618
         for i in range(0, len(contours)):
             x, y, w, h = cv2.boundingRect(contours[i])
-            if(int(w*h) > (iAmDbImageSize * (image_orig.shape[0] * image_orig.shape[1]))):
+            if (int(w * h) > (iAmDbImageSize * (image_orig.shape[0] * image_orig.shape[1]))):
                 bounding_rects[i] = (int(x), int(y), int(w), int(h), int(x + 0.5 * w), int(y + 0.5 * h))
                 cv2.rectangle(image_copy, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
         bounding_rects = bounding_rects[(bounding_rects[:, 2] != 0) & (bounding_rects[:, 3] != 0), :]
         # cv2.imwrite('image_final_contours.png', image_copy)
+        self.sendSample(image_copy, 'Final Contours')
 
         # merging the SWRs to get the word regions (WRs)
         sd, so = self.merge_swrs(image_gray.copy(), bounding_rects, name)
 
         return sd, so
+
+    def sendData(self, url, label):
+        print("SendData Word Sample With Keypoints")
+        self.socketIO.emit('LIWI', {'url': url, 'label': label})
+
+    def makeTempDirectory(self):
+        try:
+            os.makedirs('D:/Uni/Graduation Project/LIWI/temp')
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+
+    def saveImage(self, file_name, image):
+        millis = int(round(time.time() * 1000))
+        cv2.imwrite('D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png', image)
+        return 'D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png'
+
+    def sendSample(self, img, label):
+        # Khairy (sending texture blocks)
+        if self.socketIO is not None:
+            self.makeTempDirectory()
+            file_name = 'wordWithKeyPoints'
+            file_name = self.saveImage(file_name, img)
+            self.socketIO.start_background_task(self.sendData(file_name, label))

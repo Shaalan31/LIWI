@@ -12,7 +12,7 @@ class WriterService:
     def __init__(self, socket):
         self.horest_model = HorestWriterIdentification(socket=socket)
         self.texture_model = TextureWriterIdentification(socket=socket)
-        self.sift_model = SiftModel()
+        self.sift_model = SiftModel(socket=socket)
         self.socketIO = socket
         db = Database()
         db.connect()

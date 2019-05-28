@@ -1,16 +1,11 @@
-# from gevent import monkey
-
-# monkey.patch_all()
 import uuid
-
-# from threading import Lock
 from flask import Flask, request, jsonify, send_from_directory
 from flask_socketio import SocketIO
 
 from server.httpexceptions.exceptions import ExceptionHandler
 from server.services.writerservice import *
 from server.utils.writerencoder import *
-
+import time
 app = Flask(__name__)
 
 socket = SocketIO(app, async_mode='threading')
@@ -135,6 +130,7 @@ def get_prediction():
         else:
             status, message, writers_predicted = writer_service.predict_writer(testing_image, filename, image_base_url)
 
+        time.sleep(60)
         raise ExceptionHandler(message=message.value, status_code=status.value,
                                data=writers_predicted)
     except KeyError as e:
