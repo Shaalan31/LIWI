@@ -15,6 +15,7 @@ class SiftModel:
         self.right_test_cases=0
         self.w = w
         self.lang = lang
+        self.prediction = []
         # self.base_train_SDS = 'C:/Users/omars/Documents/Github/LIWI/Omar/Fast/Samples/SDS/'
         # self.base_train_SOH = 'C:/Users/omars/Documents/Github/LIWI/Omar/Fast/Samples/SOH/'
         # self.base_test_SDS = 'C:/Users/omars/Documents/Github/LIWI/Omar/Fast/TestCases/SDS/'
@@ -131,7 +132,7 @@ class SiftModel:
                 else:
                     class_numb = self.test_class[math.floor(prediction / 3)]
                 # print(name + ' , class number: ' + str(class_numb))
-
+                self.prediction.append(class_numb)
                 # Calculate accuracy
                 if (class_numb == count):
                     self.right_test_cases += 1

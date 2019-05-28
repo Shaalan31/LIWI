@@ -91,7 +91,7 @@ spin = 3
 h = [0.1,0.3, 0.5, 0.7, 0.9]
 # h=[0.7]
 acc = None
-for radius in range(10,121,10):
+for radius in range(20,121,10):
     for h_coeff in h:
         class_labels = list(range(start, end))
         classCombinations = combinations(class_labels, r=radius)#end - start)
@@ -123,7 +123,7 @@ for radius in range(10,121,10):
                         # print("Accuracy: " + str(accuracy) + "%")
             except:
                 pass
-            if testcases >= 1000:
+            if testcases >= 200:
                 if acc is None:
                     acc = np.array([radius, h_coeff, accuracy]).reshape((1, 3))
                 else:
