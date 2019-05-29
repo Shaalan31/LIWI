@@ -137,7 +137,6 @@ class WriterService:
         # writers = self.writers_dao_arabic.get_features(writers_ids)
         writers = self.writers_dao_arabic.get_all_features()
 
-        writers = self.writers_dao.get_all_features()
         _, _, _, all_features_texture, num_training_examples_texture, _, SDS_train, SOH_train, writers_lookup_array = self.get_writers_features(
             writers, "ar")
 
@@ -164,7 +163,7 @@ class WriterService:
         predictions = []
         # used to match the probability with classes
         texture_classes = self.texture_model.get_classifier_classes_arabic()
-        texture_predictions = async_results[0].get()[0]
+        texture_predictions = async_results[0][0]
         predictions.append(texture_classes[np.argmax(texture_predictions)])
         texture_indecies_sorted = np.argsort(texture_classes, axis=0)
         sorted_texture_predictions = texture_predictions[texture_indecies_sorted[::-1]]
@@ -172,7 +171,7 @@ class WriterService:
 
         score = 0.6 * sorted_texture_predictions
 
-        sift_prediction = async_results[1].get()
+        sift_prediction = async_results[1]
         sift_prediction = writers_lookup_array[sift_prediction]
         predictions.append(sift_prediction)
 
