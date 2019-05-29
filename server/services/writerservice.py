@@ -158,8 +158,8 @@ class WriterService:
 
         # pool.close()
         # pool.join()
-        async_results += self.texture_model.test(testing_image, mu_texture, sigma_texture, self._pca_arabic)
-        async_results += self.sift_model.predict(SDS_train, SOH_train, testing_image, filename)
+        async_results += [self.texture_model.test(testing_image, mu_texture, sigma_texture, self._pca_arabic)]
+        async_results += [self.sift_model.predict(SDS_train, SOH_train, testing_image, filename)]
 
         predictions = []
         # used to match the probability with classes
