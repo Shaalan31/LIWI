@@ -7,6 +7,7 @@ import threading
 import matplotlib.pyplot as plt
 from scipy import stats
 from scipy import signal
+# from utils.filters import *
 
 
 class HorestFeatures:
@@ -29,6 +30,9 @@ class HorestFeatures:
         values, count = np.unique(self.image, return_counts=True)
         countBlack = count[0]
 
+        # filters = Filters()
+        # sob_img_v = np.multiply(filters.sobelv(self.image), 255)
+        # sob_img_h = np.multiply(filters.sobelh(self.image), 255)
         sob_img_v = np.multiply(filters.sobel_v(self.image), 255)
         sob_img_h = np.multiply(filters.sobel_h(self.image), 255)
 

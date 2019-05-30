@@ -285,7 +285,6 @@ def set_writers():
         # Shaalan path 'C:/Users/omars/Documents/Github/LIWI/Omar/Dataset/Training/Class'
 
         # base_path = 'C:/Users/omars/Documents/Github/LIWI/Omar/Dataset/Training/Class'
-
         # base_path = 'D:/Uni/Graduation Project/All Test Cases/IAMJPG/Samples/Class'
         # base_path = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCasesCompressed/Samples/Class'
 

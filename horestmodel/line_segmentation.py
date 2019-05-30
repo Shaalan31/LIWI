@@ -16,12 +16,13 @@ class LineSegmentation:
         imageGray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         # Noise removal with gaussian
+        # imageGray = filters.gaussian(imageGray, 1)
         imageGray = gaussian(imageGray, 1)
 
         # Thresholding
         imageGray *= 255
         threshold = np.round(threshold_otsu(imageGray) * 1.1)
-        # threshold = np.round(filters.otsu_segmentation(imageGray) * 1.1)
+        # threshold = np.round(filters.threhold_otsu(imageGray) * 1.1)
         imageGray[(imageGray > threshold)] = 255
         imageGray[(imageGray <= threshold)] = 0
 

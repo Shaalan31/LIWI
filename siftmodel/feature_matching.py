@@ -46,5 +46,5 @@ class FeatureMatching:
 
         # D new distance to measure the dissimilarity between I1 and I2
         D = w * manhattan + (1 - w) * chi_square
-        result = np.array([np.argmin(D),0,0])
+        # result = np.array([np.argmin(D),0,0])
         return np.argmin(D)
