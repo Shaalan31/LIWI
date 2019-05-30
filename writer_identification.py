@@ -100,10 +100,10 @@ def preprocess(writers):
                                                      num_current_examples_texture * texture_model.get_num_features())))
 
         # appending sift features
-        # for i in range(len(writer.features.sift_SDS)):
-        #     SDS_train.append(np.array([writer.features.sift_SDS[i]]))
-        #     SOH_train.append(np.array([writer.features.sift_SOH[i]]))
-        #     writers_lookup_array.append(writer.id)
+        for i in range(len(writer.features.sift_SDS)):
+            SDS_train.append(np.array([writer.features.sift_SDS[i]]))
+            SOH_train.append(np.array([writer.features.sift_SOH[i]]))
+            writers_lookup_array.append(writer.id)
 
     # fit horest classifier
     all_features_horest = np.reshape(all_features_horest,
@@ -119,9 +119,7 @@ def preprocess(writers):
                             svd_solver='full')
     all_features_texture = pca.fit_transform(all_features_texture)
     texture_model.fit_classifier(all_features_texture, labels_texture)
-    # mu_horest, sigma_horest=(0,0)
-    # mu_texture, sigma_texture=(0,0)
-    # pca=0
+    # mu_horest, sigma_horest= (0,0)
     return mu_horest, sigma_horest, mu_texture, sigma_texture, pca, SDS_train, SOH_train, writers_lookup_array
 
 
@@ -146,18 +144,98 @@ def predict_writer(testing_image, filename, mu_horest, sigma_horest, mu_texture,
 
     score = 0.25 * sorted_horest_predictions + 0.25 * sorted_texture_predictions
 
-    # print("Starting Sift Testing")
-    # sift_prediction = sift_model.predict(SDS_train, SOH_train, testing_image, filename,lang="en")
-    # sift_prediction = writers_lookup_array[sift_prediction]
-    # print("Sift Prediction:" + str(sift_prediction))
+    print("Starting Sift Testing")
+    sift_prediction = sift_model.predict(SDS_train, SOH_train, testing_image, filename,lang="en")
+    sift_prediction = writers_lookup_array[sift_prediction]
+    print("Sift Prediction:" + str(sift_prediction))
 
     score[np.argwhere(sorted_texture_classes == sift_prediction)] += (1 / 2)
     final_prediction = int(sorted_horest_classes[np.argmax(score)])
-    # final_prediction = sorted_texture_classes[np.argmax(sorted_texture_predictions)]
-    # final_prediction = sift_prediction
     print("Common Prediction: " + str(final_prediction))
 
     return int(float(final_prediction))
+
+
+def predict_writer_arabic(testing_image, filename, writers_ids, dao):
+    writers = dao.get_features(writers_ids)
+
+    # process features to fit classifier
+    # declaring variables for texture
+    labels_texture = []
+    all_features_texture = []
+    num_training_examples_texture = 0
+
+    # declaring variable for sift
+    SDS_train = []
+    SOH_train = []
+    writers_lookup_array = []
+    # set arabic code book for sift
+    sift_model.set_code_book("ar")
+
+    for writer in writers:
+         # processing texture_features
+        texture_features = writer.features.texture_feature
+        num_current_examples_texture = len(texture_features)
+        labels_texture = np.append(labels_texture,
+                                   np.full(shape=(1, num_current_examples_texture), fill_value=writer.id))
+        num_training_examples_texture += num_current_examples_texture
+        all_features_texture = np.append(all_features_texture,
+                                         np.reshape(texture_features.copy(),
+                                                    (1,
+                                                     num_current_examples_texture * texture_model.get_num_features())))
+
+        # appending sift features
+        for i in range(len(writer.features.sift_SDS)):
+            SDS_train.append(np.array([writer.features.sift_SDS[i]]))
+            SOH_train.append(np.array([writer.features.sift_SOH[i]]))
+            writers_lookup_array.append(writer.id)
+
+    # fit texture classifier
+    all_features_texture = np.reshape(all_features_texture,
+                                      (num_training_examples_texture, texture_model.get_num_features()))
+    all_features_texture, mu_texture, sigma_texture = texture_model.feature_normalize(all_features_texture)
+    pca = decomposition.PCA(n_components=min(all_features_texture.shape[0], all_features_texture.shape[1]),
+                            svd_solver='full')
+    all_features_texture = pca.fit_transform(all_features_texture)
+    texture_model.fit_classifier(all_features_texture, labels_texture)
+
+
+    return mu_horest, sigma_horest, mu_texture, sigma_texture, pca, SDS_train, SOH_train, writers_lookup_array
+
+
+def predict_writer(testing_image, filename, mu_horest, sigma_horest, mu_texture, sigma_texture, pca, SDS_train, SOH_train, writers_lookup_array):
+
+    # used to match the probablity with classes
+    print("Starting Horest Testing")
+    horest_classes = horest_model.get_classifier_classes()
+    horest_predictions = horest_model.test(testing_image, mu_horest, sigma_horest)[0]
+    horest_indecies_sorted = np.argsort(horest_classes, axis=0)
+    sorted_horest_classes = horest_classes[horest_indecies_sorted[::-1]]
+    sorted_horest_predictions = horest_predictions[horest_indecies_sorted[::-1]]
+    print("Horest Prediction: " + str(sorted_horest_classes[np.argmax(sorted_horest_predictions)]))
+
+
+    print("Starting Texture Testing")
+    texture_classes = texture_model.get_classifier_classes()
+    texture_predictions = texture_model.test(testing_image, mu_texture, sigma_texture,pca)[0]
+    texture_indecies_sorted = np.argsort(texture_classes, axis=0)
+    sorted_texture_predictions = texture_predictions[texture_indecies_sorted[::-1]]
+    sorted_texture_classes = texture_classes[texture_indecies_sorted[::-1]]
+    print("Texture Prediction:" + str(sorted_texture_classes[np.argmax(sorted_texture_predictions)]))
+
+    score = 0.25 * sorted_horest_predictions + 0.25 * sorted_texture_predictions
+
+    print("Starting Sift Testing")
+    sift_prediction = sift_model.predict(SDS_train, SOH_train, testing_image, filename,lang="en")
+    sift_prediction = writers_lookup_array[sift_prediction]
+    print("Sift Prediction:" + str(sift_prediction))
+
+    score[np.argwhere(sorted_texture_classes == sift_prediction)] += (1 / 2)
+    final_prediction = int(sorted_horest_classes[np.argmax(score)])
+    # final_prediction = sorted_horest_classes[np.argmax(sorted_horest_predictions)]
+    print("Common Prediction: " + str(final_prediction))
+
+    return final_prediction
 
 
 def predict_writer_arabic(testing_image, filename, writers_ids, dao):
@@ -299,78 +377,77 @@ def predict_writer_arabic_edit(testing_image, filename, correct_sift_cases, corr
 
 
 # English
-db = Database()
-db.connect()
-db.create_collection()
-writers_dao = Writers(db.get_collection())
-first_class = 1
-last_class = 650
-count = first_class
-total_test_cases = 0
-right_test_cases = 0
-
-writers = writers_dao.get_features(list(range(first_class, last_class + 1)))
-mu_horest, sigma_horest, mu_texture, sigma_texture, pca, SDS_train, SOH_train, writers_lookup_array = preprocess(writers)
-
-print(writers)
-while count <= last_class:
-    print('Class' + str(count) + ':')
-
-    for filename in glob.glob(sift_model.base_test+ 'testing' + str(count) + '_*.jpg'):
-        name = Path(filename).name
-        print(name)
-        image = cv2.imread(filename)
-        prediction = predict_writer(image, name, mu_horest, sigma_horest, mu_texture, sigma_texture, pca, SDS_train, SOH_train, writers_lookup_array)
-
-        if (prediction == count):
-            right_test_cases += 1
-        total_test_cases += 1
-
-        accuracy = (right_test_cases / total_test_cases) * 100
-
-        print("Accuracy: " + str(accuracy) + "%")
-
-    count += 1
-# End English
-
-# Samar
 # db = Database()
 # db.connect()
 # db.create_collection()
-# writers_dao = Writers(db.get_collection_arabic())
-# startClass = 1
-# endClass = 159
-# count = startClass
+# writers_dao = Writers(db.get_collection())
+# first_class = 1
+# last_class = 300
+# count = first_class
+# total_test_cases = 0
+# right_test_cases = 0
 #
-# total_cases = 0
-# total_correct = 0
-# correct_sift_cases = 0
-# correct_texture_cases = 0
+# writers = writers_dao.get_features(list(range(first_class, last_class + 1)))
+# mu_horest, sigma_horest, mu_texture, sigma_texture, pca, SDS_train, SOH_train, writers_lookup_array = preprocess(writers)
 #
-# writers = writers_dao.get_features(list(range(startClass, endClass + 1)))
-# mu_texture, sigma_texture, pca, SDS_train, SOH_train, writers_lookup_array = preprocess_arabic(writers)
-#
-# while count <= endClass:
-#
+# while count <= last_class:
 #     print('Class' + str(count) + ':')
-#     for filename in glob.glob(
-#             texture_model.pathTestCases + str(
-#                 count) + '.png'):
-#         print(filename)
-#         label = count
-#         prediction, correct_sift_cases, correct_texture_cases = predict_writer_arabic_edit(cv2.imread(filename),filename,
-#                                                                                            correct_sift_cases, correct_texture_cases, label,
-#                                                                                            mu_texture, sigma_texture, pca, SDS_train, SOH_train, writers_lookup_array)
 #
-#         total_cases += 1
-#         if prediction == label:
-#             total_correct += 1
-#         print("Accuracy = ", total_correct * 100 / total_cases, " %")
+#     for filename in glob.glob('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/Dataset/Testing/testing' + str(count) + '_*.jpg'):
+#         name = Path(filename).name
+#         print(name)
+#         image = cv2.imread(filename)
+#         prediction = predict_writer(image, name, mu_horest, sigma_horest, mu_texture, sigma_texture, pca, SDS_train, SOH_train, writers_lookup_array)
 #
-#         print("Accuracy Sift: ", correct_sift_cases * 100 / total_cases, "%")
-#         print("Accuracy Texture: ", correct_texture_cases * 100 / total_cases, "%")
+#         if (prediction == count):
+#             right_test_cases += 1
+#         total_test_cases += 1
+#
+#         accuracy = (right_test_cases / total_test_cases) * 100
+#
+#         print("Accuracy: " + str(accuracy) + "%")
 #
 #     count += 1
+# End English
+
+# Samar
+db = Database()
+db.connect()
+db.create_collection()
+writers_dao = Writers(db.get_collection_arabic())
+startClass = 1
+endClass = 60
+count = startClass
+
+total_cases = 0
+total_correct = 0
+correct_sift_cases = 0
+correct_texture_cases = 0
+
+writers = writers_dao.get_features(list(range(startClass, endClass + 1)))
+mu_texture, sigma_texture, pca, SDS_train, SOH_train, writers_lookup_array = preprocess_arabic(writers)
+
+while count <= endClass:
+
+    print('Class' + str(count) + ':')
+    for filename in glob.glob(
+            texture_model.pathTestCases + str(
+                count) + '.png'):
+        print(filename)
+        label = count
+        prediction, correct_sift_cases, correct_texture_cases = predict_writer_arabic_edit(cv2.imread(filename),filename,
+                                                                                           correct_sift_cases, correct_texture_cases, label,
+                                                                                           mu_texture, sigma_texture, pca, SDS_train, SOH_train, writers_lookup_array)
+
+        total_cases += 1
+        if prediction == label:
+            total_correct += 1
+        print("Accuracy = ", total_correct * 100 / total_cases, " %")
+
+        print("Accuracy Sift: ", correct_sift_cases * 100 / total_cases, "%")
+        print("Accuracy Texture: ", correct_texture_cases * 100 / total_cases, "%")
+
+    count += 1
 # End Samar
 
 

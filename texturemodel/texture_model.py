@@ -6,10 +6,12 @@ import warnings
 from itertools import combinations
 
 from sklearn import decomposition
-from sklearn import svm
-
-from texturemodel.block_segmentation import *
 from texturemodel.texture_features import *
+from texturemodel.block_segmentation import *
+from sklearn.svm import SVC
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as pltLBP
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -29,11 +31,8 @@ class TextureWriterIdentification:
         self.total_test_cases = 100
         self.pathTrainingSet = path_training_set
         self.pathTestCases = path_test_cases
-        self.socketIO = socket
-        self.classifier = svm.SVC(C=100.0, cache_size=200, degree=3, gamma=0.001, kernel='rbf',
-                                  max_iter=-1, probability=True, random_state=1545481387)
-        self.classifier_arabic = svm.SVC(C=100.0, cache_size=200, degree=3, gamma=0.001, kernel='rbf',
-                                         max_iter=-1, probability=True, random_state=1545481387)
+        self.classifier = SVC(C=100.0, cache_size=200,degree=3, gamma=0.001, kernel='rbf',
+                           probability=True, random_state=1545481387)
 
     def feature_extraction(self, example, is_training=True):
         example = example.astype('uint8')
@@ -251,3 +250,45 @@ class TextureWriterIdentification:
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
+
+    def tune_svm_params(self,X,y):
+        # Split the dataset in two equal parts
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.5, random_state=0)
+
+        # Set the parameters by cross-validation
+        tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-1,1e-2,1e-3, 1e-4],
+                             'C': [1, 10, 100, 1000,10000]}
+                            ]
+
+        scores = ['precision', 'recall']
+
+        for score in scores:
+            print("# Tuning hyper-parameters for %s" % score)
+            print()
+
+            clf = GridSearchCV(SVC(), tuned_parameters, cv=5,
+                               scoring='%s_macro' % score)
+            clf.fit(X_train, y_train)
+
+            print("Best parameters set found on development set:")
+            print()
+            print(clf.best_params_)
+            print()
+            print("Grid scores on development set:")
+            print()
+            means = clf.cv_results_['mean_test_score']
+            stds = clf.cv_results_['std_test_score']
+            for mean, std, params in zip(means, stds, clf.cv_results_['params']):
+                print("%0.3f (+/-%0.03f) for %r"
+                      % (mean, std * 2, params))
+            print()
+
+            print("Detailed classification report:")
+            print()
+            print("The model is trained on the full development set.")
+            print("The scores are computed on the full evaluation set.")
+            print()
+            y_true, y_pred = y_test, clf.predict(X_test)
+            print(classification_report(y_true, y_pred))
+            print()

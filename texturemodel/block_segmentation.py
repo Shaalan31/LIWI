@@ -7,6 +7,7 @@ from skimage.filters import threshold_otsu
 
 from utils.common_functions import *
 from utils.filters import *
+import math
 
 
 class BlockSegmentation:
@@ -30,12 +31,13 @@ class BlockSegmentation:
         imageGray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
 
         # Noise removal with gaussian
+        # imageGray = filters.gausian(imageGray, 1)
         imageGray = gaussian(imageGray, 1)
 
         # Thresholding
         imageGray *= 255
         threshold = np.round(threshold_otsu(imageGray))
-        # threshold = np.round(filters.otsu_segmentation(imageGray))
+        # threshold = np.round(filters.threhold_otsu(imageGray))
         imageGray[(imageGray > threshold)] = 255
         imageGray[(imageGray <= threshold)] = 0
 

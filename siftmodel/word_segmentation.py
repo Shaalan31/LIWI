@@ -22,12 +22,13 @@ class WordSegmentation:
         filters = Filters()
 
         # Noise removal with gaussian
+        # image_gray = filters.gausian(image_gray, 1)
         image_gray = gaussian(image_gray, 1)
 
         # Thresholding
         image_gray *= 255
         threshold = np.round(threshold_otsu(image_gray) * 1.1)
-        # threshold = np.round(filters.otsu_segmentation(image_gray) * 1.1)
+        # threshold = np.round(filters.threhold_otsu(image_gray) * 1.1)
         image_gray[(image_gray > threshold)] = 255
         image_gray[(image_gray <= threshold)] = 0
         # show_images([image_gray])
@@ -103,18 +104,14 @@ class WordSegmentation:
                     # xend = int(line[word_index, 0] + line[word_index, 2])
                     word = image_gray[ymin:ymax, int(line[start, 0]):xend]
 
-                    # cv2.imwrite(
-                    #     'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/words/' + str(
-                    #         int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
+                    # cv2.imwrite('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/words/' + str(int(number)) + '_' + str(name.replace('.jpg', '')) + '.jpg', word)
 
                 else:
                     # get segmented word from the image
                     word = image_gray[int(line[word_index, 1]):int(line[word_index, 1] + line[word_index, 3]),
                            int(line[word_index, 0]):int(line[word_index, 0] + line[word_index, 2])]
 
-                    # cv2.imwrite(
-                    #     'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/words/' + str(
-                    #         int(number)) + '_' + str(name.replace('.png', '')) + '.png', word)
+                    # cv2.imwrite('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/words/' + str(int(number)) + '_' + str(name.replace('.jpg', '')) + '.jpg', word)
 
                 word_index += 1
 
@@ -148,7 +145,7 @@ class WordSegmentation:
         # convert into binary image using Otsu
         image_binary = image_gray * 255
         threshold = threshold_otsu(image_binary)
-        # threshold = filters.otsu_segmentation(image_binary)
+        # threshold = filters.threhold_otsu(image_binary)
         image_binary[(image_binary > threshold)] = 255
         image_binary[(image_binary <= threshold)] = 0
         # cv2.imwrite('image_otsu.png', image_binary)
@@ -165,13 +162,14 @@ class WordSegmentation:
 
         # get the average height ha of all CCs in Ib to decide the variance
         variance = np.average(bounding_rect[:, 0]) / 5
+        # image_gaussian = filters.gausian(image_binary.copy(), variance) * 255
         image_gaussian = gaussian(image_binary.copy(), sigma=variance) * 255
         # cv2.imwrite('image_gaussian.png', image_gaussian)
 
         # convert gaussian image into binary image using Otsu
         image_gaussian_binary = image_gaussian.copy().astype('uint8')
+        # threshold = filters.threhold_otsu(image_gaussian_binary)
         threshold = threshold_otsu(image_gaussian_binary)
-        # threshold = filters.otsu_segmentation(image_gaussian_binary)
         image_gaussian_binary[(image_gaussian_binary > threshold)] = 255
         image_gaussian_binary[(image_gaussian_binary <= threshold)] = 0
         # cv2.imwrite('image_gaussian_otsu.png', image_gaussian_binary)

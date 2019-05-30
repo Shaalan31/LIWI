@@ -93,6 +93,7 @@ def training(image):
     for block in writer_blocks:
         all_features_class = np.append(all_features_class, feature_extraction(block))
 
+    print(all_features_class)
 
     return np.reshape(all_features_class, (1, num_lines*num_features))
 
@@ -206,17 +207,17 @@ def featureNormalize(X):
     normalized_X = np.divide(normalized_X, deviation)
     return normalized_X, mean, deviation
 #
-# process_training_data()
-# for key, value in training_dict.items():
-#     np.savetxt("D:/Uni/Graduation Project/All Test Cases/IAMCSV/Samples/Texture/trainingTexture" + str(key) + ".csv", value, delimiter=",")
-#
+process_training_data()
+for key, value in training_dict.items():
+    np.savetxt("D:/Uni/Graduation Project/All Test Cases/IAMCSV/Samples/Texture/trainingTexture" + str(key) + ".csv", value, delimiter=",")
+
 # process_test_data()
 # for key, value in testing_dict.items():
 #     np.savetxt("D:/Uni/Graduation Project/All Test Cases/IAMCSV/TestCases/Texture/testTexture" + str(key) + ".csv", value, delimiter=",")
 
-#
-for i in range(1, num_classes + 1):
-    print(i)
-    training_dict[i] = np.genfromtxt('D:/Uni/Graduation Project/All Test Cases/IAMCSV/Samples/Texture/trainingTexture' + str(i) + '.csv', delimiter=",")
-    testing_dict[i] = np.genfromtxt('D:/Uni/Graduation Project/All Test Cases/IAMCSV/TestCases/Texture/testTexture' + str(i) + '.csv', delimiter=",")
-start()
+# #
+# for i in range(1, num_classes + 1):
+#     print(i)
+#     training_dict[i] = np.genfromtxt('D:/Uni/Graduation Project/All Test Cases/IAMCSV/Samples/Texture/trainingTexture' + str(i) + '.csv', delimiter=",")
+#     testing_dict[i] = np.genfromtxt('D:/Uni/Graduation Project/All Test Cases/IAMCSV/TestCases/Texture/testTexture' + str(i) + '.csv', delimiter=",")
+# start()
