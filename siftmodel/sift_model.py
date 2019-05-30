@@ -23,14 +23,13 @@ class SiftModel:
         self.features = FeaturesExtraction()
         self.accuracy = None
         self.socketIO = socket
+        self.tempdirectory = os.path.join(os.path.dirname(__file__), '../temp')
 
     def get_features(self, name, lang="en", image=None, path="", t=1, phi=36, is_training=True):
 
         if image is None:
             image = cv2.imread(path)
         image = self.preprocess.remove_shadow(image)
-
-        self.sendSample(image)
 
         # extract handwriting from image
         if lang == "en":
@@ -151,27 +150,3 @@ class SiftModel:
         elif lang == 'ar':
             fn = os.path.join(os.path.dirname(__file__), 'centers_KHATT.pkl')
         self.code_book = pickle.load(open(fn, "rb"))
-
-    def sendData(self, url, label):
-        print("SendData No Shadow")
-        self.socketIO.emit('LIWI', {'url': url, 'label': label})
-
-    def makeTempDirectory(self):
-        try:
-            os.makedirs('D:/Uni/Graduation Project/LIWI/temp')
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise
-
-    def saveImage(self, file_name, image):
-        millis = int(round(time.time() * 1000))
-        cv2.imwrite('D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png', image)
-        return 'D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png'
-
-    def sendSample(self, img):
-        # Khairy (sending texture blocks)
-        if self.socketIO is not None:
-            self.makeTempDirectory()
-            file_name = 'NoShadow'
-            file_name = self.saveImage(file_name, img)
-            self.socketIO.start_background_task(self.sendData(file_name, 'No Shadow'))

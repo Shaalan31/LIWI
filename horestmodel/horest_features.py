@@ -29,6 +29,7 @@ class HorestFeatures:
         self.lock4 = threading.Lock()
         self.num_threads = 3
         self.step = self.num_threads
+        self.tempdirectory = os.path.join(os.path.dirname(__file__), '../temp')
 
     def angles_histogram(self):
         values, count = np.unique(self.image, return_counts=True)
@@ -104,7 +105,7 @@ class HorestFeatures:
         img = self.image / 255
         for x, y, w, h, a, r in bounding_rect_sorted:
             total_transitions += np.sum(np.abs(np.diff(img[int(y):int(y + h), int(x):int(x + w)])))
-        total_transitions /= ((2 * bounding_rect_sorted.shape[0])+1e-7)
+        total_transitions /= ((2 * bounding_rect_sorted.shape[0]) + 1e-7)
         sdW = np.sqrt(np.var(bounding_rect_sorted[:, 2]))
         MedianW = np.median(bounding_rect_sorted[:, 2])
         AverageW = np.average(bounding_rect_sorted[:, 2])
@@ -332,13 +333,13 @@ class HorestFeatures:
 
     def saveEdgeDetection(self, file_name, image):
         millis = int(round(time.time() * 1000))
-        cv2.imwrite('D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png', image)
-        return 'D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png'
+        cv2.imwrite(self.tempdirectory + '/' + file_name + str(millis) + '.png', image)
+        return self.tempdirectory + '/' + file_name + str(millis) + '.png'
 
     def saveHistogram(self, _plt, file_name):
         millis = int(round(time.time() * 1000))
-        _plt.savefig('D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png')
-        return 'D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png'
+        _plt.savefig(self.tempdirectory + '/' + file_name + str(millis) + '.png')
+        return self.tempdirectory + '/' + file_name + str(millis) + '.png'
 
     def sendData(self, url, label):
         print("SendData Angles Histogram")

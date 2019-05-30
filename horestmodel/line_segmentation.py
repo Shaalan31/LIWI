@@ -13,12 +13,14 @@ class LineSegmentation:
     def __init__(self, image, socket=None):
         self.image = image
         self.socketIO = socket
+        self.tempdirectory = os.path.join(os.path.dirname(__file__), '../temp')
 
     def segment(self):
         print("segment")
         filters = Filters()
 
         image = remove_shadow(self.image)
+        self.sendSample(image)
 
         imageGray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -83,12 +85,20 @@ class LineSegmentation:
 
     def makeTempDirectory(self):
         try:
-            os.makedirs('D:/Uni/Graduation Project/LIWI/temp')
+            os.makedirs(self.tempdirectory)
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
 
     def saveImage(self, file_name, image):
         millis = int(round(time.time() * 1000))
-        cv2.imwrite('D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png', image)
-        return 'D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png'
+        cv2.imwrite(self.tempdirectory + '/' + file_name + str(millis) + '.png', image)
+        return self.tempdirectory + '/' + file_name + str(millis) + '.png'
+
+    def sendSample(self, img):
+        # Khairy (sending no shadow )
+        if self.socketIO is not None:
+            self.makeTempDirectory()
+            file_name = 'NoShadow'
+            file_name = self.saveImage(file_name, img)
+            self.socketIO.start_background_task(self.sendData(file_name, 'No Shadow'))

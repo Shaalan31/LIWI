@@ -36,6 +36,7 @@ class TextureWriterIdentification:
         self.classifier_arabic = SVC(C=100.0, cache_size=200, degree=3, gamma=0.001, kernel='rbf',
                                      probability=True, random_state=1545481387)
         self.socketIO = socket
+        self.tempdirectory = os.path.join(os.path.dirname(__file__), '../temp')
 
     def feature_extraction(self, example, is_training=True):
         example = example.astype('uint8')
@@ -240,8 +241,8 @@ class TextureWriterIdentification:
 
     def saveHistogram(self, _plt, file_name):
         millis = int(round(time.time() * 1000))
-        _plt.savefig('D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png')
-        return 'D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png'
+        _plt.savefig(self.tempdirectory + '/' + file_name + str(millis) + '.png')
+        return self.tempdirectory + '/' + file_name + str(millis) + '.png'
 
     def sendData(self, url, label):
         print("SendData LBP Histogram")
@@ -249,7 +250,7 @@ class TextureWriterIdentification:
 
     def makeTempDirectory(self):
         try:
-            os.makedirs('D:/Uni/Graduation Project/LIWI/temp')
+            os.makedirs(self.tempdirectory)
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise

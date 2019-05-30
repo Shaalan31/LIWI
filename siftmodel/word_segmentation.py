@@ -15,8 +15,7 @@ class WordSegmentation:
             self._black_percentage_threshold = 1
         else:
             self._black_percentage_threshold = 3.5
-
-        pass
+        self.tempdirectory = os.path.join(os.path.dirname(__file__), '../temp')
 
     def segment(self, image_gray):
         filters = Filters()
@@ -31,7 +30,7 @@ class WordSegmentation:
         # threshold = np.round(filters.threhold_otsu(image_gray) * 1.1)
         image_gray[(image_gray > threshold)] = 255
         image_gray[(image_gray <= threshold)] = 0
-        # show_images([image_gray])
+
         indexes_lines = []
         line_start = 0
         found_line = False
@@ -104,14 +103,10 @@ class WordSegmentation:
                     # xend = int(line[word_index, 0] + line[word_index, 2])
                     word = image_gray[ymin:ymax, int(line[start, 0]):xend]
 
-                    # cv2.imwrite('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/words/' + str(int(number)) + '_' + str(name.replace('.jpg', '')) + '.jpg', word)
-
                 else:
                     # get segmented word from the image
                     word = image_gray[int(line[word_index, 1]):int(line[word_index, 1] + line[word_index, 3]),
                            int(line[word_index, 0]):int(line[word_index, 0] + line[word_index, 2])]
-
-                    # cv2.imwrite('C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/words/' + str(int(number)) + '_' + str(name.replace('.jpg', '')) + '.jpg', word)
 
                 word_index += 1
 
@@ -203,15 +198,15 @@ class WordSegmentation:
 
     def makeTempDirectory(self):
         try:
-            os.makedirs('D:/Uni/Graduation Project/LIWI/temp')
+            os.makedirs(self.tempdirectory)
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
 
     def saveImage(self, file_name, image):
         millis = int(round(time.time() * 1000))
-        cv2.imwrite('D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png', image)
-        return 'D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png'
+        cv2.imwrite(self.tempdirectory + '/' + file_name + str(millis) + '.png', image)
+        return self.tempdirectory + '/' + file_name + str(millis) + '.png'
 
     def sendSample(self, img, label):
         # Khairy (sending texture blocks)

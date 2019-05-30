@@ -22,6 +22,7 @@ class BlockSegmentation:
             self.block_size = 256
         else:
             self.block_size = 128
+        self.tempdirectory = os.path.join(os.path.dirname(__file__), '../temp')
 
     def segment(self):
         filters = Filters()
@@ -167,15 +168,15 @@ class BlockSegmentation:
 
     def makeTempDirectory(self):
         try:
-            os.makedirs('D:/Uni/Graduation Project/LIWI/temp')
+            os.makedirs(self.tempdirectory)
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
 
     def saveImage(self, file_name, image):
         millis = int(round(time.time() * 1000))
-        cv2.imwrite('D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png', image)
-        return 'D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png'
+        cv2.imwrite(self.tempdirectory + '/' + file_name + str(millis) + '.png', image)
+        return self.tempdirectory + '/' + file_name + str(millis) + '.png'
 
     def sendBlockSample(self, block):
         # Khairy (sending texture blocks)

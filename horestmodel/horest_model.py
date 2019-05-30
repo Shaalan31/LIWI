@@ -25,9 +25,6 @@ class HorestWriterIdentification:
         self.right_test_cases = 0
         self.pathTrainingSet = path_training_set
         self.pathTestCases = path_test_cases
-        # self.classifier = MLPClassifier(solver='lbfgs', max_iter=1000, alpha=0.046041,
-        #                                 hidden_layer_sizes=(22, 18, 15, 12, 7,),
-        #                                 random_state=randomState)
         self.classifier = KNeighborsClassifier(n_neighbors=3, n_jobs=-1)
         self.socketIO = socket
 

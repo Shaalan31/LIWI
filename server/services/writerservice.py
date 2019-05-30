@@ -90,8 +90,7 @@ class WriterService:
         sift_prediction = async_results[2]
         sift_prediction = writers_lookup_array[sift_prediction]
         predictions.append(sift_prediction)
-
-        score[np.argwhere(sorted_horest_classes == sift_prediction)] += (0.4)
+        score[np.argwhere(sorted_horest_classes == sift_prediction)] += 0.4
 
         final_prediction = int(sorted_horest_classes[np.argmax(score)])
 
@@ -562,22 +561,23 @@ class WriterService:
 
             all_features_horest, num_training_examples_horest, labels_horest, all_features_texture, num_training_examples_texture, labels_texture, _, _, _ = self.get_writers_features(
                 writers, "en")
+            if num_training_examples_texture != 0:
 
-            # fit horest classifier
-            all_features_horest = np.reshape(all_features_horest,
-                                             (num_training_examples_horest, self.horest_model.get_num_features()))
-            all_features_horest, mu_horest, sigma_horest = self.horest_model.feature_normalize(all_features_horest)
-            self.horest_model.fit_classifier(all_features_horest, labels_horest)
+                # fit horest classifier
+                all_features_horest = np.reshape(all_features_horest,
+                                                 (num_training_examples_horest, self.horest_model.get_num_features()))
+                all_features_horest, mu_horest, sigma_horest = self.horest_model.feature_normalize(all_features_horest)
+                self.horest_model.fit_classifier(all_features_horest, labels_horest)
 
-            # fit texture classifier
-            all_features_texture = np.reshape(all_features_texture,
-                                              (num_training_examples_texture, self.texture_model.get_num_features()))
-            all_features_texture, mu_texture, sigma_texture = self.texture_model.feature_normalize(all_features_texture)
-            self._pca = decomposition.PCA(
-                n_components=min(all_features_texture.shape[0], all_features_texture.shape[1]),
-                svd_solver='full')
-            all_features_texture = self._pca.fit_transform(all_features_texture)
-            self.texture_model.fit_classifier(all_features_texture, labels_texture)
+                # fit texture classifier
+                all_features_texture = np.reshape(all_features_texture,
+                                                  (num_training_examples_texture, self.texture_model.get_num_features()))
+                all_features_texture, mu_texture, sigma_texture = self.texture_model.feature_normalize(all_features_texture)
+                self._pca = decomposition.PCA(
+                    n_components=min(all_features_texture.shape[0], all_features_texture.shape[1]),
+                    svd_solver='full')
+                all_features_texture = self._pca.fit_transform(all_features_texture)
+                self.texture_model.fit_classifier(all_features_texture, labels_texture)
 
         if language == 'ar' or language is None:
 
