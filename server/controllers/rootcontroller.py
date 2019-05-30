@@ -1,14 +1,15 @@
-from flask import Flask, request, jsonify, send_from_directory
-from server.httpexceptions.exceptions import ExceptionHandler
-from server.httpresponses.errors import *
-from server.utils.writerencoder import *
-from server.services.writerservice import *
 import uuid
-import cv2
+from flask import Flask, request, jsonify, send_from_directory
+from flask_socketio import SocketIO
 
+from server.httpexceptions.exceptions import ExceptionHandler
+from server.services.writerservice import *
+from server.utils.writerencoder import *
+import time
 app = Flask(__name__)
 
-writer_service = WriterService()
+socket = SocketIO(app, async_mode='threading')
+writer_service = WriterService(socket)
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), '../../uploads/')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -44,6 +45,12 @@ def get_writers_not_none():
             - list of WritersVo: each writervo contains id, name, username
             - None if there is no writer
     """
+
+    # # global thread
+    # # with thread_lock:
+    # #     if thread is None:
+    # thread = socket.start_background_task(background_thread)
+
     language = request.args.get('lang', None)
 
     if language == 'en':
@@ -69,10 +76,26 @@ def get_writers():
             - list of WritersVo: each writervo contains id, name, username
             - None if there is no writer
     """
-
     status_code, message, data = writer_service.get_all_writers()
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value, data=data)
+
+
+@app.route("/fitClassifiers", methods=['GET'])
+def fit_classifiers():
+    """
+    API to get fit classifiers for training *Language independent
+    :raise: Exception containing:
+            message:
+            - "OK" for success
+            status_code:
+            - 200 for success
+
+    """
+    language = request.args.get('lang', None)
+
+    status_code, message = writer_service.fit_classifiers(language)
+    raise ExceptionHandler(message=message.value, status_code=status_code.value)
 
 
 @app.route("/predict", methods=['POST'])
@@ -98,17 +121,17 @@ def get_prediction():
         testing_image = cv2.imread(UPLOAD_FOLDER + 'testing/' + filename)
 
         # get features of the writers
-        writers_ids = request.get_json()['writers_ids']
+        # writers_ids = request.get_json()['writers_ids']
         language = request.args.get('lang', None)
         image_base_url = request.host_url + 'image/writers/'
 
         if language == "ar":
             status, message, writers_predicted = writer_service.predict_writer_arabic(testing_image, filename,
-                                                                                      writers_ids, image_base_url)
+                                                                                      image_base_url)
         else:
-            status, message, writers_predicted = writer_service.predict_writer(testing_image, filename, writers_ids,
-                                                                               image_base_url)
+            status, message, writers_predicted = writer_service.predict_writer(testing_image, filename, image_base_url)
 
+        time.sleep(60)
         raise ExceptionHandler(message=message.value, status_code=status.value,
                                data=writers_predicted)
     except KeyError as e:
@@ -166,7 +189,7 @@ def get_profile():
     """
     writer_id = request.args.get('id', None)
 
-    status_code, message, profile_vo = writer_service.get_writer_profile(writer_id,request.host_url)
+    status_code, message, profile_vo = writer_service.get_writer_profile(writer_id, request.host_url)
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value, data=profile_vo)
 
@@ -207,14 +230,17 @@ def get_image(path, filename):
                 - testing: for testing
                 - training: for training
     :param filename: path variable for image name
-    :return:
+    :return: url for image in case found, url fo image not found in case not found
     """
     try:
         path = request.view_args['path'] + '/' + request.view_args['filename']
 
         return send_from_directory(UPLOAD_FOLDER, path)
     except:
-        raise ExceptionHandler(message=HttpMessages.IMAGENOTFOUND.value, status_code=HttpErrors.NOTFOUND.value)
+        path = request.view_args['path'] + '/not_found.png'
+
+        return send_from_directory(UPLOAD_FOLDER, path)
+        # raise ExceptionHandler(message=HttpMessages.IMAGENOTFOUND.value, status_code=HttpErrors.NOTFOUND.value)
 
 
 @app.route("/writer", methods=['PUT'])
@@ -266,23 +292,26 @@ def set_writers():
                - response status code:
                    200 for success
     """
-    start_class = 1
-    end_class = 159
+    # Shaalan 1293
+    # May 1205
+    start_class = 562
+    end_class = 650
+
     language = request.args.get('lang', None)
     if language == "ar":
         # base_path = 'D:/Uni/Graduation Project/All Test Cases/KHATT/Samples/Class'
         base_path = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/KHATT/Samples/Class'
         status_code, message = writer_service.fill_collection_arabic(start_class, end_class, base_path)
     else:
+        base_path = 'D:/Uni/Graduation Project/All Test Cases/Dataset/Training/Class'
+        # Shaalan path 'C:/Users/omars/Documents/Github/LIWI/Omar/Dataset/Training/Class'
         # base_path = 'C:/Users/omars/Documents/Github/LIWI/Omar/Dataset/Training/Class'
-
-        # base_path = 'D:/Uni/Graduation Project/All Test Cases/IAMJPG/Samples/Class'
-        base_path = 'C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/TestCasesCompressed/Samples/Class'
-
         status_code, message = writer_service.fill_collection(start_class, end_class, base_path)
 
     raise ExceptionHandler(message=message.value, status_code=status_code.value)
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port='5000')
+    writer_service.fit_classifiers()
+    print("Classifiers are fitted!")
+    socket.run(app)

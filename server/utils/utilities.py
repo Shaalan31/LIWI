@@ -1021,4 +1021,13 @@ def fake_data():
     #     images.append(image)
     # print(temp)
 
+    # temp = []
+    # for filename in os.listdir("C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/uploads/writers/women/"):
+    #     basefile = "C:/Users/Samar Gamal/Documents/CCE/Faculty/Senior-2/2st term/GP/writer identification/LIWI/uploads/writers/women/"
+    #     image = str(uuid.uuid1())
+    #     os.rename(basefile + filename, basefile + image + ".jpg")
+    #     temp.append(image)
+    #     images.append(image)
+    # print(temp)
+
     return names, birthdays, phones, addresses, nid, images

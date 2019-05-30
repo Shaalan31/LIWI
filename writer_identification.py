@@ -100,10 +100,10 @@ def preprocess(writers):
                                                      num_current_examples_texture * texture_model.get_num_features())))
 
         # appending sift features
-        for i in range(len(writer.features.sift_SDS)):
-            SDS_train.append(np.array([writer.features.sift_SDS[i]]))
-            SOH_train.append(np.array([writer.features.sift_SOH[i]]))
-            writers_lookup_array.append(writer.id)
+        # for i in range(len(writer.features.sift_SDS)):
+        #     SDS_train.append(np.array([writer.features.sift_SDS[i]]))
+        #     SOH_train.append(np.array([writer.features.sift_SOH[i]]))
+        #     writers_lookup_array.append(writer.id)
 
     # fit horest classifier
     all_features_horest = np.reshape(all_features_horest,
@@ -119,7 +119,9 @@ def preprocess(writers):
                             svd_solver='full')
     all_features_texture = pca.fit_transform(all_features_texture)
     texture_model.fit_classifier(all_features_texture, labels_texture)
-
+    # mu_horest, sigma_horest=(0,0)
+    # mu_texture, sigma_texture=(0,0)
+    # pca=0
     return mu_horest, sigma_horest, mu_texture, sigma_texture, pca, SDS_train, SOH_train, writers_lookup_array
 
 
@@ -134,27 +136,28 @@ def predict_writer(testing_image, filename, mu_horest, sigma_horest, mu_texture,
     sorted_horest_predictions = horest_predictions[horest_indecies_sorted[::-1]]
     print("Horest Prediction: " + str(sorted_horest_classes[np.argmax(sorted_horest_predictions)]))
 
-    # print("Starting Texture Testing")
-    # texture_classes = texture_model.get_classifier_classes()
-    # texture_predictions = texture_model.test(testing_image, mu_texture, sigma_texture,pca)[0]
-    # texture_indecies_sorted = np.argsort(texture_classes, axis=0)
-    # sorted_texture_predictions = texture_predictions[texture_indecies_sorted[::-1]]
-    # sorted_texture_classes = texture_classes[texture_indecies_sorted[::-1]]
-    # print("Texture Prediction:" + str(sorted_texture_classes[np.argmax(sorted_texture_predictions)]))
+    print("Starting Texture Testing")
+    texture_classes = texture_model.get_classifier_classes()
+    texture_predictions = texture_model.test(testing_image, mu_texture, sigma_texture,pca)[0]
+    texture_indecies_sorted = np.argsort(texture_classes, axis=0)
+    sorted_texture_predictions = texture_predictions[texture_indecies_sorted[::-1]]
+    sorted_texture_classes = texture_classes[texture_indecies_sorted[::-1]]
+    print("Texture Prediction:" + str(sorted_texture_classes[np.argmax(sorted_texture_predictions)]))
 
-    # score = 0.25 * sorted_horest_predictions + 0.25 * sorted_texture_predictions
+    score = 0.25 * sorted_horest_predictions + 0.25 * sorted_texture_predictions
 
     # print("Starting Sift Testing")
     # sift_prediction = sift_model.predict(SDS_train, SOH_train, testing_image, filename,lang="en")
     # sift_prediction = writers_lookup_array[sift_prediction]
     # print("Sift Prediction:" + str(sift_prediction))
 
-    # score[np.argwhere(sorted_texture_classes == sift_prediction)] += (1 / 2)
-    # final_prediction = int(sorted_horest_classes[np.argmax(score)])
-    final_prediction = sorted_horest_classes[np.argmax(sorted_horest_predictions)]
+    score[np.argwhere(sorted_texture_classes == sift_prediction)] += (1 / 2)
+    final_prediction = int(sorted_horest_classes[np.argmax(score)])
+    # final_prediction = sorted_texture_classes[np.argmax(sorted_texture_predictions)]
+    # final_prediction = sift_prediction
     print("Common Prediction: " + str(final_prediction))
 
-    return final_prediction
+    return int(float(final_prediction))
 
 
 def predict_writer_arabic(testing_image, filename, writers_ids, dao):
@@ -220,7 +223,7 @@ def predict_writer_arabic(testing_image, filename, writers_ids, dao):
     final_prediction = int(sorted_texture_classes[np.argmax(score)])
     print("Common Prediction: " + str(final_prediction))
 
-    return final_prediction
+    return str(final_prediction)
 
 
 def preprocess_arabic(writers):
@@ -301,7 +304,7 @@ db.connect()
 db.create_collection()
 writers_dao = Writers(db.get_collection())
 first_class = 1
-last_class = 159
+last_class = 650
 count = first_class
 total_test_cases = 0
 right_test_cases = 0
@@ -309,6 +312,7 @@ right_test_cases = 0
 writers = writers_dao.get_features(list(range(first_class, last_class + 1)))
 mu_horest, sigma_horest, mu_texture, sigma_texture, pca, SDS_train, SOH_train, writers_lookup_array = preprocess(writers)
 
+print(writers)
 while count <= last_class:
     print('Class' + str(count) + ':')
 

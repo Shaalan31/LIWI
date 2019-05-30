@@ -1,19 +1,24 @@
-import numpy as np
-import cv2
+import errno
 import math
-import skimage.filters as filters
-import scipy.ndimage as ndimage
+import os
 import threading
+import time
+
+import cv2
 import matplotlib.pyplot as plt
-from scipy import stats
+import numpy as np
+import scipy.ndimage as ndimage
+import skimage.filters as filters
 from scipy import signal
+from scipy import stats
 
 
 class HorestFeatures:
-    def __init__(self, image, contours, hierarchy):
+    def __init__(self, image, contours, hierarchy, socket=None):
         self.image = image
         self.contours = contours
         self.hierarchy = hierarchy
+        self.socketIO = socket
 
         # needed in blobs detection threading
         self.areas = []
@@ -32,12 +37,18 @@ class HorestFeatures:
         sob_img_v = np.multiply(filters.sobel_v(self.image), 255)
         sob_img_h = np.multiply(filters.sobel_h(self.image), 255)
 
+        sobelXY = np.sqrt(np.power(sob_img_h, 2) + np.power(sob_img_v, 2))
+        self.sendEdgeDetectionSample(sobelXY)
+
         # Getting angles in radians
         angles = np.arctan2(sob_img_v, sob_img_h)
         angles = np.multiply(angles, (180 / math.pi))
         angles = np.round(angles)
 
+        abs_angles = np.abs(angles)
+
         anglesHist = []
+        abs_angles_hist = []
         angle1 = 10
         angle2 = 40
 
@@ -46,10 +57,19 @@ class HorestFeatures:
             anglesCopy[np.logical_or(anglesCopy < angle1, anglesCopy > angle2)] = 0
             anglesCopy[np.logical_and(anglesCopy >= angle1, anglesCopy <= angle2)] = 1
             anglesHist.append(np.sum(anglesCopy))
+
+            abs_angles_copy = abs_angles.copy()
+            abs_angles_copy[np.logical_or(abs_angles_copy < angle1, abs_angles_copy > angle2)] = 0
+            abs_angles_copy[np.logical_and(abs_angles_copy >= angle1, abs_angles_copy <= angle2)] = 1
+            abs_angles_hist.append(np.sum(abs_angles_copy))
+
             angle1 += 30
             angle2 += 30
 
-        return np.divide(anglesHist, countBlack)
+        hist = np.divide(anglesHist, countBlack)
+        abs_hist = np.divide(abs_angles_hist, countBlack)
+        self.sendHistogram(abs_hist)
+        return hist
 
     def connected_components(self, image_shape):
         mask = (self.hierarchy[:, 3] == 0).astype('int')
@@ -299,3 +319,43 @@ class HorestFeatures:
 
         return [slope, std_err, len(local_max), len(local_min), average_slope_max, average_slope_min, max_ratio,
                 min_ratio]
+
+    def makeTempDirectory(self):
+        try:
+            os.makedirs('D:/Uni/Graduation Project/LIWI/temp')
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+
+    def saveEdgeDetection(self, file_name, image):
+        millis = int(round(time.time() * 1000))
+        cv2.imwrite('D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png', image)
+        return 'D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png'
+
+    def saveHistogram(self, _plt, file_name):
+        millis = int(round(time.time() * 1000))
+        _plt.savefig('D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png')
+        return 'D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png'
+
+    def sendData(self, url, label):
+        print("SendData Angles Histogram")
+        self.socketIO.emit('LIWI', {'url': url, 'label': label})
+
+    def sendEdgeDetectionSample(self, img):
+        # Khairy (sending edge detection)
+        if self.socketIO is not None:
+            self.makeTempDirectory()
+            file_name = 'EdgeDetection'
+            file_name = self.saveEdgeDetection(file_name, img)
+            self.socketIO.start_background_task(self.sendData(file_name, 'Edge Detection'))
+
+    def sendHistogram(self, hist):
+        if self.socketIO is not None:
+            pltRange = np.arange(start=10, stop=160, step=30)
+            plt.figure()
+            plt.title('Weighted Angles Histogram')
+            plt.bar(pltRange.copy(), np.around(np.multiply(hist, 100)).astype('uint8').copy(), width=2, align='center')
+
+            self.makeTempDirectory()
+            file_name = self.saveHistogram(plt, 'Angles Histogram')
+            self.socketIO.start_background_task(self.sendData(file_name, 'Angles Histogram'))

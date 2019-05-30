@@ -1,3 +1,4 @@
+Dataset/
 node_modules
 TestCasesCompressed/
 KHATT/
@@ -125,4 +126,5 @@ venv.bak/
 # mypy
 .mypy_cache/
 data/
+Omar/
 uploads/

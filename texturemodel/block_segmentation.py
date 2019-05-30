@@ -1,11 +1,18 @@
-from utils.common_functions import *
+import errno
+import os
+import time
+
 from skimage.filters import gaussian
 from skimage.filters import threshold_otsu
-import math
+
+from utils.common_functions import *
+from utils.filters import *
+
 
 class BlockSegmentation:
-    def __init__(self, image, lang="en", h_coeff=None):
+    def __init__(self, image, lang="en", h_coeff=None, socket=None):
         self.image = image
+        self.socketIO = socket
         if h_coeff is None:
             self.h_coeff = 0.5
         else:
@@ -14,10 +21,10 @@ class BlockSegmentation:
             self.block_size = 256
         else:
             self.block_size = 128
-        # self.block_size = 256
-
 
     def segment(self):
+        filters = Filters()
+
         # image = remove_shadow(image)
 
         imageGray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
@@ -28,6 +35,7 @@ class BlockSegmentation:
         # Thresholding
         imageGray *= 255
         threshold = np.round(threshold_otsu(imageGray))
+        # threshold = np.round(filters.otsu_segmentation(imageGray))
         imageGray[(imageGray > threshold)] = 255
         imageGray[(imageGray <= threshold)] = 0
 
@@ -79,6 +87,7 @@ class BlockSegmentation:
                 # New Block
                 x = 0
                 y = 0
+                self.sendBlockSample(block)
                 blocks.append(block)
                 block = np.full((self.block_size, self.block_size), 1, dtype='int')
                 heights = np.asarray([])
@@ -100,6 +109,8 @@ class BlockSegmentation:
                     x = 0
                     y = 0
                     # cv2.imwrite('blocksample'+str(index)+'.png', np.multiply(block, 255))
+                    # show_images([np.multiply(block, 255)])
+                    self.sendBlockSample(block)
                     blocks.append(block)
                     block = np.full((self.block_size, self.block_size), 1, dtype='int')
                     heights = np.asarray([])
@@ -144,5 +155,31 @@ class BlockSegmentation:
 
             index += 1
         if y < self.block_size:
+            self.sendBlockSample(block)
             blocks.append(block)
         return blocks
+
+    def sendData(self, url, label):
+        print("SendData Block Sample")
+        self.socketIO.emit('LIWI', {'url': url, 'label': label})
+
+    def makeTempDirectory(self):
+        try:
+            os.makedirs('D:/Uni/Graduation Project/LIWI/temp')
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+
+    def saveImage(self, file_name, image):
+        millis = int(round(time.time() * 1000))
+        cv2.imwrite('D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png', image)
+        return 'D:/Uni/Graduation Project/LIWI/temp/' + file_name + str(millis) + '.png'
+
+    def sendBlockSample(self, block):
+        # Khairy (sending texture blocks)
+        if self.socketIO is not None:
+            block = np.multiply(block, 255)
+            self.makeTempDirectory()
+            file_name = 'block'
+            file_name = self.saveImage(file_name, block)
+            self.socketIO.start_background_task(self.sendData(file_name, 'Block Sample'))
