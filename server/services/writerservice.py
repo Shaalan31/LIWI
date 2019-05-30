@@ -84,14 +84,14 @@ class WriterService:
         texture_indecies_sorted = np.argsort(texture_classes, axis=0)
         sorted_texture_predictions = texture_predictions[texture_indecies_sorted[::-1]]
 
-        score = 0.25 * sorted_horest_predictions + 0.25 * sorted_texture_predictions
+        score = 0.4 * sorted_horest_predictions + 0.2 * sorted_texture_predictions
 
         # sift_prediction = async_results[2].get()
         sift_prediction = async_results[2]
         sift_prediction = writers_lookup_array[sift_prediction]
         predictions.append(sift_prediction)
 
-        score[np.argwhere(sorted_horest_classes == sift_prediction)] += (1 / 2)
+        score[np.argwhere(sorted_horest_classes == sift_prediction)] += (0.4)
 
         final_prediction = int(sorted_horest_classes[np.argmax(score)])
 
@@ -581,8 +581,10 @@ class WriterService:
             if num_training_examples_texture != 0:
                 # fit texture classifier
                 all_features_texture = np.reshape(all_features_texture,
-                                                  (num_training_examples_texture, self.texture_model.get_num_features()))
-                all_features_texture, mu_texture, sigma_texture = self.texture_model.feature_normalize(all_features_texture)
+                                                  (
+                                                  num_training_examples_texture, self.texture_model.get_num_features()))
+                all_features_texture, mu_texture, sigma_texture = self.texture_model.feature_normalize(
+                    all_features_texture)
                 self._pca_arabic = decomposition.PCA(
                     n_components=min(all_features_texture.shape[0], all_features_texture.shape[1]),
                     svd_solver='full')

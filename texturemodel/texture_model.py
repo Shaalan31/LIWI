@@ -10,6 +10,7 @@ from sklearn import svm
 
 from texturemodel.block_segmentation import *
 from texturemodel.texture_features import *
+import matplotlib.pyplot as pltLBP
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
@@ -226,12 +227,13 @@ class TextureWriterIdentification:
 
     def sendHistogram(self, hist):
         if self.socketIO is not None:
-            pltRange = np.arange(start=0, stop=256, step=1)
-            plt.title('LBP Histogram')
-            plt.bar(pltRange, hist[0], width=2, align='center')
+            pltRange2 = np.arange(start=0, stop=256, step=1)
+            pltLBP.figure()
+            pltLBP.title('LBP Histogram')
+            pltLBP.bar(pltRange2.copy(), hist[0].copy(), width=2, align='center')
 
             self.makeTempDirectory()
-            file_name = self.saveHistogram(plt, 'LBP Histogram')
+            file_name = self.saveHistogram(pltLBP, 'LBP Histogram')
             self.socketIO.start_background_task(self.sendData(file_name, 'LBP Histogram'))
 
     def saveHistogram(self, _plt, file_name):
