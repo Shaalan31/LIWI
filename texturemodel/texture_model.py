@@ -31,8 +31,11 @@ class TextureWriterIdentification:
         self.total_test_cases = 100
         self.pathTrainingSet = path_training_set
         self.pathTestCases = path_test_cases
-        self.classifier = SVC(C=100.0, cache_size=200,degree=3, gamma=0.001, kernel='rbf',
-                           probability=True, random_state=1545481387)
+        self.classifier = SVC(C=100.0, cache_size=200, degree=3, gamma=0.001, kernel='rbf',
+                              probability=True, random_state=1545481387)
+        self.classifier_arabic = SVC(C=100.0, cache_size=200, degree=3, gamma=0.001, kernel='rbf',
+                                     probability=True, random_state=1545481387)
+        self.socketIO = socket
 
     def feature_extraction(self, example, is_training=True):
         example = example.astype('uint8')
@@ -251,14 +254,14 @@ class TextureWriterIdentification:
             if e.errno != errno.EEXIST:
                 raise
 
-    def tune_svm_params(self,X,y):
+    def tune_svm_params(self, X, y):
         # Split the dataset in two equal parts
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.5, random_state=0)
 
         # Set the parameters by cross-validation
-        tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-1,1e-2,1e-3, 1e-4],
-                             'C': [1, 10, 100, 1000,10000]}
+        tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-1, 1e-2, 1e-3, 1e-4],
+                             'C': [1, 10, 100, 1000, 10000]}
                             ]
 
         scores = ['precision', 'recall']
