@@ -6,9 +6,10 @@ t = [1, 50, 150]
 phi = [36, 72, 108]
 w = [0.1,0.25,0.5,0.75,0.9]
 
-# t=[1]
+
+# t=[50]
 # phi=[36]
-# w=[0.75]
+# w=[0.5]
 code_book = pickle.load( open( "centers_KHATT.pkl", "rb" ) )
 
 #writer identification using SIFT
@@ -20,7 +21,7 @@ print('start')
 # print(total)
 count = 0
 
-for radius in range (50,51,10):
+for radius in range (10,110,20):
 
 
     for t_test in t:

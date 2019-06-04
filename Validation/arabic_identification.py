@@ -8,7 +8,7 @@ from texturemodel.texture_model import *
 t_test=50
 phi_test=36
 w_test=0.5
-h_coeff=0.7
+h_coeff=0.5
 code_book = pickle.load( open( "centers_KHATT.pkl", "rb" ) )
 
 
@@ -98,19 +98,21 @@ def predict_texture(testing_image, mu_texture, sigma_texture, pca,sift_predictio
 
 start = 1
 end = 120
-prob_sift = [0.1,0.5,0.9]
+prob_sift = [0.45]
 acc = None
-
-for radius in range(50,121,10):
+acc_sift = None
+for radius in range(10,121,20):
     class_labels = list(range(start, end))
     classCombinations = combinations(class_labels, r=radius)#end - start)
-    right_test_cases = 0
-    total_test_cases = 0
+
     accuracy = 0
 
     # print(h_coeff)
 
     for prob_sift_test in prob_sift:
+        right_test_cases = 0
+        total_test_cases = 0
+        sift_right = 0
         testcases = 0
         for item in classCombinations:
             print(testcases)
@@ -120,6 +122,10 @@ for radius in range(50,121,10):
             sift_model.run()
             sift_prediction = sift_model.prediction
             i = 0
+            sift_right += sift_model.right_test_cases
+            testcases+=sift_model.total_test_cases
+            sift_accuracy = (sift_right/testcases) *100
+
             for count in item:
                 # print('Class' + str(count) + ':')
                 for filename in glob.glob('C:/Users/omars/Documents/Github/LIWI/Omar/ValidationArabic/TestCases/H/'+str(h_coeff)+ '/testing' + str(count) + '.csv'):
@@ -132,19 +138,26 @@ for radius in range(50,121,10):
                     if (prediction == count):
                         right_test_cases += 1
                     total_test_cases += 1
-                    testcases += 1
-                    accuracy = (right_test_cases / total_test_cases) * 100
 
+                    accuracy = (right_test_cases / total_test_cases) * 100
+                    # sift_accuracy = (sift_right / total_test_cases) * 100
                     print("Accuracy: " + str(accuracy) + "%")
+
             # except:
             #     pass
-            if testcases >= 20:
-                if acc is None:
+            if testcases >= 100:
+                print(accuracy)
+                print(sift_accuracy)
+                if acc_sift is None:
                     acc = np.array([radius, prob_sift_test, accuracy]).reshape((1, 3))
+                    acc_sift = np.array([radius, prob_sift_test, sift_accuracy]).reshape((1, 3))
                 else:
                     acc = np.append(acc,np.array([radius, prob_sift_test, accuracy]).reshape((1,3)),axis=0)
+                    acc_sift = np.append(acc_sift, np.array([radius, prob_sift_test, sift_accuracy]).reshape((1, 3)), axis=0)
+
                 print('Acc finaal @ p=', prob_sift_test, ' - ', accuracy, 'rad - ', radius)
                 print('shape ',acc.shape)
                 np.savetxt('ar_results.csv',acc,delimiter=',')
+                np.savetxt('ar_sift_results.csv',acc_sift,delimiter=',')
                 break
 

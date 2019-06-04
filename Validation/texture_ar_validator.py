@@ -91,7 +91,7 @@ spin = 3
 h = [0.1,0.3, 0.5, 0.7, 0.9]
 # h=[0.7]
 acc = None
-for radius in range(40,90,10):
+for radius in range(60,90,20):
     for h_coeff in h:
         class_labels = list(range(start, end))
         classCombinations = combinations(class_labels, r=radius)#end - start)

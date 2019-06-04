@@ -21,11 +21,18 @@ class SiftModel:
         # self.base_test_SDS = 'C:/Users/omars/Documents/Github/LIWI/Omar/Fast/TestCases/SDS/'
         # self.base_test_SOH = 'C:/Users/omars/Documents/Github/LIWI/Omar/Fast/TestCases/SOH/'
 
-        self.base_samples_t = 'C:/Users/omars/Documents/Github/LIWI/Omar/ValidationArabic/Samples/SDS/'
-        self.base_samples_phi = 'C:/Users/omars/Documents/Github/LIWI/Omar/ValidationArabic/Samples/SOH/'
+        # self.base_samples_t = 'C:/Users/omars/Documents/Github/LIWI/Omar/ValidationArabic/Samples/SDS/'
+        # self.base_samples_phi = 'C:/Users/omars/Documents/Github/LIWI/Omar/ValidationArabic/Samples/SOH/'
+        #
+        # self.base_test_t = 'C:/Users/omars/Documents/Github/LIWI/Omar/ValidationArabic/TestCases/SDS/'
+        # self.base_test_phi = 'C:/Users/omars/Documents/Github/LIWI/Omar/ValidationArabic/TestCases/SOH/'
 
-        self.base_test_t = 'C:/Users/omars/Documents/Github/LIWI/Omar/ValidationArabic/TestCases/SDS/'
-        self.base_test_phi = 'C:/Users/omars/Documents/Github/LIWI/Omar/ValidationArabic/TestCases/SOH/'
+
+        self.base_samples_t = 'C:/Users/omars/Documents/Github/LIWI/Omar/Validation/Samples/SDS/'
+        self.base_samples_phi = 'C:/Users/omars/Documents/Github/LIWI/Omar/Validation/Samples/SOH/'
+
+        self.base_test_t = 'C:/Users/omars/Documents/Github/LIWI/Omar/Validation/TestCases/SDS/'
+        self.base_test_phi = 'C:/Users/omars/Documents/Github/LIWI/Omar/Validation/TestCases/SOH/'
 
         self.str_t = str(t)
         self.str_phi = str(phi)
@@ -78,7 +85,7 @@ class SiftModel:
                 # print(count)
                 # print('Class' + str(count) + ':')
 
-                for image in glob.glob(filename + '/*.csv'):
+                for image in glob.glob(filename + '/*.jpg'):
                     name = Path(image).name
                     # print(name)
                     SDS = np.genfromtxt(image, delimiter=",")
@@ -88,7 +95,7 @@ class SiftModel:
             for filename in glob.glob(self.base_samples_phi + 'Class' + str(count)):
                 # print('Class' + str(count) + ':')
 
-                for image in glob.glob(filename + '/*.csv'):
+                for image in glob.glob(filename + '/*.jpg'):
                     name = Path(image).name
                     # print(name)
                     SOH = np.genfromtxt(image, delimiter=",")
@@ -109,7 +116,7 @@ class SiftModel:
         for count in self.test_class:
             # print('Class' + str(count) + ':')
 
-            for filename in glob.glob(self.base_test_t + 'testing' + str(count) + '.csv'):
+            for filename in glob.glob(self.base_test_t + 'testing' + str(count) + '_*.csv'):
                 # print(filename)
                 name = Path(filename).name
 
