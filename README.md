@@ -1,3 +1,4 @@
+![LOGO][Logo]
 # LIWI
 Language Independent Writer Identification
 
