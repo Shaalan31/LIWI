@@ -2,7 +2,7 @@ cffi==1.12.3
 Click==7.0
 cloudpickle==1.1.1
 cycler==0.10.0
-dask==1.2.2
+dask==2021.10.0
 decorator==4.4.0
 Faker==1.0.5
 Flask==1.0.3
